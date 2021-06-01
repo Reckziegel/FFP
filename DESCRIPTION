@@ -1,0 +1,33 @@
+Package: ffp
+Type: Package
+Title: Fully Flexible Probabilities 
+Version: 0.1.9000
+Author: Bernardo Reckziegel
+Maintainer: Bernardo Reckziegel <bernardo_cse@hotmail.com>
+Description: State and time-dependent risk management through Flexible Probabilities.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.1.1
+Imports: 
+    usethis (>= 0.2.1),
+    nloptr (>= 1.2.2.2),
+    pracma (>= 2.3.3),
+    assertthat (>= 0.2.1),
+    mvtnorm (>= 1.1-1),
+    rlang (>= 0.1.2),
+    vctrs (>= 0.3.7),
+    tibble (>= 3.1.1),
+    stats (>= 4.0.5),
+    dplyr (>= 1.0.6),
+    purrr (>= 0.3.4),
+    methods (>= 4.0.5),
+    xts (>= 0.12.1),
+    lubridate (>= 1.7.10),
+    NlcOptim (>= 0.6)
+Depends: 
+    R (>= 2.10)
+Suggests: 
+    roxygen2,
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3

@@ -1,0 +1,97 @@
+#' Flexible Probabilities Driven Bootstrap
+#'
+#' This function resamples scenarios given by the flexible probabilities
+#' approach.
+#'
+#' @param x A time-series defining the scenario-probability distribution.
+#' @param p A vector of probabilities.
+#' @param n A \code{numeric} scalar with the number of scenarios to be generated.
+#'
+#' @return The argument `x` is supposed to have the same size of `p`.
+#'
+#' @export
+#'
+#' @examples
+#' set.seed(123)
+#' ret <- diff(log(EuStockMarkets))
+#' ew  <- rep(1 / nrow(ret), nrow(ret))
+#'
+#' bootstrap_scenarios(x = ret, p = ew, n = 10)
+bootstrap_scenarios <- function(x, p, n) {
+  UseMethod("bootstrap_scenarios", x)
+}
+
+#' @rdname bootstrap_scenarios
+#' @export
+bootstrap_scenarios.numeric <- function(x, p, n) {
+  vctrs::vec_assert(n, double(), 1)
+  vctrs::vec_assert(p, double())
+  assertthat::assert_that(
+    assertthat::are_equal(vctrs::vec_size(x), vctrs::vec_size(p))
+  )
+
+  make_scenarios(x, p, n)
+}
+
+#' @rdname bootstrap_scenarios
+#' @export
+bootstrap_scenarios.matrix <- function(x, p, n) {
+  vctrs::vec_assert(n, double(), 1)
+  vctrs::vec_assert(p, double())
+  assertthat::assert_that(
+    assertthat::are_equal(vctrs::vec_size(x), vctrs::vec_size(p))
+  )
+
+  make_scenarios(x, p, n)
+}
+
+#' @rdname bootstrap_scenarios
+#' @export
+bootstrap_scenarios.ts <- function(x, p, n) {
+  vctrs::vec_assert(n, double(), 1)
+  vctrs::vec_assert(p, double())
+  assertthat::assert_that(
+    assertthat::are_equal(vctrs::vec_size(x), vctrs::vec_size(p))
+  )
+
+  make_scenarios(x, p, n)
+}
+
+#' @rdname bootstrap_scenarios
+#' @export
+bootstrap_scenarios.xts <- function(x, p, n) {
+  vctrs::vec_assert(n, double(), 1)
+  vctrs::vec_assert(p, double())
+  assertthat::assert_that(
+    assertthat::are_equal(vctrs::vec_size(x), vctrs::vec_size(p))
+  )
+
+  make_scenarios(x, p, n)
+}
+
+#' @rdname bootstrap_scenarios
+#' @export
+bootstrap_scenarios.tbl <- function(x, p, n) {
+  vctrs::vec_assert(n, double(), 1)
+  vctrs::vec_assert(p, double())
+  assertthat::assert_that(
+    assertthat::are_equal(vctrs::vec_size(x), vctrs::vec_size(p))
+  )
+
+  make_scenarios(x, p, n)
+}
+
+#' @rdname bootstrap_scenarios
+#' @export
+bootstrap_scenarios.data.frame <- function(x, p, n) {
+  vctrs::vec_assert(n, double(), 1)
+  vctrs::vec_assert(p, double())
+  assertthat::assert_that(
+    assertthat::are_equal(vctrs::vec_size(x), vctrs::vec_size(p))
+  )
+
+  make_scenarios(x, p, n)
+}
+
+
+

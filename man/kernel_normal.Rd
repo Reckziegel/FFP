@@ -32,14 +32,14 @@ kernel_normal(x, mean, sigma)
 
 \item{mean}{A number in which the kernel should be centered.}
 
-\item{sigma}{A number with the uncertainty ("volatility") around mean.}
+\item{sigma}{A number with the uncertainty (volatility) around mean.}
 }
 \value{
 A vector with the new probabilities distribution.
 }
 \description{
-In this framework, the historical realization of a certain indicator is given
-a weight proportional to its distance from the target "mean", which is enveloped
+In this framework, historical realizations receive a weight proportional to
+the distance from the target mean, which is enveloped
 normal kernel with a bandwidth equal sigma.
 }
 \examples{
@@ -47,5 +47,5 @@ ret <- diff(log(EuStockMarkets[ , 1]))
 mean <- -0.01 # scenarios around -1\%
 sigma <- var(diff(ret))
 
-plot(kernel_normal(ret, mean, sigma), type = 'l')
+#plot(kernel_normal(ret, mean, sigma), type = 'l')
 }

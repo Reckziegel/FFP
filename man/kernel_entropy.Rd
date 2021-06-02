@@ -32,7 +32,7 @@ kernel_entropy(x, mean, sigma = NULL)
 
 \item{mean}{A number in which the kernel should be centered.}
 
-\item{sigma}{A number with the uncertainty around mean. When \code{NULL} only
+\item{sigma}{A number with the uncertainty around mean. When \code{NULL}, only
 the mean is constrained.}
 }
 \value{
@@ -47,5 +47,10 @@ ret <- diff(log(EuStockMarkets[ , 1]))
 mean <- -0.01 # scenarios around -1\%
 sigma <- var(diff(ret))
 
-plot(kernel_entropy(ret, mean, sigma), type = 'l')
+#plot(kernel_entropy(ret, mean, sigma), type = 'l')
+}
+\references{
+De Santis, G., R. Litterman, A. Vesval, and K. Winkelmann, 2003,
+Covariance matrix estimation, Modern investment management: an equilibrium
+approach, Wiley.
 }

@@ -8,7 +8,7 @@
 #' to be near by.
 #' @param h2 A \code{matrix} with the covariance of the \code{Y} factor.
 #'
-#' @return A \code{matrix} of size \code{TX1} with flexible probabilities.
+#' @return A vector with the new probability distribution.
 #'
 #' @keywords internal
 LeastInfoKernel <- function(Y, y, h2) {

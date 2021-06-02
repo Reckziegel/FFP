@@ -7,18 +7,14 @@
 DoubleDecay(x, decay_low, decay_high)
 }
 \arguments{
-\item{x}{A \code{matrix} of size \code{TxN} with the relevant set of risk drivers.}
+\item{x}{A set of relevant risk drivers.}
 
 \item{decay_low}{A \code{numeric} value with the low decay (long half-life).}
 
 \item{decay_high}{A \code{numeric} value with the high decay (short half-life).}
 }
 \value{
-A \code{list} with two components:
-    \itemize{
-      \item{\code{m}}: a \code{matrix} of size \code{Nx1} with zero expectation.
-      \item{\code{s}}: a \code{matrix} of size \code{NxN} with a dispersion matrix.
-    }
+A \code{list} with the posterior mean ans sigma.
 }
 \description{
 This function computes the covariance matrix using two different decay factors.
@@ -28,12 +24,3 @@ A common practice is to estimate the covariance of the risk drivers using a high
 decay (short half-life) for the volatilities and a low decay (long half-life)
 for the correlations.
 }
-\examples{
-ret <- diff(log(EuStockMarkets))
-DoubleDecay(x = ret, decay_low = 0.0055, decay_high = 0.0166)
-}
-\references{
-Litterman, Bob. Modern investment management: an equilibrium approach.
-Vol. 246. John Wiley & Sons, 2004.
-}
-\keyword{internal}

@@ -2,7 +2,7 @@
 #'
 #' This function solves the entropy minimization problem with equality and inequality
 #' constraints. The solution is a vector of posterior probabilities that distorts
-#' the least the prior, given the constraints.
+#' the least the prior (equal-weights probabilities), given the constraints.
 #'
 #' @param p A vector of prior probabilities
 #' @param A The linear inequality constraint (left-hand side)
@@ -14,15 +14,9 @@
 #'
 #' @export
 #'
-#' @references Meucci, Attilio, Fully Flexible Views: Theory and Practice (August 8, 2008).
-#' Fully Flexible Views: Theory and Practice, Risk, Vol. 21, No. 10, pp. 97-102,
-#' October 2008, Available at SSRN: https://ssrn.com/abstract=1213325
-#'
 #' @examples
 #' #
 entropy_pooling <- function(p, A = NULL, b = NULL, Aeq, beq) {
-
-  #vctrs::vec_assert(p, double())
 
   if (!is.matrix(p)) {
     p <- matrix(p, ncol = 1)
@@ -52,7 +46,6 @@ entropy_pooling <- function(p, A = NULL, b = NULL, Aeq, beq) {
   InqMat <- InqMat[-c(K_ + 1:nrow(InqMat)), ]
   InqVec <- matrix(0, K_, 1)
 
-  # equality constraints only
   if (!K_) {
 
     nestedfunU <- function(v, p, Aeq_, beq_) {
@@ -76,7 +69,6 @@ entropy_pooling <- function(p, A = NULL, b = NULL, Aeq, beq) {
     v  <- opts$par
     p_ <- exp(log(p) - 1 - Aeq_ %*% v)
 
-    # case inequality constraints are specified
   } else {
 
     nestedfunC <- function(lv, K_, p, A_, Aeq_, .A, .b, .Aeq, .beq) {

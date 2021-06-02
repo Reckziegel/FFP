@@ -5,7 +5,7 @@
 #'
 #' @param x A time-series defining the scenario-probability distribution.
 #' @param p A vector of probabilities.
-#' @param n A \code{numeric} scalar with the number of scenarios to be generated.
+#' @param n An \code{integer} scalar with the number of scenarios to be generated.
 #'
 #' @return The argument `x` is supposed to have the same size of `p`.
 #'
@@ -30,7 +30,7 @@ bootstrap_scenarios.numeric <- function(x, p, n) {
     assertthat::are_equal(vctrs::vec_size(x), vctrs::vec_size(p))
   )
 
-  make_scenarios(x, p, n)
+  make_scenarios(as.matrix(x), p, n)
 }
 
 #' @rdname bootstrap_scenarios

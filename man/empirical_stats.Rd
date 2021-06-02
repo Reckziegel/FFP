@@ -28,7 +28,7 @@ empirical_stats(x, p, level = 0.01)
 \method{empirical_stats}{tbl_df}(x, p, level = 0.01)
 }
 \arguments{
-\item{x}{A tabular data with the joint-scenarios of risk-drivers.}
+\item{x}{A set of joint-scenarios of risk-drivers.}
 
 \item{p}{A numeric vector with flexible probabilities.}
 

@@ -8,10 +8,15 @@
 #'
 #' @param x An univariate set of risk-drivers.
 #' @param mean A number in which the kernel should be centered.
-#' @param sigma A number with the uncertainty around mean. When \code{NULL} only
+#' @param sigma A number with the uncertainty around mean. When \code{NULL}, only
 #' the mean is constrained.
 #'
 #' @return A vector with the new probabilities distribution.
+#'
+#' @references
+#' De Santis, G., R. Litterman, A. Vesval, and K. Winkelmann, 2003,
+#' Covariance matrix estimation, Modern investment management: an equilibrium
+#' approach, Wiley.
 #'
 #' @export
 #'
@@ -20,7 +25,7 @@
 #' mean <- -0.01 # scenarios around -1%
 #' sigma <- var(diff(ret))
 #'
-#' plot(kernel_entropy(ret, mean, sigma), type = 'l')
+#' #plot(kernel_entropy(ret, mean, sigma), type = 'l')
 kernel_entropy <- function(x, mean, sigma = NULL) {
   UseMethod("kernel_entropy", x)
 }
@@ -134,7 +139,7 @@ kernel_entropy.data.frame <- function(x, mean, sigma = NULL) {
 #' l_c <- 0.0055
 #' l_s <- 0.0166
 #' ret <- diff(log(EuStockMarkets))
-#' plot(double_decay(ret, l_c, l_s), type = "l")
+#' #plot(double_decay(ret, l_c, l_s), type = "l")
 double_decay <- function(x, decay_low, decay_high) {
   UseMethod("double_decay", x)
 }

@@ -5,7 +5,7 @@
 #' The data in \code{x} and \code{p} are expected to have the same number of rows
 #' (size).
 #'
-#' @param x A tabular data with the joint-scenarios of risk-drivers.
+#' @param x A set of joint-scenarios of risk-drivers.
 #' @param p A numeric vector with flexible probabilities.
 #' @param level A number with the desired confidence level.
 #'

@@ -15,4 +15,3 @@ pHist <- function(X, p) {
   cbind(x, f)
 }
 
-

@@ -15,7 +15,7 @@ to be near by.}
 \item{h2}{A \code{matrix} with the covariance of the \code{Y} factor.}
 }
 \value{
-A \code{matrix} of size \code{TX1} with flexible probabilities.
+A vector with the new probability distribution.
 }
 \description{
 This is an internal function that uses the kernel-smoothing approach to compute

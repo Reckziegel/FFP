@@ -23,13 +23,8 @@ A vector of posterior probabilities.
 \description{
 This function solves the entropy minimization problem with equality and inequality
 constraints. The solution is a vector of posterior probabilities that distorts
-the least the prior, given the constraints.
+the least the prior (equal-weights probabilities), given the constraints.
 }
 \examples{
 #
-}
-\references{
-Meucci, Attilio, Fully Flexible Views: Theory and Practice (August 8, 2008).
-Fully Flexible Views: Theory and Practice, Risk, Vol. 21, No. 10, pp. 97-102,
-October 2008, Available at SSRN: https://ssrn.com/abstract=1213325
 }

@@ -36,8 +36,7 @@ Fit2Moms <- function(X, m, S) {
 
   p_0 <- matrix(1, nrow = T_, ncol = 1) / T_
 
-  # compute posterior probabilities
-  #EntropyProg(p_0, matrix(NA_real_, 0, 0), matrix(NA_real_, 0, 0), Aeq, beq)$p_
+  # ...compute posterior probabilities
   entropy_pooling(p = p_0, A = NULL, b = NULL, Aeq = Aeq, beq = beq)
 
 }

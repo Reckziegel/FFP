@@ -47,5 +47,5 @@ covariance matrix.
 l_c <- 0.0055
 l_s <- 0.0166
 ret <- diff(log(EuStockMarkets))
-plot(double_decay(ret, l_c, l_s), type = "l")
+#plot(double_decay(ret, l_c, l_s), type = "l")
 }

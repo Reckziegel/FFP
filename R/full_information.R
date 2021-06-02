@@ -19,7 +19,7 @@
 #'
 #' # full weight on scenarios above 2%
 #' probs <- crisp(x = ret, ret > 0.02)
-#' plot(probs, type = 'l')
+#' #plot(probs, type = 'l')
 crisp <- function(x, condition) {
   UseMethod("crisp", x)
 }
@@ -104,8 +104,15 @@ crisp.tbl_df <- function(x, condition) {
 #' Exponential smoothing twists probabilities by giving relatively more weight
 #' to recent observations at an exponential rate.
 #'
+#' The half-life is computed as:
+#'
+#' \code{HL = log(2) / lambda}.
+#'
+#' For example: log(2) / 0.0166 is approximately 42. So, a parameter lambda of
+#' 0.0166 can be associated with a half-life of two-months.
+#'
 #' @param x A vector of risk-drivers.
-#' @param lambda A number with a half-life parameter.
+#' @param lambda A number with the decay parameter that generated the half-life.
 #'
 #' @return A vector with the new probabilities distribution.
 #'
@@ -117,10 +124,10 @@ crisp.tbl_df <- function(x, condition) {
 #' ffp3 <- smoothing(EuStockMarkets, 0.0075)
 #' ffp4 <- smoothing(EuStockMarkets, 0.005)
 #'
-#' plot(ffp1, type = 'l')
-#' lines(ffp2, type = 'l', col = 'red')
-#' lines(ffp3, type = 'l', col = 'blue')
-#' lines(ffp4, type = 'l', col = 'green')
+#' #plot(ffp1, type = 'l')
+#' #lines(ffp2, type = 'l', col = 'red')
+#' #lines(ffp3, type = 'l', col = 'blue')
+#' #lines(ffp4, type = 'l', col = 'green')
 smoothing <- function(x, lambda) {
   UseMethod("smoothing", x)
 }
@@ -179,13 +186,13 @@ smoothing.tbl <- function(x, lambda) {
 
 #' Full Information by Kernel-Damping
 #'
-#' In this framework, the historical realization of a certain indicator is given
-#' a weight proportional to its distance from the target "mean", which is enveloped
+#' In this framework, historical realizations receive a weight proportional to
+#' the distance from the target mean, which is enveloped
 #' normal kernel with a bandwidth equal sigma.
 #'
 #' @param x An univariate set of risk-drivers.
 #' @param mean A number in which the kernel should be centered.
-#' @param sigma A number with the uncertainty ("volatility") around mean.
+#' @param sigma A number with the uncertainty (volatility) around mean.
 #'
 #' @return A vector with the new probabilities distribution.
 #'
@@ -196,7 +203,7 @@ smoothing.tbl <- function(x, lambda) {
 #' mean <- -0.01 # scenarios around -1%
 #' sigma <- var(diff(ret))
 #'
-#' plot(kernel_normal(ret, mean, sigma), type = 'l')
+#' #plot(kernel_normal(ret, mean, sigma), type = 'l')
 kernel_normal <- function(x, mean, sigma) {
   UseMethod("kernel_normal", x)
 }

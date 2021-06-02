@@ -1,7 +1,6 @@
 is_equal_size <- function(x, y) {
   assertthat::assert_that(
-    vctrs::vec_size(x) == vctrs::vec_size(y)#,
-    #msg = paste0(expr(x), " and ", expr(y), " have different sizes.")
+    vctrs::vec_size(x) == vctrs::vec_size(y)
     )
 }
 

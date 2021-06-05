@@ -1,4 +1,3 @@
-
 # kernel_entropy ----------------------------------------------------------
 
 #' Partial Information Kernel-Damping
@@ -25,7 +24,7 @@
 #' mean <- -0.01 # scenarios around -1%
 #' sigma <- var(diff(ret))
 #'
-#' #plot(kernel_entropy(ret, mean, sigma), type = 'l')
+#' plot(kernel_entropy(ret, mean, sigma), type = 'l')
 kernel_entropy <- function(x, mean, sigma = NULL) {
   UseMethod("kernel_entropy", x)
 }
@@ -39,7 +38,6 @@ kernel_entropy.default <- function(x, mean, sigma = NULL) {
 #' @rdname kernel_entropy
 #' @export
 kernel_entropy.numeric <- function(x, mean, sigma = NULL) {
-  assert_is_univariate(x)
   vctrs::vec_assert(mean, double(), 1)
   if (!is.null(sigma)) {
     vctrs::vec_assert(sigma, double(), 1)
@@ -51,10 +49,15 @@ kernel_entropy.numeric <- function(x, mean, sigma = NULL) {
 #' @rdname kernel_entropy
 #' @export
 kernel_entropy.matrix <- function(x, mean, sigma = NULL) {
-  assert_is_univariate(x)
-  vctrs::vec_assert(mean, double(), 1)
-  if (!is.null(sigma)) {
-    vctrs::vec_assert(sigma, double(), 1)
+  if (NCOL(x) == 1) {
+    vctrs::vec_assert(mean, double(), 1)
+    if (!is.null(sigma)) {
+      vctrs::vec_assert(sigma, double(), 1)
+    }
+  } else {
+    assertthat::are_equal(NCOL(x), vctrs::vec_size(mean))
+    assert_is_equal_size(mean, sigma)
+    if (is.vector(mean)) mean <- as.matrix(mean)
   }
 
   make_kernel_entropy(x, mean, sigma)
@@ -64,41 +67,54 @@ kernel_entropy.matrix <- function(x, mean, sigma = NULL) {
 #' @rdname kernel_entropy
 #' @export
 kernel_entropy.ts <- function(x, mean, sigma = NULL) {
-  assert_is_univariate(x)
-  vctrs::vec_assert(mean, double(), 1)
-  if (!is.null(sigma)) {
-    vctrs::vec_assert(sigma, double(), 1)
+  if (NCOL(x) == 1) {
+    vctrs::vec_assert(mean, double(), 1)
+    if (!is.null(sigma)) {
+      vctrs::vec_assert(sigma, double(), 1)
+    }
+  } else {
+    assertthat::are_equal(NCOL(x), vctrs::vec_size(mean))
+    assert_is_equal_size(mean, sigma)
+    if (is.vector(mean)) mean <- as.matrix(mean)
   }
 
-  x <- matrix(x, nrow = vctrs::vec_size(x), ncol = 1)
+  x <- as_ffp_mat(x)
   make_kernel_entropy(x, mean, sigma)
 }
 
 #' @rdname kernel_entropy
 #' @export
 kernel_entropy.xts <- function(x, mean, sigma = NULL) {
-  assert_is_univariate(x)
-  vctrs::vec_assert(mean, double(), 1)
-  if (!is.null(sigma)) {
-    vctrs::vec_assert(sigma, double(), 1)
+  if (NCOL(x) == 1) {
+    vctrs::vec_assert(mean, double(), 1)
+    if (!is.null(sigma)) {
+      vctrs::vec_assert(sigma, double(), 1)
+    }
+  } else {
+    assertthat::are_equal(NCOL(x), vctrs::vec_size(mean))
+    assert_is_equal_size(mean, sigma)
+    if (is.vector(mean)) mean <- as.matrix(mean)
   }
-  nrow_ <- NROW(x)
-  ncol_ <- NCOL(x)
-  attributes(x)$class <- "matrix"
-  x <- matrix(x, nrow = nrow_, ncol = ncol_)
+
+  x <- as_ffp_mat(x)
   make_kernel_entropy(x, mean, sigma)
 }
 
 #' @rdname kernel_entropy
 #' @export
 kernel_entropy.tbl_df <- function(x, mean, sigma = NULL) {
-  x <- ffp_tbl(x)
-  x <- as_ffp_mat(x)
-  assert_is_univariate(x)
-  vctrs::vec_assert(mean, double(), 1)
-  if (!is.null(sigma)) {
-    vctrs::vec_assert(sigma, double(), 1)
+  if (NCOL(x) == 1) {
+    vctrs::vec_assert(mean, double(), 1)
+    if (!is.null(sigma)) {
+      vctrs::vec_assert(sigma, double(), 1)
+    }
+  } else {
+    assertthat::are_equal(NCOL(x), vctrs::vec_size(mean))
+    assert_is_equal_size(mean, sigma)
+    if (is.vector(mean)) mean <- as.matrix(mean)
   }
+
+  x <- as_ffp_mat(x)
 
   make_kernel_entropy(x, mean, sigma)
 }
@@ -106,13 +122,18 @@ kernel_entropy.tbl_df <- function(x, mean, sigma = NULL) {
 #' @rdname kernel_entropy
 #' @export
 kernel_entropy.data.frame <- function(x, mean, sigma = NULL) {
-  x <- ffp_tbl(x)
-  x <- as_ffp_mat(x)
-  assert_is_univariate(x)
-  vctrs::vec_assert(mean, double(), 1)
-  if (!is.null(sigma)) {
-    vctrs::vec_assert(sigma, double(), 1)
+  if (NCOL(x) == 1) {
+    vctrs::vec_assert(mean, double(), 1)
+    if (!is.null(sigma)) {
+      vctrs::vec_assert(sigma, double(), 1)
+    }
+  } else {
+    assertthat::are_equal(NCOL(x), vctrs::vec_size(mean))
+    assert_is_equal_size(mean, sigma)
+    if (is.vector(mean)) mean <- as.matrix(mean)
   }
+
+  x <- as_ffp_mat(x)
   make_kernel_entropy(x, mean, sigma)
 }
 
@@ -139,7 +160,7 @@ kernel_entropy.data.frame <- function(x, mean, sigma = NULL) {
 #' l_c <- 0.0055
 #' l_s <- 0.0166
 #' ret <- diff(log(EuStockMarkets))
-#' #plot(double_decay(ret, l_c, l_s), type = "l")
+#' plot(double_decay(ret, l_c, l_s), type = "l")
 double_decay <- function(x, decay_low, decay_high) {
   UseMethod("double_decay", x)
 }
@@ -185,10 +206,7 @@ double_decay.ts <- function(x, decay_low, decay_high) {
 double_decay.xts <- function(x, decay_low, decay_high) {
   vctrs::vec_assert(decay_low, double(), 1)
   vctrs::vec_assert(decay_high, double(), 1)
-  nrow_ <- NROW(x)
-  ncol_ <- NCOL(x)
-  attributes(x)$class <- "matrix"
-  x <- matrix(x, nrow = nrow_, ncol = ncol_)
+  x <- as_ffp_mat(x)
   make_double_decay(x, decay_low, decay_high)
 }
 
@@ -197,7 +215,7 @@ double_decay.xts <- function(x, decay_low, decay_high) {
 double_decay.tbl <- function(x, decay_low, decay_high) {
   vctrs::vec_assert(decay_low, double(), 1)
   vctrs::vec_assert(decay_high, double(), 1)
-  x <- ffp_tbl(x)
+
   x <- as_ffp_mat(x)
   make_double_decay(x, decay_low, decay_high)
 }
@@ -207,7 +225,7 @@ double_decay.tbl <- function(x, decay_low, decay_high) {
 double_decay.data.frame <- function(x, decay_low, decay_high) {
   vctrs::vec_assert(decay_low, double(), 1)
   vctrs::vec_assert(decay_high, double(), 1)
-  x <- ffp_tbl(x)
+
   x <- as_ffp_mat(x)
   make_double_decay(x, decay_low, decay_high)
 }

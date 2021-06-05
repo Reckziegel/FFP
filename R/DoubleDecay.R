@@ -11,6 +11,8 @@
 #' @param decay_high A \code{numeric} value with the high decay (short half-life).
 #'
 #' @return A \code{list} with the posterior mean ans sigma.
+#'
+#' @keywords internal
 DoubleDecay <- function(x, decay_low, decay_high) {
 
   T_ <- nrow(x)

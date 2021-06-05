@@ -46,5 +46,5 @@ ret <- diff(log(EuStockMarkets))[ , 1]
 
 # full weight on scenarios above 2\%
 probs <- crisp(x = ret, ret > 0.02)
-#plot(probs, type = 'l')
+plot(probs, type = 'l')
 }

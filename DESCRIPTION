@@ -33,6 +33,9 @@ Suggests:
     rmarkdown,
     knitr,
     roxygen2,
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    covr,
+    spelling
 Config/testthat/edition: 3
 VignetteBuilder: knitr
+Language: en-US

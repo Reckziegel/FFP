@@ -1,0 +1,43 @@
+template:
+  params:
+    bootswatch: cosmo
+
+navbar:
+  title: "ffp"
+  left:
+    - text: "Home"
+      href: index.html
+    - text: "Function Reference"
+      href: reference/index.html
+    - text: "Vignettes"
+      href: articles/index.html
+      menu:
+        - text: "Replicating Meucci's Paper"
+          href: articles/Replicating-the-Paper.html
+    - text: "News"
+      href: news/index.html
+
+
+reference:
+    - title: Full Information
+      contents:
+      - crisp
+      - smoothing
+      - kernel_normal
+
+    - title: Partial Information
+      contents:
+      - kernel_entropy
+      - double_decay
+
+    - title: Utilities
+      contents:
+      - bootstrap_scenarios
+      - entropy_pooling
+      - empirical_stats
+    - title: Data
+      contents:
+      - db
+
+
+

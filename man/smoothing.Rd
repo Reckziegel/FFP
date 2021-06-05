@@ -53,8 +53,8 @@ ffp2 <- smoothing(EuStockMarkets, 0.01)
 ffp3 <- smoothing(EuStockMarkets, 0.0075)
 ffp4 <- smoothing(EuStockMarkets, 0.005)
 
-#plot(ffp1, type = 'l')
-#lines(ffp2, type = 'l', col = 'red')
-#lines(ffp3, type = 'l', col = 'blue')
-#lines(ffp4, type = 'l', col = 'green')
+plot(ffp1, type = 'l')
+lines(ffp2, type = 'l', col = 'red')
+lines(ffp3, type = 'l', col = 'blue')
+lines(ffp4, type = 'l', col = 'green')
 }

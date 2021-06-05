@@ -10,6 +10,8 @@ any_is_double <- function(x) {
   any(purrr::map_lgl(x, ~ is.double(.) && is.numeric(.)))
 }
 
+is_empty <- function(x) length(x) == 0
+
 #' @keywords internal
 which_is_date <- function(x) {
   stopifnot(tibble::is_tibble(x))
@@ -19,7 +21,7 @@ which_is_date <- function(x) {
 #' @keywords internal
 get_date_col <- function(x) {
   stopifnot(tibble::is_tibble(x))
-  dplyr::select(x, lubridate::is.Date)
+  dplyr::select(x, where(lubridate::is.Date))
 }
 
 #' @keywords internal

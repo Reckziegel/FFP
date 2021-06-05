@@ -47,5 +47,5 @@ ret <- diff(log(EuStockMarkets[ , 1]))
 mean <- -0.01 # scenarios around -1\%
 sigma <- var(diff(ret))
 
-#plot(kernel_normal(ret, mean, sigma), type = 'l')
+plot(kernel_normal(ret, mean, sigma), type = 'l')
 }

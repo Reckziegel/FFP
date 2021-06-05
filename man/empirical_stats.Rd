@@ -54,7 +54,6 @@ The data in \code{x} and \code{p} are expected to have the same number of rows
 }
 \examples{
 ret <- diff(log(EuStockMarkets))
-ret <- matrix(ret, nrow = nrow(ret), ncol = ncol(ret))
 ew  <- rep(1 / nrow(ret), nrow(ret))
 
 empirical_stats(x = ret, p = ew)

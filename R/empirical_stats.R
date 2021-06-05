@@ -23,7 +23,6 @@
 #'
 #' @examples
 #' ret <- diff(log(EuStockMarkets))
-#' ret <- matrix(ret, nrow = nrow(ret), ncol = ncol(ret))
 #' ew  <- rep(1 / nrow(ret), nrow(ret))
 #'
 #' empirical_stats(x = ret, p = ew)
@@ -100,7 +99,7 @@ empirical_stats.data.frame <- function(x, p, level = 0.01) {
   assertthat::assert_that(
     assertthat::are_equal(vctrs::vec_size(x), vctrs::vec_size(p))
   )
-  x <- ffp_tbl(x)
+  #x <- ffp_tbl(x)
   x <- as_ffp_mat(x)
   make_empirical_stats(x, p, level)
 }
@@ -113,7 +112,7 @@ empirical_stats.tbl_df <- function(x, p, level = 0.01) {
   assertthat::assert_that(
     assertthat::are_equal(vctrs::vec_size(x), vctrs::vec_size(p))
   )
-  x <- ffp_tbl(x)
+  #x <- ffp_tbl(x)
   x <- as_ffp_mat(x)
   make_empirical_stats(x, p, level)
 }

@@ -1,10 +1,24 @@
-is_equal_size <- function(x, y) {
+assert_is_equal_size <- function(x, y) {
   assertthat::assert_that(
     vctrs::vec_size(x) == vctrs::vec_size(y)
     )
 }
 
+assert_is_logical <- function(x) {
+  if (tibble::is_tibble(x)) {
+    vctrs::vec_assert(x[[1]], logical())
+  } else if (is.null(dim(x))) {
+    vctrs::vec_assert(x, logical())
+  } else {
+    stop(deparse(x), " must be logical.", call. = FALSE)
+  }
+}
 
+assert_is_univariate <- function(x) {
+  if (NCOL(x) > 1) {
+    stop("The conditioning variable (x) should be univariate.", call. = FALSE)
+  }
+}
 
 
 # assertetion - fi_kernel -------------------------------------------------
@@ -21,8 +35,3 @@ assert_kernel_sigma <- function(sigma) {
   }
 }
 
-assert_is_univariate <- function(x) {
-  if (NCOL(x) > 1) {
-    stop("The conditioning variable (x) should be univariate.", call. = FALSE)
-  }
-}

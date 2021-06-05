@@ -19,7 +19,11 @@ make_smoothing <- function(x, lambda) {
 
 #' @keywords internal
 make_kernel_normal <- function(x, mean, sigma) {
-  p <- stats::dnorm(x = x, mean = mean, sd = sqrt(sigma))
+  if (NCOL(x) == 1) {
+    p <- stats::dnorm(x = x, mean = mean, sd = sqrt(sigma))
+  } else {
+    p <- mvtnorm::dmvnorm(x = x, mean = mean, sigma = sigma)
+  }
   p <- p / sum(p)
   as.double(p)
 }

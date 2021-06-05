@@ -47,7 +47,7 @@ ret <- diff(log(EuStockMarkets[ , 1]))
 mean <- -0.01 # scenarios around -1\%
 sigma <- var(diff(ret))
 
-#plot(kernel_entropy(ret, mean, sigma), type = 'l')
+plot(kernel_entropy(ret, mean, sigma), type = 'l')
 }
 \references{
 De Santis, G., R. Litterman, A. Vesval, and K. Winkelmann, 2003,

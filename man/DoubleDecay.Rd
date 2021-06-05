@@ -24,3 +24,4 @@ A common practice is to estimate the covariance of the risk drivers using a high
 decay (short half-life) for the volatilities and a low decay (long half-life)
 for the correlations.
 }
+\keyword{internal}

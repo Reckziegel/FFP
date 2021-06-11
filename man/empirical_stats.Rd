@@ -36,14 +36,14 @@ empirical_stats(x, p, level = 0.01)
 }
 \value{
 A table with 6 components:
-    \itemize{
-      \item{\code{mu}}: A \code{numeric} with the location parameter.
-      \item{\code{sd}}: A \code{numeric} with the standard deviation.
-      \item{\code{skew}}: A \code{numeric} with the skewness.
-      \item{\code{kurtosis}}: A \code{numeric} with the kurtosis.
-      \item{\code{VaR}}: A \code{numeric} with the Value-at-Risk.
-      \item{\code{CVaR}}: A \code{numeric} with the Expected-Shortfall.
-    }
+\itemize{
+\item{\code{mu}}: A \code{numeric} with the location parameter.
+\item{\code{sd}}: A \code{numeric} with the standard deviation.
+\item{\code{skew}}: A \code{numeric} with the skewness.
+\item{\code{kurtosis}}: A \code{numeric} with the kurtosis.
+\item{\code{VaR}}: A \code{numeric} with the Value-at-Risk.
+\item{\code{CVaR}}: A \code{numeric} with the Expected-Shortfall.
+}
 }
 \description{
 Computes some of the most commonly used statistics by portfolio managers.

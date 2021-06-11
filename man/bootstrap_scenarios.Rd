@@ -32,7 +32,7 @@ bootstrap_scenarios(x, p, n)
 \item{n}{An \code{integer} scalar with the number of scenarios to be generated.}
 }
 \value{
-The argument `x` is supposed to have the same size of `p`.
+The argument \code{x} is supposed to have the same size of \code{p}.
 }
 \description{
 This function resamples scenarios given by the flexible probabilities

@@ -129,42 +129,42 @@
     <p>Computes some of the most commonly used statistics by portfolio managers.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>empirical_stats</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>p</span>, level <span class='op'>=</span> <span class='fl'>0.01</span><span class='op'>)</span>
+    <pre class="usage"><span class='fu'>empirical_stats</span><span class='op'>(</span><span class='va'>.x</span>, <span class='va'>.p</span>, .level <span class='op'>=</span> <span class='fl'>0.01</span><span class='op'>)</span>
 
 <span class='co'># S3 method for default</span>
-<span class='fu'>empirical_stats</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>p</span>, level <span class='op'>=</span> <span class='fl'>0.01</span><span class='op'>)</span>
+<span class='fu'>empirical_stats</span><span class='op'>(</span><span class='va'>.x</span>, <span class='va'>.p</span>, .level <span class='op'>=</span> <span class='fl'>0.01</span><span class='op'>)</span>
 
-<span class='co'># S3 method for double</span>
-<span class='fu'>empirical_stats</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>p</span>, level <span class='op'>=</span> <span class='fl'>0.01</span><span class='op'>)</span>
+<span class='co'># S3 method for numeric</span>
+<span class='fu'>empirical_stats</span><span class='op'>(</span><span class='va'>.x</span>, <span class='va'>.p</span>, .level <span class='op'>=</span> <span class='fl'>0.01</span><span class='op'>)</span>
 
 <span class='co'># S3 method for matrix</span>
-<span class='fu'>empirical_stats</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>p</span>, level <span class='op'>=</span> <span class='fl'>0.01</span><span class='op'>)</span>
+<span class='fu'>empirical_stats</span><span class='op'>(</span><span class='va'>.x</span>, <span class='va'>.p</span>, .level <span class='op'>=</span> <span class='fl'>0.01</span><span class='op'>)</span>
 
 <span class='co'># S3 method for xts</span>
-<span class='fu'>empirical_stats</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>p</span>, level <span class='op'>=</span> <span class='fl'>0.01</span><span class='op'>)</span>
+<span class='fu'>empirical_stats</span><span class='op'>(</span><span class='va'>.x</span>, <span class='va'>.p</span>, .level <span class='op'>=</span> <span class='fl'>0.01</span><span class='op'>)</span>
 
 <span class='co'># S3 method for ts</span>
-<span class='fu'>empirical_stats</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>p</span>, level <span class='op'>=</span> <span class='fl'>0.01</span><span class='op'>)</span>
+<span class='fu'>empirical_stats</span><span class='op'>(</span><span class='va'>.x</span>, <span class='va'>.p</span>, .level <span class='op'>=</span> <span class='fl'>0.01</span><span class='op'>)</span>
 
 <span class='co'># S3 method for data.frame</span>
-<span class='fu'>empirical_stats</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>p</span>, level <span class='op'>=</span> <span class='fl'>0.01</span><span class='op'>)</span>
+<span class='fu'>empirical_stats</span><span class='op'>(</span><span class='va'>.x</span>, <span class='va'>.p</span>, .level <span class='op'>=</span> <span class='fl'>0.01</span><span class='op'>)</span>
 
 <span class='co'># S3 method for tbl_df</span>
-<span class='fu'>empirical_stats</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>p</span>, level <span class='op'>=</span> <span class='fl'>0.01</span><span class='op'>)</span></pre>
+<span class='fu'>empirical_stats</span><span class='op'>(</span><span class='va'>.x</span>, <span class='va'>.p</span>, .level <span class='op'>=</span> <span class='fl'>0.01</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>x</th>
+      <th>.x</th>
       <td><p>A set of joint-scenarios of risk-drivers.</p></td>
     </tr>
     <tr>
-      <th>p</th>
+      <th>.p</th>
       <td><p>A numeric vector with flexible probabilities.</p></td>
     </tr>
     <tr>
-      <th>level</th>
+      <th>.level</th>
       <td><p>A number with the desired confidence level.</p></td>
     </tr>
     </table>
@@ -189,12 +189,16 @@
     <pre class="examples"><div class='input'><span class='va'>ret</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/diff.html'>diff</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span><span class='va'>EuStockMarkets</span><span class='op'>)</span><span class='op'>)</span>
 <span class='va'>ew</span>  <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='fl'>1</span> <span class='op'>/</span> <span class='fu'><a href='https://rdrr.io/r/base/nrow.html'>nrow</a></span><span class='op'>(</span><span class='va'>ret</span><span class='op'>)</span>, <span class='fu'><a href='https://rdrr.io/r/base/nrow.html'>nrow</a></span><span class='op'>(</span><span class='va'>ret</span><span class='op'>)</span><span class='op'>)</span>
 
-<span class='fu'>empirical_stats</span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>ret</span>, p <span class='op'>=</span> <span class='va'>ew</span><span class='op'>)</span>
-</div><div class='output co'>#&gt;                mu          sd    skewness kurtosis         VaR        CVaR
-#&gt; [1,] 0.0006520417 0.010302394 -0.53148560 9.233962 -0.02793287 -0.03754343
-#&gt; [2,] 0.0008178997 0.009253393 -0.55704424 8.695015 -0.02640034 -0.03494303
-#&gt; [3,] 0.0004370540 0.011027598 -0.21728012 5.395534 -0.02825199 -0.03651310
-#&gt; [4,] 0.0004319851 0.007957401  0.05153045 5.623214 -0.02095574 -0.02555881</div></pre>
+<span class='fu'>empirical_stats</span><span class='op'>(</span>.x <span class='op'>=</span> <span class='va'>ret</span>, .p <span class='op'>=</span> <span class='va'>ew</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span style='color: #949494;'># A tibble: 6 x 5</span><span>
+#&gt;   .stat       DAX       SMI       CAC     FTSE
+#&gt;   </span><span style='color: #949494;font-style: italic;'>&lt;fct&gt;</span><span>     </span><span style='color: #949494;font-style: italic;'>&lt;dbl&gt;</span><span>     </span><span style='color: #949494;font-style: italic;'>&lt;dbl&gt;</span><span>     </span><span style='color: #949494;font-style: italic;'>&lt;dbl&gt;</span><span>    </span><span style='color: #949494;font-style: italic;'>&lt;dbl&gt;</span><span>
+#&gt; </span><span style='color: #BCBCBC;'>1</span><span> Mu     0.000</span><span style='text-decoration: underline;'>652</span><span>  0.000</span><span style='text-decoration: underline;'>818</span><span>  0.000</span><span style='text-decoration: underline;'>437</span><span> 0.000</span><span style='text-decoration: underline;'>432</span><span>
+#&gt; </span><span style='color: #BCBCBC;'>2</span><span> Std    0.010</span><span style='text-decoration: underline;'>3</span><span>    0.009</span><span style='text-decoration: underline;'>25</span><span>   0.011</span><span style='text-decoration: underline;'>0</span><span>   0.007</span><span style='text-decoration: underline;'>96</span><span> 
+#&gt; </span><span style='color: #BCBCBC;'>3</span><span> Skew  -</span><span style='color: #BB0000;'>0.531</span><span>    -</span><span style='color: #BB0000;'>0.557</span><span>    -</span><span style='color: #BB0000;'>0.217</span><span>    0.051</span><span style='text-decoration: underline;'>5</span><span>  
+#&gt; </span><span style='color: #BCBCBC;'>4</span><span> Kurt   9.23      8.70      5.40     5.62    
+#&gt; </span><span style='color: #BCBCBC;'>5</span><span> VaR    0.027</span><span style='text-decoration: underline;'>9</span><span>    0.026</span><span style='text-decoration: underline;'>4</span><span>    0.028</span><span style='text-decoration: underline;'>3</span><span>   0.021</span><span style='text-decoration: underline;'>0</span><span>  
+#&gt; </span><span style='color: #BCBCBC;'>6</span><span> CVaR   0.037</span><span style='text-decoration: underline;'>5</span><span>    0.034</span><span style='text-decoration: underline;'>9</span><span>    0.036</span><span style='text-decoration: underline;'>5</span><span>   0.025</span><span style='text-decoration: underline;'>6</span><span>  </div></span></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

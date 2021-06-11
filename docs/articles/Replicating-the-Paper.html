@@ -89,223 +89,183 @@
 
     
     
-<p>Consider, as in <em>Historical Scenarios with Fully Flexible Probabilities</em>, that we would like to price and stress-test a book of long-short options, in which the underlying is the S&amp;P500 index. To do so, we may like to consider the S&amp;P500 at-the-money implied-volatility (VIX) and also some macroeconomic variables, like gold, inflation, oil prices, etc.</p>
+<p>Consider, as in <em>Historical Scenarios with Fully Flexible Probabilities</em>, that we would like to price and stress-test a book of long-short call options, in which the underlying is the S&amp;P500 index. The <code>db_tbl</code> dataset contains the same information Atilio used to write the original paper plus <span class="math inline">\(5\)</span> additional macroeconomic variables that can be used to filter the state of the economy.</p>
 <div id="prepare-the-data" class="section level3">
 <h3 class="hasAnchor">
 <a href="#prepare-the-data" class="anchor"></a>Prepare the Data</h3>
-<p>The <code>ffp</code> package comes with the <code>db</code> dataset that contains the information needed to proceed with this exercise:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="st"><a href="https://github.com/Reckziegel/FFP">"ffp"</a></span><span class="op">)</span> <span class="co"># load de package </span>
-<span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">db</span><span class="op">)</span>       <span class="co"># load the data</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">db</span>, <span class="fl">2</span><span class="op">)</span>    <span class="co"># take a look on the first observations</span>
-<span class="co">#&gt;      SWAP2YR SWAP10YR CDXIG OTR S&amp;P 500 Dollar Index Crude  Gold   VIX</span>
-<span class="co">#&gt; [1,]   4.130    4.483    52.417 1218.02        86.30 67.57 445.4 13.57</span>
-<span class="co">#&gt; [2,]   4.178    4.523    52.583 1233.39        86.57 65.96 445.5 12.93</span>
-<span class="co">#&gt;      10YR Inflation Swap Rate</span>
-<span class="co">#&gt; [1,]                   2.7525</span>
-<span class="co">#&gt; [2,]                   2.7250</span></code></pre></div>
-<p>The next chunk of code filters-out the information that are really need to replicate the original paper results.</p>
+<code class="sourceCode R"><span class="co"># Load Packages</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="st"><a href="https://dplyr.tidyverse.org">"dplyr"</a></span><span class="op">)</span>  <span class="co"># Data Manipulation and pipe (%&gt;%) </span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="st"><a href="https://github.com/Reckziegel/FFP">"ffp"</a></span><span class="op">)</span>    <span class="co"># Fully-Flexible Probabilities</span>
+<span class="co"># Load Data</span>
+<span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="st">"db_tbl"</span><span class="op">)</span>
+<span class="va">db_tbl</span>
+<span class="co">#&gt; # A tibble: 1,083 x 9</span>
+<span class="co">#&gt;    SWAP2YR SWAP10YR `CDXIG OTR` `S&amp;P 500` `Dollar Index` Crude  Gold   VIX</span>
+<span class="co">#&gt;      &lt;dbl&gt;    &lt;dbl&gt;       &lt;dbl&gt;     &lt;dbl&gt;          &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;</span>
+<span class="co">#&gt;  1    4.13     4.48        52.4     1218.           86.3  67.6  445.  13.6</span>
+<span class="co">#&gt;  2    4.18     4.52        52.6     1233.           86.6  66.0  446.  12.9</span>
+<span class="co">#&gt;  3    4.24     4.58        50.8     1236.           87.0  64.4  446   12.5</span>
+<span class="co">#&gt;  4    4.26     4.58        51.1     1232.           87.0  64.5  448.  12.9</span>
+<span class="co">#&gt;  5    4.25     4.55        50.5     1241.           86.9  64.1  450   12.0</span>
+<span class="co">#&gt;  6    4.29     4.60        49.8     1241.           87.7  63.3  451.  11.6</span>
+<span class="co">#&gt;  7    4.24     4.56        49.7     1231.           87.8  63.1  447   12.4</span>
+<span class="co">#&gt;  8    4.25     4.59        49.5     1227.           87.7  65.1  451.  12.9</span>
+<span class="co">#&gt;  9    4.28     4.64        49.3     1228.           88.1  64.8  456.  12.5</span>
+<span class="co">#&gt; 10    4.37     4.72        50       1238.           88.1  63    460.  11.2</span>
+<span class="co">#&gt; # ... with 1,073 more rows, and 1 more variable: 10YR Inflation Swap Rate &lt;dbl&gt;</span></code></pre></div>
+<p>The variables <code>VIX</code>, <code>SWAP10YR</code> and <code>S&amp;P 500</code> are essential inputs in the Black-Scholes formula and offer an interesting starting point for scenario generation. By making them “stationary” and feeding the output into the last available observation, we get a distribution that “mimmics” historical randomness.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># used as a macro-conditioning variable</span>
-<span class="va">inflation</span> <span class="op">&lt;-</span> <span class="va">db</span><span class="op">[</span> , <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">ncol</a></span><span class="op">(</span><span class="va">db</span><span class="op">)</span>, drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span>
-<span class="va">inflation</span> <span class="op">&lt;-</span> <span class="va">inflation</span><span class="op">[</span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">inflation</span><span class="op">)</span>, , drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span>
-<span class="co"># Inputs in Black-Scholes option pricing</span>
-<span class="va">vix</span>    <span class="op">&lt;-</span> <span class="va">db</span><span class="op">[</span> , <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">ncol</a></span><span class="op">(</span><span class="va">db</span><span class="op">)</span> <span class="op">-</span> <span class="fl">1</span>, drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span>
-<span class="va">swap10</span> <span class="op">&lt;-</span> <span class="va">db</span><span class="op">[</span> , <span class="fl">2</span>, drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span>
-<span class="va">sp500</span>  <span class="op">&lt;-</span> <span class="va">db</span><span class="op">[</span> , <span class="fl">4</span>, drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span>
-<span class="co"># Log-returns</span>
-<span class="va">X</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/diff.html">diff</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html">log</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">sp500</span>, <span class="va">vix</span>, <span class="va">swap10</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></code></pre></div>
-<p>The <code>inflation</code> object is already in percentage terms and there is no need to change it. The <code>X</code> object, on the other hand, contains the historical returns for three inputs of the Black-Scholes formula: the price of the underlying, the implied-volatility and the risk-free rate. They will be used in a minute to generate scenarios.</p>
-<p>The call-price function can be constructed as follows:</p>
+<code class="sourceCode R"><span class="co"># Inputs in Black-Scholes option pricing</span>
+<span class="va">invariants</span> <span class="op">&lt;-</span> <span class="va">db_tbl</span> <span class="op">%&gt;%</span> 
+  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="va">VIX</span>, <span class="va">SWAP10YR</span>, <span class="va">`S&amp;P 500`</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">purrr</span><span class="fu">::</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html">map_df</a></span><span class="op">(</span><span class="op">~</span><span class="fu"><a href="https://rdrr.io/r/base/diff.html">diff</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html">log</a></span><span class="op">(</span><span class="va">.</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="co"># compute the continuous return for every column</span>
+
+<span class="co"># get last observations</span>
+<span class="va">last_obs</span> <span class="op">&lt;-</span> <span class="va">db_tbl</span> <span class="op">%&gt;%</span> 
+  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html">slice_tail</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="va">VIX</span>, <span class="va">SWAP10YR</span>, <span class="va">`S&amp;P 500`</span><span class="op">)</span>
+
+<span class="co"># Last observation for the underlying (SP500)</span>
+<span class="va">S_0</span>   <span class="op">&lt;-</span> <span class="va">last_obs</span><span class="op">[[</span><span class="st">"S&amp;P 500"</span><span class="op">]</span><span class="op">]</span>  
+<span class="co"># Last observation for the implied-volatility</span>
+<span class="va">vol_0</span> <span class="op">&lt;-</span> <span class="va">last_obs</span><span class="op">[[</span><span class="st">"VIX"</span><span class="op">]</span><span class="op">]</span>
+<span class="co"># Last observation for the risk-free rate</span>
+<span class="va">rf_0</span>  <span class="op">&lt;-</span> <span class="va">last_obs</span><span class="op">[[</span><span class="st">"SWAP10YR"</span><span class="op">]</span><span class="op">]</span> 
+
+<span class="co"># Gererate Paths from Historical Scenarios</span>
+<span class="va">paths</span> <span class="op">&lt;-</span> <span class="fu">purrr</span><span class="fu">::</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/map2.html">map2_df</a></span><span class="op">(</span>.x <span class="op">=</span> <span class="va">last_obs</span>, .y <span class="op">=</span> <span class="va">invariants</span>, .f <span class="op">=</span> <span class="op">~</span> <span class="va">.x</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">exp</a></span><span class="op">(</span><span class="va">.y</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/rename.html">rename</a></span><span class="op">(</span>S_T <span class="op">=</span> <span class="va">`S&amp;P 500`</span>, vol_T <span class="op">=</span> <span class="va">`VIX`</span>, rf_T <span class="op">=</span> <span class="va">`SWAP10YR`</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html">rowid_to_column</a></span><span class="op">(</span>var <span class="op">=</span> <span class="st">"id"</span><span class="op">)</span> 
+<span class="va">paths</span>
+<span class="co">#&gt; # A tibble: 1,082 x 4</span>
+<span class="co">#&gt;       id vol_T  rf_T   S_T</span>
+<span class="co">#&gt;    &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;</span>
+<span class="co">#&gt;  1     1  16.3  3.85 1188.</span>
+<span class="co">#&gt;  2     2  16.6  3.86 1176.</span>
+<span class="co">#&gt;  3     3  17.7  3.82 1169.</span>
+<span class="co">#&gt;  4     4  15.9  3.79 1183.</span>
+<span class="co">#&gt;  5     5  16.7  3.86 1172.</span>
+<span class="co">#&gt;  6     6  18.2  3.78 1164.</span>
+<span class="co">#&gt;  7     7  17.8  3.84 1169.</span>
+<span class="co">#&gt;  8     8  16.6  3.86 1174.</span>
+<span class="co">#&gt;  9     9  15.4  3.88 1183.</span>
+<span class="co">#&gt; 10    10  18.5  3.79 1167.</span>
+<span class="co">#&gt; # ... with 1,072 more rows</span></code></pre></div>
+<p>The 10-years inflation swap-rate is also extracted from the data to be used as a macro-conditioning variable.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">inflation</span> <span class="op">&lt;-</span> <span class="va">db_tbl</span> <span class="op">%&gt;%</span> 
+  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="va">`10YR Inflation Swap Rate`</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html">slice</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">db_tbl</span><span class="op">)</span> <span class="op">-</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+</div>
+<div id="trading-and-pricing" class="section level3">
+<h3 class="hasAnchor">
+<a href="#trading-and-pricing" class="anchor"></a>Trading and Pricing</h3>
+<p>The call-price function can be constructed as follows:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">call_price</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">p</span>, <span class="va">k</span>, <span class="va">r</span>, <span class="va">t</span>, <span class="va">s</span><span class="op">)</span> <span class="op">{</span>
   <span class="va">d_1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">log</a></span><span class="op">(</span><span class="va">p</span> <span class="op">/</span> <span class="va">k</span><span class="op">)</span> <span class="op">+</span> <span class="op">(</span><span class="va">r</span> <span class="op">+</span> <span class="va">s</span> <span class="op">*</span> <span class="va">s</span> <span class="op">/</span> <span class="fl">2</span><span class="op">)</span> <span class="op">*</span> <span class="va">t</span>
   <span class="va">d_2</span> <span class="op">&lt;-</span> <span class="va">d_1</span> <span class="op">-</span> <span class="va">s</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">sqrt</a></span><span class="op">(</span><span class="va">t</span><span class="op">)</span>
   <span class="va">c</span> <span class="op">&lt;-</span> <span class="va">p</span> <span class="op">*</span> <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">pnorm</a></span><span class="op">(</span><span class="va">d_1</span><span class="op">)</span> <span class="op">-</span> <span class="va">k</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">exp</a></span><span class="op">(</span><span class="op">-</span><span class="va">r</span> <span class="op">*</span> <span class="va">t</span><span class="op">)</span> <span class="op">*</span> <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">pnorm</a></span><span class="op">(</span><span class="va">d_2</span><span class="op">)</span>
   <span class="va">c</span>
 <span class="op">}</span></code></pre></div>
-<p>The arguments above match the standard in the literature: <span class="math inline">\(p\)</span> is for price, <span class="math inline">\(k\)</span> for strike, <span class="math inline">\(r\)</span> for the risk-free rate, <span class="math inline">\(t\)</span> for time and <span class="math inline">\(s\)</span> for the volatility.</p>
-<p>The next step we need to separate the last information available for variables that are observable in the market:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># call parameters (fixed in this exercise)</span>
-<span class="va">S_0</span>   <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html">as.vector</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html">tail</a></span><span class="op">(</span><span class="va">sp500</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span> 
-<span class="va">vol_0</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html">as.vector</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html">tail</a></span><span class="op">(</span><span class="va">vix</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span>
-<span class="va">rf_0</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html">as.vector</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html">tail</a></span><span class="op">(</span><span class="va">swap10</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">S_0</span>, <span class="va">vol_0</span>, <span class="va">rf_0</span><span class="op">)</span>
-<span class="co">#&gt; [1] 1173.270   17.130    3.813</span></code></pre></div>
-<p>In this exercise, the time-to-expiry and strike prices are allowed to vary:</p>
+<p>in which the arguments match the standard in the literature: <span class="math inline">\(p\)</span> is for price, <span class="math inline">\(k\)</span> for strike, <span class="math inline">\(r\)</span> for the risk-free rate, <span class="math inline">\(t\)</span> for time and <span class="math inline">\(s\)</span> for the volatility.</p>
+<p>It’ assumed that every option has <span class="math inline">\(21\)</span> days to expiry and the market offers grid of <span class="math inline">\(20\)</span> different strikes homogeneously distributed from deeply-in to slightly out-of-the money.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">N</span> <span class="op">&lt;-</span> <span class="fl">20</span>
-<span class="co"># call parameters (time-varying in this exercise)</span>
+<span class="co"># call parameters </span>
 <span class="va">K</span>      <span class="op">&lt;-</span> <span class="va">S_0</span> <span class="op">*</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span><span class="op">(</span><span class="fl">0.8</span>, <span class="fl">1.1</span>, length <span class="op">=</span> <span class="va">N</span><span class="op">)</span><span class="op">)</span>
 <span class="va">Expiry</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="fl">2</span><span class="op">:</span><span class="op">(</span><span class="va">N</span> <span class="op">+</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span> <span class="op">/</span> <span class="fl">252</span></code></pre></div>
-<p>A grid of 20 equally-spaced options that goes from deeply into-the-money to slightly out-of-the money is created. The time-to-expiry is set to decrease from <span class="math inline">\(21\)</span> to <span class="math inline">\(2\)</span> days, and it’s assumed that no options will be traded in the expiring day.</p>
-<p>Finally, scenarios for the index price (<code>S_T</code>), volatility (<code>vol_T</code>) and risk-free rate (<code>rf_T</code>) are recreated from past history:</p>
+<p>The trading opportunities are assessed on a daily basis: at the beginning of the trading day a grid of 10 different in-the-money options are bought and a grid of 10 different out-of the money options are sold (object <code>u</code>).</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># Historical Risk-Driven Scenarios</span>
-<span class="va">S_T</span>   <span class="op">&lt;-</span> <span class="va">S_0</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">exp</a></span><span class="op">(</span><span class="va">X</span><span class="op">[</span> , <span class="fl">1</span><span class="op">]</span><span class="op">)</span>
-<span class="va">vol_T</span> <span class="op">&lt;-</span> <span class="va">vol_0</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">exp</a></span><span class="op">(</span><span class="va">X</span><span class="op">[</span> , <span class="fl">2</span><span class="op">]</span><span class="op">)</span>
-<span class="va">rf_T</span>  <span class="op">&lt;-</span> <span class="va">rf_0</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">exp</a></span><span class="op">(</span><span class="va">X</span><span class="op">[</span> , <span class="fl">3</span><span class="op">]</span><span class="op">)</span></code></pre></div>
-</div>
-<div id="trading" class="section level3">
-<h3 class="hasAnchor">
-<a href="#trading" class="anchor"></a>Trading</h3>
-<p>The trading opportunities are assessed on a daily basis. It is assumed that at the beginning of the trading day a grid of 10 different in-the-money options are bought and a grid of 10 different at and out-of the money options are sold. The options bought have just a few days to be exercised and behave, more or less, like the underlying. The options short carry a higher vega (a premium that can be consistently earned) at a cost of being sold in gamma, which will hurt in a few number of scenarios - by a lot!</p>
-<p>The <code>call_close</code> object differs from <code>call_open</code> because it incorporates the variations in the underlying and it’s adjacent volatility. The time to expiry is discounted by <code>-1 / 252</code> trading days and, all else constant, drags more value in options that are sold than the options that are bought.</p>
+<code class="sourceCode R"><span class="co"># Market Pricing</span>
+<span class="va">pnl</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span>K <span class="op">=</span> <span class="va">K</span>, Expiry <span class="op">=</span> <span class="va">Expiry</span>, panel <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">as.factor</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">20</span><span class="op">)</span>, <span class="va">S_0</span>, <span class="va">vol_0</span>, <span class="va">rf_0</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>paths <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="va">paths</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu">tidyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyr.tidyverse.org/reference/nest.html">unnest</a></span><span class="op">(</span><span class="va">paths</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="va">id</span>, <span class="va">panel</span>, <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/everything.html">everything</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="co"># portfolio scenarios</span>
+  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>
+    call_open  <span class="op">=</span> <span class="fu">call_price</span><span class="op">(</span>p <span class="op">=</span> <span class="va">S_0</span>, k <span class="op">=</span> <span class="va">K</span>, r <span class="op">=</span> <span class="va">rf_0</span>, t <span class="op">=</span> <span class="va">Expiry</span>, s <span class="op">=</span> <span class="va">vol_0</span><span class="op">)</span>,
+    call_close <span class="op">=</span> <span class="fu">call_price</span><span class="op">(</span>p <span class="op">=</span> <span class="va">S_T</span>, k <span class="op">=</span> <span class="va">K</span>, r <span class="op">=</span> <span class="va">rf_T</span>, t <span class="op">=</span> <span class="va">Expiry</span> <span class="op">-</span> <span class="fl">1</span> <span class="op">/</span> <span class="fl">252</span>, s <span class="op">=</span> <span class="va">vol_T</span><span class="op">)</span>,
+    pnl        <span class="op">=</span> <span class="va">call_close</span> <span class="op">-</span> <span class="va">call_open</span>,
+    u          <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span><span class="op">)</span>, each <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">paths</span><span class="op">)</span> <span class="op">*</span> <span class="fl">10</span><span class="op">)</span>
+  <span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">id</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html">summarise</a></span><span class="op">(</span>pnl_u <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/double.html">as.double</a></span><span class="op">(</span><span class="va">pnl</span> <span class="op">%*%</span> <span class="va">u</span><span class="op">)</span><span class="op">)</span>
+<span class="va">pnl</span>
+<span class="co">#&gt; # A tibble: 1,082 x 2</span>
+<span class="co">#&gt;       id pnl_u</span>
+<span class="co">#&gt;    &lt;int&gt; &lt;dbl&gt;</span>
+<span class="co">#&gt;  1     1 533. </span>
+<span class="co">#&gt;  2     2 482. </span>
+<span class="co">#&gt;  3     3 256. </span>
+<span class="co">#&gt;  4     4 687. </span>
+<span class="co">#&gt;  5     5 473. </span>
+<span class="co">#&gt;  6     6 169. </span>
+<span class="co">#&gt;  7     7 210. </span>
+<span class="co">#&gt;  8     8 491. </span>
+<span class="co">#&gt;  9     9 773. </span>
+<span class="co">#&gt; 10    10  99.1</span>
+<span class="co">#&gt; # ... with 1,072 more rows</span></code></pre></div>
+<p>The histogram bellow shows the marginal distribution of this strategy when every scenario has the same probability of occurrence, which is the standard approach:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co">## Market Pricing</span>
-<span class="va">PnL</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="cn">NA_real_</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span>, <span class="va">N</span><span class="op">)</span> <span class="co"># pre-allocate for efficiency</span>
-<span class="kw">for</span> <span class="op">(</span><span class="va">n</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="va">N</span><span class="op">)</span> <span class="op">{</span>
-  <span class="va">call_close</span> <span class="op">&lt;-</span> <span class="fu">call_price</span><span class="op">(</span><span class="va">S_T</span>, <span class="va">K</span><span class="op">[</span><span class="va">n</span><span class="op">]</span>, <span class="va">rf_T</span>, <span class="va">Expiry</span><span class="op">[</span><span class="va">n</span><span class="op">]</span> <span class="op">-</span> <span class="fl">1</span> <span class="op">/</span> <span class="fl">252</span>, <span class="va">vol_T</span><span class="op">)</span>
-  <span class="va">call_open</span>  <span class="op">&lt;-</span> <span class="fu">call_price</span><span class="op">(</span><span class="va">S_0</span>, <span class="va">K</span><span class="op">[</span><span class="va">n</span><span class="op">]</span>, <span class="va">rf_0</span>, <span class="va">Expiry</span><span class="op">[</span><span class="va">n</span><span class="op">]</span>, <span class="va">vol_0</span><span class="op">)</span>
-  <span class="va">PnL</span><span class="op">[</span> , <span class="va">n</span><span class="op">]</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/double.html">as.double</a></span><span class="op">(</span><span class="va">call_close</span> <span class="op">-</span> <span class="va">call_open</span><span class="op">)</span>
-<span class="op">}</span>
-<span class="co">## portfolio scenarios </span>
-<span class="co"># number of units (contracts/shares/etc)</span>
-<span class="va">u</span> <span class="op">&lt;-</span> <span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">rbind</a></span><span class="op">(</span>
-  <span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fl">1</span>, <span class="va">N</span> <span class="op">/</span> <span class="fl">2</span>, <span class="fl">1</span><span class="op">)</span>, <span class="co"># symmetrize the payoffs</span>
-  <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fl">1</span>, <span class="va">N</span> <span class="op">/</span> <span class="fl">2</span>, <span class="fl">1</span><span class="op">)</span>   <span class="co"># symmetrize the payoffs</span>
-<span class="op">)</span> 
-<span class="co"># final P&amp;L</span>
-<span class="va">PnL_u</span> <span class="op">&lt;-</span> <span class="va">PnL</span> <span class="op">%*%</span> <span class="va">u</span></code></pre></div>
-<p>The histogram bellow shows the density distribution of this strategy when every scenario has the same probability of occurrence, which is the standard approach:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">p_ew</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span><span class="op">)</span>
-<span class="va">plot_info</span> <span class="op">&lt;-</span> <span class="fu">pHist</span><span class="op">(</span>X <span class="op">=</span> <span class="va">PnL_u</span>, p <span class="op">=</span> <span class="va">p_ew</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">plot_info</span><span class="op">[</span>, <span class="st">"x"</span><span class="op">]</span>, <span class="va">plot_info</span><span class="op">[</span> , <span class="st">"f"</span><span class="op">]</span>, type <span class="op">=</span> <span class="st">'h'</span><span class="op">)</span></code></pre></div>
-<p><img src="Replicating-the-Paper_files/figure-html/unnamed-chunk-10-1.png" width="576" style="display: block; margin: auto;"></p>
+<code class="sourceCode R"><span class="va">pnl</span> <span class="op">%&gt;%</span> 
+  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">pnl_u</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> 
+  <span class="fu">ggdist</span><span class="fu">::</span><span class="fu"><a href="http://mjskay.github.io/ggdist/reference/stat_sample_slabinterval.html">stat_histinterval</a></span><span class="op">(</span>breaks <span class="op">=</span> <span class="fl">100</span>, outline_bars <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">+</span> 
+  <span class="fu">ggdist</span><span class="fu">::</span><span class="fu"><a href="http://mjskay.github.io/ggdist/reference/theme_ggdist.html">theme_ggdist</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> 
+  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html">scale_y_continuous</a></span><span class="op">(</span>labels <span class="op">=</span> <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/label_percent.html">percent_format</a></span><span class="op">(</span>scale <span class="op">=</span> <span class="fl">100</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> 
+  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html">scale_x_continuous</a></span><span class="op">(</span>labels <span class="op">=</span> <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/label_dollar.html">dollar_format</a></span><span class="op">(</span>prefix <span class="op">=</span> <span class="st">"U$ "</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> 
+  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"P&amp;L Simulation"</span>,
+                subtitle <span class="op">=</span> <span class="st">"Long-Short Call Options Strategy"</span>, 
+                x <span class="op">=</span> <span class="cn">NULL</span>, 
+                y <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span> </code></pre></div>
+<p><img src="Replicating-the-Paper_files/figure-html/unnamed-chunk-8-1.png" width="672" style="display: block; margin: auto;"></p>
 </div>
 <div id="flexible-probabilities" class="section level3">
 <h3 class="hasAnchor">
 <a href="#flexible-probabilities" class="anchor"></a>Flexible Probabilities</h3>
-<p>Now, fully-flexible probabilities kicks in. Let’s tweak the scenarios that are deemed to be considered most relevant to us (to the trader, etc.) without having to reprice the <code>PnL_u</code> over and over again.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co">#### Full Information #### </span>
-<span class="co"># exponential-smoothing </span>
-<span class="va">fp_es1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/smoothing.html">smoothing</a></span><span class="op">(</span><span class="va">X</span>, <span class="fl">0.0166</span><span class="op">)</span>
-<span class="va">fp_es2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/smoothing.html">smoothing</a></span><span class="op">(</span><span class="va">X</span>, <span class="fl">0.0055</span><span class="op">)</span>
-<span class="co"># crisp-conditioning on inflation </span>
+<p>Now, Fully-Flexible Probabilities (FFP) kicks in. The key is to tweak the scenarios that are deemed to be considered most relevant (to the trader, to the risk and portfolio manager, etc.) without the need to reprice the call options and the <code>pnl</code> once again.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co">#### Full Information ####</span>
+<span class="co"># exponential-smoothing</span>
+<span class="va">fp_es1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/smoothing.html">smoothing</a></span><span class="op">(</span><span class="va">invariants</span>, <span class="fl">0.0166</span><span class="op">)</span>
+<span class="va">fp_es2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/smoothing.html">smoothing</a></span><span class="op">(</span><span class="va">invariants</span>, <span class="fl">0.0055</span><span class="op">)</span>
+<span class="co"># crisp-conditioning on inflation</span>
 <span class="va">fp_cc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/crisp.html">crisp</a></span><span class="op">(</span><span class="va">inflation</span>, condition <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/logical.html">as.logical</a></span><span class="op">(</span><span class="va">inflation</span> <span class="op">&gt;=</span> <span class="fl">2.8</span><span class="op">)</span><span class="op">)</span>
-<span class="co"># normal kernel on inflation </span>
-<span class="va">fp_kd</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/kernel_normal.html">kernel_normal</a></span><span class="op">(</span><span class="va">inflation</span>, mean <span class="op">=</span> <span class="fl">3</span>, sigma <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/double.html">as.double</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/cor.html">cov</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/diff.html">diff</a></span><span class="op">(</span><span class="va">inflation</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
+<span class="co"># normal kernel on inflation</span>
+<span class="va">fp_kd</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/kernel_normal.html">kernel_normal</a></span><span class="op">(</span><span class="va">inflation</span>, mean <span class="op">=</span> <span class="fl">3</span>, sigma <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/cor.html">var</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/diff.html">diff</a></span><span class="op">(</span><span class="va">inflation</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
 <span class="co">#### Partial Information ####</span>
 <span class="co"># entropy-pooling by kernel-dumping on inflation</span>
-<span class="va">fp_ekd</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/kernel_entropy.html">kernel_entropy</a></span><span class="op">(</span><span class="va">inflation</span>, mean <span class="op">=</span> <span class="fl">3</span>, sigma <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/double.html">as.double</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/cor.html">cov</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/diff.html">diff</a></span><span class="op">(</span><span class="va">inflation</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
+<span class="va">fp_ekd</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/kernel_entropy.html">kernel_entropy</a></span><span class="op">(</span><span class="va">inflation</span>, mean <span class="op">=</span> <span class="fl">3</span>, sigma <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/cor.html">var</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/diff.html">diff</a></span><span class="op">(</span><span class="va">inflation</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
 <span class="co"># entropy-pooling by moment-matching</span>
-<span class="va">fp_emc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/double_decay.html">double_decay</a></span><span class="op">(</span><span class="va">X</span>, decay_low <span class="op">=</span> <span class="fl">0.0055</span>, decay_high <span class="op">=</span> <span class="fl">0.0166</span><span class="op">)</span></code></pre></div>
-<p>Five different types of probabilities were generated:</p>
-<ul>
-<li>
-<code>pf_es1</code> and <code>fp_es2</code> give relatively more weight to recent observations;</li>
-<li>
-<code>fp_cc</code>, <code>fp_kd</code> and <code>fp_ekd</code> give more importance for scenarios in which the inflation was near 2.8%-3%;</li>
-<li>
-<code>fp_emc</code> generate scenarios using a high decay for covariances and a slow decay for correlations.</li>
-</ul>
+<span class="va">fp_emc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/double_decay.html">double_decay</a></span><span class="op">(</span><span class="va">invariants</span>, decay_low <span class="op">=</span> <span class="fl">0.0055</span>, decay_high <span class="op">=</span> <span class="fl">0.0166</span><span class="op">)</span></code></pre></div>
+<p>The estimated probabilities can be seen in the image that follows:</p>
+<p><img src="Replicating-the-Paper_files/figure-html/unnamed-chunk-10-1.png" width="672" style="display: block; margin: auto;"></p>
+</div>
+<div id="comparison-and-results" class="section level3">
+<h3 class="hasAnchor">
+<a href="#comparison-and-results" class="anchor"></a>Comparison and Results</h3>
+<p>The new marginal distribution that results from “tweaking” the probabilities can be vizualized, case by case, with <code><a href="../reference/scenario_density.html">scenario_density()</a></code>.</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="../reference/scenario_density.html">scenario_density</a></span><span class="op">(</span><span class="va">pnl</span>, <span class="va">fp_es2</span><span class="op">)</span> <span class="op">+</span> 
+  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html">scale_y_continuous</a></span><span class="op">(</span>labels <span class="op">=</span> <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/label_percent.html">percent_format</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> 
+  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html">scale_x_continuous</a></span><span class="op">(</span>labels <span class="op">=</span> <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/label_dollar.html">dollar_format</a></span><span class="op">(</span>prefix <span class="op">=</span> <span class="st">"U$ "</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> 
+  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Scenario Analysis with Fully-Flexible Probabilities (FFP)"</span>, 
+                subtitle <span class="op">=</span> <span class="st">"Base Case vs. Exponential Smoothing"</span><span class="op">)</span></code></pre></div>
+<p><img src="Replicating-the-Paper_files/figure-html/unnamed-chunk-11-1.png" width="672" style="display: block; margin: auto;"></p>
+<p>In this case, the marginal distribution that results from the smoothing probabilities with a half-life of 6 months presents a slightly superior return and a smaller interquartile range.</p>
+<p>Finally, the main statistics of the scenarios considered can be assessed with <code><a href="../reference/empirical_stats.html">empirical_stats()</a></code>.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/par.html">par</a></span><span class="op">(</span>mfrow <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">fp_es1</span>, type <span class="op">=</span> <span class="st">'l'</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">fp_es2</span>, type <span class="op">=</span> <span class="st">'l'</span>, col <span class="op">=</span> <span class="st">"red"</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">fp_cc</span>, type <span class="op">=</span> <span class="st">'l'</span>, col <span class="op">=</span> <span class="st">"green"</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">fp_kd</span>, type <span class="op">=</span> <span class="st">'l'</span>, col <span class="op">=</span> <span class="st">"blue"</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">fp_ekd</span>, type <span class="op">=</span> <span class="st">'l'</span>, col <span class="op">=</span> <span class="st">"purple"</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">fp_emc</span>, type <span class="op">=</span> <span class="st">'l'</span>, col <span class="op">=</span> <span class="st">"grey"</span><span class="op">)</span></code></pre></div>
-<p><img src="Replicating-the-Paper_files/figure-html/unnamed-chunk-12-1.png" width="672" style="display: block; margin: auto;"></p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/par.html">par</a></span><span class="op">(</span>mfrow <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></code></pre></div>
-<p>It’s important to emphasize that <strong>any variable that is considered to be relevant for the portfolio manager can be included as a conditioning variable for stress-testing</strong>, with multiple restrictions, if it’s the case.</p>
-<p>Each different probability combination provides a very different outlook based on expectations, dispersion and quantile measures.</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">summary</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html">rbind</a></span><span class="op">(</span>
-  <span class="fu"><a href="../reference/empirical_stats.html">empirical_stats</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">PnL_u</span>, p <span class="op">=</span> <span class="va">p_ew</span><span class="op">)</span>, 
-  <span class="fu"><a href="../reference/empirical_stats.html">empirical_stats</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">PnL_u</span>, p <span class="op">=</span> <span class="va">fp_es1</span><span class="op">)</span>,
-  <span class="fu"><a href="../reference/empirical_stats.html">empirical_stats</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">PnL_u</span>, p <span class="op">=</span> <span class="va">fp_es2</span><span class="op">)</span>,
-  <span class="fu"><a href="../reference/empirical_stats.html">empirical_stats</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">PnL_u</span>, p <span class="op">=</span> <span class="va">fp_cc</span><span class="op">)</span>,
-  <span class="fu"><a href="../reference/empirical_stats.html">empirical_stats</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">PnL_u</span>, p <span class="op">=</span> <span class="va">fp_kd</span><span class="op">)</span>,
-  <span class="fu"><a href="../reference/empirical_stats.html">empirical_stats</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">PnL_u</span>, p <span class="op">=</span> <span class="va">fp_ekd</span><span class="op">)</span>,
-  <span class="fu"><a href="../reference/empirical_stats.html">empirical_stats</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">PnL_u</span>, p <span class="op">=</span> <span class="va">fp_emc</span><span class="op">)</span>
-<span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="va">summary</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Standard Approach"</span>, 
-                       <span class="st">"Exp. Smoothing"</span>, <span class="st">"Exp. Smoothing"</span>, 
-                       <span class="st">"Crisp-Condition"</span>, <span class="st">"Kernel-Damping"</span>, 
-                       <span class="st">"Entropy-Pooling"</span>, <span class="st">"Match-Covariance"</span><span class="op">)</span>
-<span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html">kable</a></span><span class="op">(</span><span class="va">summary</span>, digits <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></code></pre></div>
-<table class="table">
-<thead><tr class="header">
-<th align="left"></th>
-<th align="right">mu</th>
-<th align="right">sd</th>
-<th align="right">skewness</th>
-<th align="right">kurtosis</th>
-<th align="right">VaR</th>
-<th align="right">CVaR</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td align="left">Standard Approach</td>
-<td align="right">382.53</td>
-<td align="right">230.88</td>
-<td align="right">-0.27</td>
-<td align="right">5.11</td>
-<td align="right">-287.33</td>
-<td align="right">-396.45</td>
-</tr>
-<tr class="even">
-<td align="left">Exp. Smoothing</td>
-<td align="right">393.62</td>
-<td align="right">182.71</td>
-<td align="right">-1.28</td>
-<td align="right">5.62</td>
-<td align="right">-259.23</td>
-<td align="right">-297.06</td>
-</tr>
-<tr class="odd">
-<td align="left">Exp. Smoothing</td>
-<td align="right">388.94</td>
-<td align="right">202.62</td>
-<td align="right">-0.63</td>
-<td align="right">5.12</td>
-<td align="right">-259.23</td>
-<td align="right">-307.24</td>
-</tr>
-<tr class="even">
-<td align="left">Crisp-Condition</td>
-<td align="right">378.56</td>
-<td align="right">243.22</td>
-<td align="right">0.04</td>
-<td align="right">4.05</td>
-<td align="right">-290.77</td>
-<td align="right">-359.56</td>
-</tr>
-<tr class="odd">
-<td align="left">Kernel-Damping</td>
-<td align="right">377.17</td>
-<td align="right">253.69</td>
-<td align="right">-0.03</td>
-<td align="right">4.60</td>
-<td align="right">-297.10</td>
-<td align="right">-439.25</td>
-</tr>
-<tr class="even">
-<td align="left">Entropy-Pooling</td>
-<td align="right">377.80</td>
-<td align="right">252.61</td>
-<td align="right">0.02</td>
-<td align="right">4.53</td>
-<td align="right">-290.77</td>
-<td align="right">-430.23</td>
-</tr>
-<tr class="odd">
-<td align="left">Match-Covariance</td>
-<td align="right">381.40</td>
-<td align="right">188.77</td>
-<td align="right">-0.25</td>
-<td align="right">4.14</td>
-<td align="right">-141.03</td>
-<td align="right">-237.14</td>
-</tr>
-</tbody>
-</table>
+<code class="sourceCode R"><span class="fu"><a href="../reference/empirical_stats.html">empirical_stats</a></span><span class="op">(</span><span class="va">pnl</span>, <span class="va">fp_es1</span><span class="op">)</span>
+<span class="co">#&gt; # A tibble: 6 x 2</span>
+<span class="co">#&gt;   .stat  pnl_u</span>
+<span class="co">#&gt;   &lt;fct&gt;  &lt;dbl&gt;</span>
+<span class="co">#&gt; 1 Mu    394.  </span>
+<span class="co">#&gt; 2 Std   183.  </span>
+<span class="co">#&gt; 3 Skew   -1.28</span>
+<span class="co">#&gt; 4 Kurt    5.62</span>
+<span class="co">#&gt; 5 VaR   259.  </span>
+<span class="co">#&gt; 6 CVaR  297.</span></code></pre></div>
 </div>
   </div>
 

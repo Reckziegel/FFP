@@ -131,39 +131,39 @@ approach." />
 approach.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>bootstrap_scenarios</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>p</span>, <span class='va'>n</span><span class='op'>)</span>
+    <pre class="usage"><span class='fu'>bootstrap_scenarios</span><span class='op'>(</span><span class='va'>.x</span>, <span class='va'>.p</span>, <span class='va'>.n</span><span class='op'>)</span>
 
 <span class='co'># S3 method for numeric</span>
-<span class='fu'>bootstrap_scenarios</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>p</span>, <span class='va'>n</span><span class='op'>)</span>
+<span class='fu'>bootstrap_scenarios</span><span class='op'>(</span><span class='va'>.x</span>, <span class='va'>.p</span>, <span class='va'>.n</span><span class='op'>)</span>
 
 <span class='co'># S3 method for matrix</span>
-<span class='fu'>bootstrap_scenarios</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>p</span>, <span class='va'>n</span><span class='op'>)</span>
+<span class='fu'>bootstrap_scenarios</span><span class='op'>(</span><span class='va'>.x</span>, <span class='va'>.p</span>, <span class='va'>.n</span><span class='op'>)</span>
 
 <span class='co'># S3 method for ts</span>
-<span class='fu'>bootstrap_scenarios</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>p</span>, <span class='va'>n</span><span class='op'>)</span>
+<span class='fu'>bootstrap_scenarios</span><span class='op'>(</span><span class='va'>.x</span>, <span class='va'>.p</span>, <span class='va'>.n</span><span class='op'>)</span>
 
 <span class='co'># S3 method for xts</span>
-<span class='fu'>bootstrap_scenarios</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>p</span>, <span class='va'>n</span><span class='op'>)</span>
+<span class='fu'>bootstrap_scenarios</span><span class='op'>(</span><span class='va'>.x</span>, <span class='va'>.p</span>, <span class='va'>.n</span><span class='op'>)</span>
 
 <span class='co'># S3 method for tbl</span>
-<span class='fu'>bootstrap_scenarios</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>p</span>, <span class='va'>n</span><span class='op'>)</span>
+<span class='fu'>bootstrap_scenarios</span><span class='op'>(</span><span class='va'>.x</span>, <span class='va'>.p</span>, <span class='va'>.n</span><span class='op'>)</span>
 
 <span class='co'># S3 method for data.frame</span>
-<span class='fu'>bootstrap_scenarios</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>p</span>, <span class='va'>n</span><span class='op'>)</span></pre>
+<span class='fu'>bootstrap_scenarios</span><span class='op'>(</span><span class='va'>.x</span>, <span class='va'>.p</span>, <span class='va'>.n</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>x</th>
+      <th>.x</th>
       <td><p>A time-series defining the scenario-probability distribution.</p></td>
     </tr>
     <tr>
-      <th>p</th>
+      <th>.p</th>
       <td><p>A vector of probabilities.</p></td>
     </tr>
     <tr>
-      <th>n</th>
+      <th>.n</th>
       <td><p>An <code>integer</code> scalar with the number of scenarios to be generated.</p></td>
     </tr>
     </table>
@@ -177,18 +177,20 @@ approach.</p>
 <span class='va'>ret</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/diff.html'>diff</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span><span class='va'>EuStockMarkets</span><span class='op'>)</span><span class='op'>)</span>
 <span class='va'>ew</span>  <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='fl'>1</span> <span class='op'>/</span> <span class='fu'><a href='https://rdrr.io/r/base/nrow.html'>nrow</a></span><span class='op'>(</span><span class='va'>ret</span><span class='op'>)</span>, <span class='fu'><a href='https://rdrr.io/r/base/nrow.html'>nrow</a></span><span class='op'>(</span><span class='va'>ret</span><span class='op'>)</span><span class='op'>)</span>
 
-<span class='fu'>bootstrap_scenarios</span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>ret</span>, p <span class='op'>=</span> <span class='va'>ew</span>, n <span class='op'>=</span> <span class='fl'>10</span><span class='op'>)</span>
-</div><div class='output co'>#&gt;                DAX           SMI          CAC          FTSE
-#&gt;  [1,]  0.003127348 -6.111107e-03  0.003437298  0.0034884371
-#&gt;  [2,]  0.001797036  5.481834e-03 -0.005137626 -0.0007895960
-#&gt;  [3,]  0.003552768 -7.318266e-03 -0.011072032  0.0013811924
-#&gt;  [4,] -0.011119111 -3.501488e-03 -0.003436372 -0.0066650503
-#&gt;  [5,]  0.006913901  8.235236e-03  0.003848989 -0.0021594363
-#&gt;  [6,]  0.004518835  6.081200e-03  0.009384647  0.0172676371
-#&gt;  [7,]  0.003509159  3.942829e-05 -0.005271999  0.0006584827
-#&gt;  [8,]  0.003490180  3.872168e-03  0.000000000  0.0088809603
-#&gt;  [9,]  0.010007338  1.567231e-03 -0.002743068  0.0010064234
-#&gt; [10,] -0.006858512 -9.268781e-03  0.001650912  0.0112315928</div></pre>
+<span class='fu'>bootstrap_scenarios</span><span class='op'>(</span>.x <span class='op'>=</span> <span class='va'>ret</span>, .p <span class='op'>=</span> <span class='va'>ew</span>, .n <span class='op'>=</span> <span class='fl'>10</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span style='color: #949494;'># A tibble: 10 x 4</span><span>
+#&gt;         DAX        SMI      CAC      FTSE
+#&gt;       </span><span style='color: #949494;font-style: italic;'>&lt;dbl&gt;</span><span>      </span><span style='color: #949494;font-style: italic;'>&lt;dbl&gt;</span><span>    </span><span style='color: #949494;font-style: italic;'>&lt;dbl&gt;</span><span>     </span><span style='color: #949494;font-style: italic;'>&lt;dbl&gt;</span><span>
+#&gt; </span><span style='color: #BCBCBC;'> 1</span><span>  0.003</span><span style='text-decoration: underline;'>13</span><span> -</span><span style='color: #BB0000;'>0.006</span><span style='color: #BB0000;text-decoration: underline;'>11</span><span>    0.003</span><span style='text-decoration: underline;'>44</span><span>  0.003</span><span style='text-decoration: underline;'>49</span><span> 
+#&gt; </span><span style='color: #BCBCBC;'> 2</span><span>  0.001</span><span style='text-decoration: underline;'>80</span><span>  0.005</span><span style='text-decoration: underline;'>48</span><span>   -</span><span style='color: #BB0000;'>0.005</span><span style='color: #BB0000;text-decoration: underline;'>14</span><span> -</span><span style='color: #BB0000;'>0.000</span><span style='color: #BB0000;text-decoration: underline;'>790</span><span>
+#&gt; </span><span style='color: #BCBCBC;'> 3</span><span>  0.003</span><span style='text-decoration: underline;'>55</span><span> -</span><span style='color: #BB0000;'>0.007</span><span style='color: #BB0000;text-decoration: underline;'>32</span><span>   -</span><span style='color: #BB0000;'>0.011</span><span style='color: #BB0000;text-decoration: underline;'>1</span><span>   0.001</span><span style='text-decoration: underline;'>38</span><span> 
+#&gt; </span><span style='color: #BCBCBC;'> 4</span><span> -</span><span style='color: #BB0000;'>0.011</span><span style='color: #BB0000;text-decoration: underline;'>1</span><span>  -</span><span style='color: #BB0000;'>0.003</span><span style='color: #BB0000;text-decoration: underline;'>50</span><span>   -</span><span style='color: #BB0000;'>0.003</span><span style='color: #BB0000;text-decoration: underline;'>44</span><span> -</span><span style='color: #BB0000;'>0.006</span><span style='color: #BB0000;text-decoration: underline;'>67</span><span> 
+#&gt; </span><span style='color: #BCBCBC;'> 5</span><span>  0.006</span><span style='text-decoration: underline;'>91</span><span>  0.008</span><span style='text-decoration: underline;'>24</span><span>    0.003</span><span style='text-decoration: underline;'>85</span><span> -</span><span style='color: #BB0000;'>0.002</span><span style='color: #BB0000;text-decoration: underline;'>16</span><span> 
+#&gt; </span><span style='color: #BCBCBC;'> 6</span><span>  0.004</span><span style='text-decoration: underline;'>52</span><span>  0.006</span><span style='text-decoration: underline;'>08</span><span>    0.009</span><span style='text-decoration: underline;'>38</span><span>  0.017</span><span style='text-decoration: underline;'>3</span><span>  
+#&gt; </span><span style='color: #BCBCBC;'> 7</span><span>  0.003</span><span style='text-decoration: underline;'>51</span><span>  0.000</span><span style='text-decoration: underline;'>039</span><span>4 -</span><span style='color: #BB0000;'>0.005</span><span style='color: #BB0000;text-decoration: underline;'>27</span><span>  0.000</span><span style='text-decoration: underline;'>658</span><span>
+#&gt; </span><span style='color: #BCBCBC;'> 8</span><span>  0.003</span><span style='text-decoration: underline;'>49</span><span>  0.003</span><span style='text-decoration: underline;'>87</span><span>    0        0.008</span><span style='text-decoration: underline;'>88</span><span> 
+#&gt; </span><span style='color: #BCBCBC;'> 9</span><span>  0.010</span><span style='text-decoration: underline;'>0</span><span>   0.001</span><span style='text-decoration: underline;'>57</span><span>   -</span><span style='color: #BB0000;'>0.002</span><span style='color: #BB0000;text-decoration: underline;'>74</span><span>  0.001</span><span style='text-decoration: underline;'>01</span><span> 
+#&gt; </span><span style='color: #BCBCBC;'>10</span><span> -</span><span style='color: #BB0000;'>0.006</span><span style='color: #BB0000;text-decoration: underline;'>86</span><span> -</span><span style='color: #BB0000;'>0.009</span><span style='color: #BB0000;text-decoration: underline;'>27</span><span>    0.001</span><span style='text-decoration: underline;'>65</span><span>  0.011</span><span style='text-decoration: underline;'>2</span><span>  </div></span></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

@@ -84,10 +84,10 @@
 <!-- badges: start -->
 
 <blockquote>
-<p>Functions for Scenario Generarion and Risk-Management</p>
+<p>Functions for Scenario Analysis and Risk-Management</p>
 </blockquote>
 <p>Oftentimes, the econometrician needs to stress-test the potential outcomes for a given set of risk-drivers. This process can be computationally costly when the entire set of scenarios needs to be repriced (bootsraped, resampled, etc.).</p>
-<p>To overcome this difficulty, the Fully-Flexible Probabilities (FFP) approach offers an inexpensive way for scenario generation: it reprices the <em>probabilities</em> associated to each scenario, instead of the scenarios themselves. Once the new probabilities have been defined, the computations can be performed very quickly without having to generate a large set of scenarios.</p>
+<p>To overcome this difficulty, the Fully-Flexible Probabilities (FFP) approach offers an inexpensive way for scenario generation: it reprices the <em>probabilities</em> associated to each scenario, instead of the scenarios themselves. Once the new probabilities have been defined, the computations can be performed very quickly without having to call <strong>fisnish the sentence here</strong>.</p>
 <p><code>ffp</code> ports the MATLAB package <a href="https://la.mathworks.com/matlabcentral/fileexchange/31360-historical-scenarios-with-fully-flexible-probabilities?s_tid=prof_contriblnk">Historical Scenarios with Fully Flexible Probabilities</a> into R.</p>
 <div id="installation" class="section level2">
 <h2 class="hasAnchor">
@@ -97,18 +97,15 @@
 <code class="sourceCode R"><span class="co"># install.packages("devtools")</span>
 <span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org//reference/remote-reexports.html">install_github</a></span><span class="op">(</span><span class="st">"Reckziegel/ffp"</span><span class="op">)</span></code></pre></div>
 </div>
-<div id="functions" class="section level2">
+<div id="probability-estimation" class="section level2">
 <h2 class="hasAnchor">
-<a href="#functions" class="anchor"></a>Functions</h2>
-<div id="probability-estimation" class="section level3">
-<h3 class="hasAnchor">
-<a href="#probability-estimation" class="anchor"></a>Probability Estimation</h3>
+<a href="#probability-estimation" class="anchor"></a>Probability Estimation</h2>
 <p>The package <code>ffp</code> comes with five functions to extract probabilities from the historical scenarios:</p>
 <ul>
 <li>
 <code><a href="reference/smoothing.html">smoothing()</a></code>: accounts for the time-changing nature of volatility by giving more weight to recent observations;</li>
 <li>
-<code><a href="reference/crisp.html">crisp()</a></code>: selects scenarios where a certain macroeconomic statement is satisfied;</li>
+<code><a href="reference/crisp.html">crisp()</a></code>: selects scenarios where a certain logical macroeconomic statement is satisfied;</li>
 <li>
 <code><a href="reference/kernel_normal.html">kernel_normal()</a></code>: generalizes the <code>crisp</code> condition by wrapping scenarios over a normal kernel;</li>
 <li>
@@ -116,18 +113,19 @@
 <li>
 <code><a href="reference/double_decay.html">double_decay()</a></code>: uses entropy-polling and double-decay factor to constrain the first two moments of a distribution.</li>
 </ul>
+<p><img src="reference/figures/README-unnamed-chunk-3-1.png" width="70%" height="70%" style="display: block; margin: auto;"></p>
 <p>In all functions, the driver for the FFP can be endogenous (time-series themselves) or exogenous factors (volatility surface, inflation, etc.).</p>
 </div>
-<div id="scenario-analysis" class="section level3">
-<h3 class="hasAnchor">
-<a href="#scenario-analysis" class="anchor"></a>Scenario Analysis</h3>
+<div id="scenario-analysis" class="section level2">
+<h2 class="hasAnchor">
+<a href="#scenario-analysis" class="anchor"></a>Scenario Analysis</h2>
 <p>Once the probabilities have been estimated, <code><a href="reference/bootstrap_scenarios.html">bootstrap_scenarios()</a></code> can be used to sample data, while keeping the structure of the empirical copulas intact. The main statistics of arbitrary scenarios can be computed with <code><a href="reference/empirical_stats.html">empirical_stats()</a></code>.</p>
-</div>
 </div>
 <div id="references" class="section level2">
 <h2 class="hasAnchor">
 <a href="#references" class="anchor"></a>References</h2>
 <ul>
+<li><p>Attilio Meucci (2021). Historical Scenarios with Fully Flexible Probabilities (<a href="https://www.mathworks.com/matlabcentral/fileexchange/31360-historical-scenarios-with-fully-flexible-probabilities" class="uri">https://www.mathworks.com/matlabcentral/fileexchange/31360-historical-scenarios-with-fully-flexible-probabilities</a>), MATLAB Central File Exchange. Retrieved June 11, 2021.</p></li>
 <li><p>De Santis, G., R. Litterman, A. Vesval, and K. Winkelmann, 2003, Covariance matrix estimation, Modern investment management: an equilibrium approach, Wiley.</p></li>
 <li><p>Meucci, Attilio, Fully Flexible Views: Theory and Practice (August 8, 2008). Fully Flexible Views: Theory and Practice, Risk, Vol. 21, No. 10, pp. 97-102, October 2008, Available at SSRN: <a href="https://ssrn.com/abstract=1213325" class="uri">https://ssrn.com/abstract=1213325</a></p></li>
 <li><p>Meucci, Attilio, Historical Scenarios with Fully Flexible Probabilities (October 23, 2010). GARP Risk Professional, pp. 47-51, December 2010, Available at SSRN: <a href="https://ssrn.com/abstract=1696802" class="uri">https://ssrn.com/abstract=1696802</a> or <a href="http://dx.doi.org/10.2139/ssrn.1696802" class="uri">http://dx.doi.org/10.2139/ssrn.1696802</a></p></li>

@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title># ffp_tbl ---------------------------------------------------------------- — new_ffp_mat • ffp</title>
+<title>Internal class ffp_mat — new_ffp_mat • ffp</title>
 
 
 <!-- jquery -->
@@ -39,15 +39,8 @@
 
 
 
-<meta property="og:title" content="# ffp_tbl ---------------------------------------------------------------- — new_ffp_mat" />
-<meta property="og:description" content="# constructor
-#' Internal ffp_tbl class
-#'
-#' @rdname ffp_tbl
-#' @keywords internal
-new_ffp_tbl &amp;lt;- function(x, ...) 
-  #stopifnot(tibble::is_tibble(x))
-  validate_ffp_tbl(ffp_tbl(x, ...))" />
+<meta property="og:title" content="Internal class ffp_mat — new_ffp_mat" />
+<meta property="og:description" content="Internal class ffp_mat" />
 
 
 
@@ -127,72 +120,26 @@ new_ffp_tbl &amp;lt;- function(x, ...)
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1># ffp_tbl ----------------------------------------------------------------</h1>
+    <h1>Internal class ffp_mat</h1>
     <small class="dont-index">Source: <a href='https://github.com/Reckziegel/FFP/blob/master/R/classes.R'><code>R/classes.R</code></a></small>
     <div class="hidden name"><code>ffp_mat.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p># constructor
-#' Internal ffp_tbl class
-#'
-#' @rdname ffp_tbl
-#' @keywords internal
-new_ffp_tbl &lt;- function(x, ...) 
-  #stopifnot(tibble::is_tibble(x))
-  validate_ffp_tbl(ffp_tbl(x, ...))</p>
+    <p>Internal class ffp_mat</p>
     </div>
 
-    <pre class="usage"><span class='fu'>new_ffp_mat</span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span>
+    <pre class="usage"><span class='fu'>new_ffp_mat</span><span class='op'>(</span><span class='va'>.x</span><span class='op'>)</span>
 
-<span class='fu'>validate_ffp_mat</span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span>
+<span class='fu'>validate_ffp_mat</span><span class='op'>(</span><span class='va'>.x</span><span class='op'>)</span>
 
-<span class='fu'>ffp_mat</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>...</span><span class='op'>)</span>
+<span class='fu'>ffp_mat</span><span class='op'>(</span><span class='va'>.x</span>, <span class='va'>...</span><span class='op'>)</span>
 
-<span class='fu'>is_ffp_mat</span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span>
+<span class='fu'>is_ffp_mat</span><span class='op'>(</span><span class='va'>.x</span><span class='op'>)</span>
 
-<span class='fu'>as_ffp_mat</span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span></pre>
+<span class='fu'>as_ffp_mat</span><span class='op'>(</span><span class='va'>.x</span><span class='op'>)</span></pre>
 
 
-    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
-
-    <p># validator
-#' @rdname ffp_tbl
-#' @keywords internal
-validate_ffp_tbl &lt;- function(x) 
-  # stopifnot(tibble::is_tibble(x))
-  # if (purrr::is_empty(x)) 
-  #   stop("The argument x is empty.", call. = FALSE)
-  # 
-  # if (!any_is_double(x)) 
-  #   stop("There is no numeric columns in x.", call. = FALSE)
-  # 
-  if (inherits(x, "grouped_df")) 
-    stop("Don't know how to deal with grouped tibbles.", call. = FALSE)  tibble::validate_tibble(x)
-  x</p>
-<p># helper
-#' @rdname ffp_tbl
-#' @keywords internal
-ffp_tbl &lt;- function(x, ...)   # old_attr &lt;- attributes(x)
-  # if (any_is_date(x)) 
-  #   date_attr &lt;- vector("list", 2L)
-  #   date_attr$date_col &lt;- which_is_date(x)
-  #   date_attr$series  &lt;- dplyr::select(x, date_attr$date_col)
-  #  else 
-  #   date_attr &lt;- NULL
-  # 
-  #
-  # x &lt;- dplyr::select(x, where(is.double) &amp; where(is.numeric))  tibble::new_tibble(x = x,
-                     date_info = ...,
-                     nrow = vctrs::vec_size(x),
-                     class = "ffp_tbl")</p>
-<p>#' @rdname ffp_tbl
-#' @keywords internal
-is_ffp_tbl &lt;- function(x) inherits(x, "ffp_tbl")</p>
-<p>#' @rdname ffp_tbl
-#' @keywords internal
-as_ffp_tbl &lt;- function(x) new_ffp_tbl(x)
-Internal class ffp_mat</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

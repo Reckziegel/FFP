@@ -15,7 +15,8 @@ scenario_density(x, p)
 A \code{ggplot2} object.
 }
 \description{
-SSSS.
+This function is designed make it easy to visualize the impact of a view in the
+distribution of the P&L.
 }
 \examples{
 ret <- diff(log(EuStockMarkets))[, 1]

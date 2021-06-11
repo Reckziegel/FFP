@@ -89,7 +89,7 @@
 
     
     
-<p>Consider, as in <em>Historical Scenarios with Fully Flexible Probabilities</em>, that we would like to price and stress-test a book of long-short call options, in which the underlying is the S&amp;P500 index. The <code>db_tbl</code> dataset contains the same information Atilio used to write the original paper plus <span class="math inline">\(5\)</span> additional macroeconomic variables that can be used to filter the state of the economy.</p>
+<p>Consider, as in <em>Historical Scenarios with Fully Flexible Probabilities</em>, that we would like to price and stress-test a book of long-short call options, in which the underlying is the S&amp;P500 index. The <code>db_tbl</code> dataset contains information on the interest-rates, US stock market and implied volatility. It also provides <span class="math inline">\(6\)</span> macroeconomic variables that can be used to filter the state of the economy.</p>
 <div id="prepare-the-data" class="section level3">
 <h3 class="hasAnchor">
 <a href="#prepare-the-data" class="anchor"></a>Prepare the Data</h3>
@@ -169,7 +169,7 @@
   <span class="va">c</span> <span class="op">&lt;-</span> <span class="va">p</span> <span class="op">*</span> <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">pnorm</a></span><span class="op">(</span><span class="va">d_1</span><span class="op">)</span> <span class="op">-</span> <span class="va">k</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">exp</a></span><span class="op">(</span><span class="op">-</span><span class="va">r</span> <span class="op">*</span> <span class="va">t</span><span class="op">)</span> <span class="op">*</span> <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">pnorm</a></span><span class="op">(</span><span class="va">d_2</span><span class="op">)</span>
   <span class="va">c</span>
 <span class="op">}</span></code></pre></div>
-<p>in which the arguments match the standard in the literature: <span class="math inline">\(p\)</span> is for price, <span class="math inline">\(k\)</span> for strike, <span class="math inline">\(r\)</span> for the risk-free rate, <span class="math inline">\(t\)</span> for time and <span class="math inline">\(s\)</span> for the volatility.</p>
+<p>In which the arguments match the standard in the literature: <span class="math inline">\(p\)</span> is for price, <span class="math inline">\(k\)</span> for strike, <span class="math inline">\(r\)</span> for the risk-free rate, <span class="math inline">\(t\)</span> for time and <span class="math inline">\(s\)</span> for the volatility.</p>
 <p>It’ assumed that every option has <span class="math inline">\(21\)</span> days to expiry and the market offers grid of <span class="math inline">\(20\)</span> different strikes homogeneously distributed from deeply-in to slightly out-of-the money.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">N</span> <span class="op">&lt;-</span> <span class="fl">20</span>
@@ -207,7 +207,7 @@
 <span class="co">#&gt;  9     9 773. </span>
 <span class="co">#&gt; 10    10  99.1</span>
 <span class="co">#&gt; # ... with 1,072 more rows</span></code></pre></div>
-<p>The histogram bellow shows the marginal distribution of this strategy when every scenario has the same probability of occurrence, which is the standard approach:</p>
+<p>The histogram shows the marginal distribution of this strategy when every scenario has the same probability of occurrence, which is the standard approach:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">pnl</span> <span class="op">%&gt;%</span> 
   <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">pnl_u</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> 
@@ -224,14 +224,14 @@
 <div id="flexible-probabilities" class="section level3">
 <h3 class="hasAnchor">
 <a href="#flexible-probabilities" class="anchor"></a>Flexible Probabilities</h3>
-<p>Now, Fully-Flexible Probabilities (FFP) kicks in. The key is to tweak the scenarios that are deemed to be considered most relevant (to the trader, to the risk and portfolio manager, etc.) without the need to reprice the call options and the <code>pnl</code> once again.</p>
+<p>Now, Fully-Flexible Probabilities (FFP) kicks in:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co">#### Full Information ####</span>
 <span class="co"># exponential-smoothing</span>
 <span class="va">fp_es1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/smoothing.html">smoothing</a></span><span class="op">(</span><span class="va">invariants</span>, <span class="fl">0.0166</span><span class="op">)</span>
 <span class="va">fp_es2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/smoothing.html">smoothing</a></span><span class="op">(</span><span class="va">invariants</span>, <span class="fl">0.0055</span><span class="op">)</span>
 <span class="co"># crisp-conditioning on inflation</span>
-<span class="va">fp_cc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/crisp.html">crisp</a></span><span class="op">(</span><span class="va">inflation</span>, condition <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/logical.html">as.logical</a></span><span class="op">(</span><span class="va">inflation</span> <span class="op">&gt;=</span> <span class="fl">2.8</span><span class="op">)</span><span class="op">)</span>
+<span class="va">fp_cc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/crisp.html">crisp</a></span><span class="op">(</span><span class="va">inflation</span>, lgl <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/logical.html">as.logical</a></span><span class="op">(</span><span class="va">inflation</span> <span class="op">&gt;=</span> <span class="fl">2.8</span><span class="op">)</span><span class="op">)</span>
 <span class="co"># normal kernel on inflation</span>
 <span class="va">fp_kd</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/kernel_normal.html">kernel_normal</a></span><span class="op">(</span><span class="va">inflation</span>, mean <span class="op">=</span> <span class="fl">3</span>, sigma <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/cor.html">var</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/diff.html">diff</a></span><span class="op">(</span><span class="va">inflation</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
 <span class="co">#### Partial Information ####</span>
@@ -239,13 +239,13 @@
 <span class="va">fp_ekd</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/kernel_entropy.html">kernel_entropy</a></span><span class="op">(</span><span class="va">inflation</span>, mean <span class="op">=</span> <span class="fl">3</span>, sigma <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/cor.html">var</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/diff.html">diff</a></span><span class="op">(</span><span class="va">inflation</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
 <span class="co"># entropy-pooling by moment-matching</span>
 <span class="va">fp_emc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/double_decay.html">double_decay</a></span><span class="op">(</span><span class="va">invariants</span>, decay_low <span class="op">=</span> <span class="fl">0.0055</span>, decay_high <span class="op">=</span> <span class="fl">0.0166</span><span class="op">)</span></code></pre></div>
-<p>The estimated probabilities can be seen in the image that follows:</p>
+<p>Six different objects are estimated with varying degrees of flexibility, as the image shows:</p>
 <p><img src="Replicating-the-Paper_files/figure-html/unnamed-chunk-10-1.png" width="672" style="display: block; margin: auto;"></p>
 </div>
 <div id="comparison-and-results" class="section level3">
 <h3 class="hasAnchor">
 <a href="#comparison-and-results" class="anchor"></a>Comparison and Results</h3>
-<p>The new marginal distribution that results from “tweaking” the probabilities can be vizualized, case by case, with <code><a href="../reference/scenario_density.html">scenario_density()</a></code>.</p>
+<p>The new marginal distribution of the P&amp;L that results from “tweaking” probabilities can be visualized, case by case, with <code><a href="../reference/scenario_density.html">scenario_density()</a></code>.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/scenario_density.html">scenario_density</a></span><span class="op">(</span><span class="va">pnl</span>, <span class="va">fp_es2</span><span class="op">)</span> <span class="op">+</span> 
   <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html">scale_y_continuous</a></span><span class="op">(</span>labels <span class="op">=</span> <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/label_percent.html">percent_format</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> 
@@ -253,8 +253,8 @@
   <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Scenario Analysis with Fully-Flexible Probabilities (FFP)"</span>, 
                 subtitle <span class="op">=</span> <span class="st">"Base Case vs. Exponential Smoothing"</span><span class="op">)</span></code></pre></div>
 <p><img src="Replicating-the-Paper_files/figure-html/unnamed-chunk-11-1.png" width="672" style="display: block; margin: auto;"></p>
-<p>In this case, the marginal distribution that results from the smoothing probabilities with a half-life of 6 months presents a slightly superior return and a smaller interquartile range.</p>
-<p>Finally, the main statistics of the scenarios considered can be assessed with <code><a href="../reference/empirical_stats.html">empirical_stats()</a></code>.</p>
+<p>As the figure shows, a slightly superior average return and a smaller interquartile range arises from exponentiating probabilities with half-life of 6 months.</p>
+<p>Finally, the main statistics of the scenarios at hand can be assessed with <code><a href="../reference/empirical_stats.html">empirical_stats()</a></code>.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/empirical_stats.html">empirical_stats</a></span><span class="op">(</span><span class="va">pnl</span>, <span class="va">fp_es1</span><span class="op">)</span>
 <span class="co">#&gt; # A tibble: 6 x 2</span>

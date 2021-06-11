@@ -131,39 +131,39 @@ approach." />
 approach.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>bootstrap_scenarios</span><span class='op'>(</span><span class='va'>.x</span>, <span class='va'>.p</span>, <span class='va'>.n</span><span class='op'>)</span>
+    <pre class="usage"><span class='fu'>bootstrap_scenarios</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>p</span>, <span class='va'>n</span><span class='op'>)</span>
 
 <span class='co'># S3 method for numeric</span>
-<span class='fu'>bootstrap_scenarios</span><span class='op'>(</span><span class='va'>.x</span>, <span class='va'>.p</span>, <span class='va'>.n</span><span class='op'>)</span>
+<span class='fu'>bootstrap_scenarios</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>p</span>, <span class='va'>n</span><span class='op'>)</span>
 
 <span class='co'># S3 method for matrix</span>
-<span class='fu'>bootstrap_scenarios</span><span class='op'>(</span><span class='va'>.x</span>, <span class='va'>.p</span>, <span class='va'>.n</span><span class='op'>)</span>
+<span class='fu'>bootstrap_scenarios</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>p</span>, <span class='va'>n</span><span class='op'>)</span>
 
 <span class='co'># S3 method for ts</span>
-<span class='fu'>bootstrap_scenarios</span><span class='op'>(</span><span class='va'>.x</span>, <span class='va'>.p</span>, <span class='va'>.n</span><span class='op'>)</span>
+<span class='fu'>bootstrap_scenarios</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>p</span>, <span class='va'>n</span><span class='op'>)</span>
 
 <span class='co'># S3 method for xts</span>
-<span class='fu'>bootstrap_scenarios</span><span class='op'>(</span><span class='va'>.x</span>, <span class='va'>.p</span>, <span class='va'>.n</span><span class='op'>)</span>
+<span class='fu'>bootstrap_scenarios</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>p</span>, <span class='va'>n</span><span class='op'>)</span>
 
 <span class='co'># S3 method for tbl</span>
-<span class='fu'>bootstrap_scenarios</span><span class='op'>(</span><span class='va'>.x</span>, <span class='va'>.p</span>, <span class='va'>.n</span><span class='op'>)</span>
+<span class='fu'>bootstrap_scenarios</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>p</span>, <span class='va'>n</span><span class='op'>)</span>
 
 <span class='co'># S3 method for data.frame</span>
-<span class='fu'>bootstrap_scenarios</span><span class='op'>(</span><span class='va'>.x</span>, <span class='va'>.p</span>, <span class='va'>.n</span><span class='op'>)</span></pre>
+<span class='fu'>bootstrap_scenarios</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>p</span>, <span class='va'>n</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>.x</th>
+      <th>x</th>
       <td><p>A time-series defining the scenario-probability distribution.</p></td>
     </tr>
     <tr>
-      <th>.p</th>
+      <th>p</th>
       <td><p>A vector of probabilities.</p></td>
     </tr>
     <tr>
-      <th>.n</th>
+      <th>n</th>
       <td><p>An <code>integer</code> scalar with the number of scenarios to be generated.</p></td>
     </tr>
     </table>
@@ -177,7 +177,7 @@ approach.</p>
 <span class='va'>ret</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/diff.html'>diff</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span><span class='va'>EuStockMarkets</span><span class='op'>)</span><span class='op'>)</span>
 <span class='va'>ew</span>  <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='fl'>1</span> <span class='op'>/</span> <span class='fu'><a href='https://rdrr.io/r/base/nrow.html'>nrow</a></span><span class='op'>(</span><span class='va'>ret</span><span class='op'>)</span>, <span class='fu'><a href='https://rdrr.io/r/base/nrow.html'>nrow</a></span><span class='op'>(</span><span class='va'>ret</span><span class='op'>)</span><span class='op'>)</span>
 
-<span class='fu'>bootstrap_scenarios</span><span class='op'>(</span>.x <span class='op'>=</span> <span class='va'>ret</span>, .p <span class='op'>=</span> <span class='va'>ew</span>, .n <span class='op'>=</span> <span class='fl'>10</span><span class='op'>)</span>
+<span class='fu'>bootstrap_scenarios</span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>ret</span>, p <span class='op'>=</span> <span class='va'>ew</span>, n <span class='op'>=</span> <span class='fl'>10</span><span class='op'>)</span>
 </div><div class='output co'>#&gt; <span style='color: #949494;'># A tibble: 10 x 4</span><span>
 #&gt;         DAX        SMI      CAC      FTSE
 #&gt;       </span><span style='color: #949494;font-style: italic;'>&lt;dbl&gt;</span><span>      </span><span style='color: #949494;font-style: italic;'>&lt;dbl&gt;</span><span>    </span><span style='color: #949494;font-style: italic;'>&lt;dbl&gt;</span><span>     </span><span style='color: #949494;font-style: italic;'>&lt;dbl&gt;</span><span>

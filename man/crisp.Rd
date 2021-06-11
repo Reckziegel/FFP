@@ -11,26 +11,26 @@
 \alias{crisp.tbl_df}
 \title{Full Information by Market Conditioning}
 \usage{
-crisp(x, condition)
+crisp(x, lgl)
 
-\method{crisp}{default}(x, condition)
+\method{crisp}{default}(x, lgl)
 
-\method{crisp}{numeric}(x, condition)
+\method{crisp}{numeric}(x, lgl)
 
-\method{crisp}{matrix}(x, condition)
+\method{crisp}{matrix}(x, lgl)
 
-\method{crisp}{ts}(x, condition)
+\method{crisp}{ts}(x, lgl)
 
-\method{crisp}{xts}(x, condition)
+\method{crisp}{xts}(x, lgl)
 
-\method{crisp}{data.frame}(x, condition)
+\method{crisp}{data.frame}(x, lgl)
 
-\method{crisp}{tbl_df}(x, condition)
+\method{crisp}{tbl_df}(x, lgl)
 }
 \arguments{
 \item{x}{A vector of risk-drivers.}
 
-\item{condition}{A \code{logical} vector with TRUE's and FALSE's indicating
+\item{lgl}{A \code{logical} vector with TRUE's and FALSE's indicating
 which scenarios should considered.}
 }
 \value{

@@ -6,7 +6,7 @@
 #' condition satisfy a logical statement.
 #'
 #' @param x A vector of risk-drivers.
-#' @param condition A \code{logical} vector with TRUE's and FALSE's indicating
+#' @param lgl A \code{logical} vector with TRUE's and FALSE's indicating
 #' which scenarios should considered.
 #'
 #' @return A \code{tibble} with the new probabilities distribution.
@@ -19,25 +19,25 @@
 #'
 #' # full weight on scenarios above 2%
 #' crisp(x = ret, ret > 0.02)
-crisp <- function(x, condition) {
+crisp <- function(x, lgl) {
   UseMethod("crisp", x)
 }
 
 #' @rdname crisp
 #' @export
-crisp.default <- function(x, condition) {
+crisp.default <- function(x, lgl) {
   stop("function not implemented in this class yet.", call. = FALSE)
 }
 
 #' @rdname crisp
 #' @export
-crisp.numeric <- function(x, condition) {
+crisp.numeric <- function(x, lgl) {
   assertthat::assert_that(
-    assertthat::are_equal(vctrs::vec_size(x), vctrs::vec_size(condition))
+    assertthat::are_equal(vctrs::vec_size(x), vctrs::vec_size(lgl))
   )
-  vctrs::vec_assert(condition, logical())
+  vctrs::vec_assert(lgl, logical())
 
-  p <- make_crisp(x, condition)
+  p <- make_crisp(x, lgl)
 
   # FIXME
   new_ffp(tibble::tibble(.rowid = 1:vctrs::vec_size(x), .p = p),
@@ -46,13 +46,13 @@ crisp.numeric <- function(x, condition) {
 
 #' @rdname crisp
 #' @export
-crisp.matrix <- function(x, condition) {
+crisp.matrix <- function(x, lgl) {
   assertthat::assert_that(
-    assertthat::are_equal(vctrs::vec_size(x), vctrs::vec_size(condition))
+    assertthat::are_equal(vctrs::vec_size(x), vctrs::vec_size(lgl))
   )
-  vctrs::vec_assert(condition, logical())
+  vctrs::vec_assert(lgl, logical())
 
-  p <- make_crisp(x, condition)
+  p <- make_crisp(x, lgl)
 
   #FIXME
   new_ffp(tibble::tibble(.rowid = 1:vctrs::vec_size(x), .p = p),
@@ -62,13 +62,13 @@ crisp.matrix <- function(x, condition) {
 
 #' @rdname crisp
 #' @export
-crisp.ts <- function(x, condition) {
+crisp.ts <- function(x, lgl) {
   assertthat::assert_that(
-    assertthat::are_equal(vctrs::vec_size(x), vctrs::vec_size(condition))
+    assertthat::are_equal(vctrs::vec_size(x), vctrs::vec_size(lgl))
   )
-  vctrs::vec_assert(condition, logical())
+  vctrs::vec_assert(lgl, logical())
 
-  p <- make_crisp(x, condition)
+  p <- make_crisp(x, lgl)
   #FIXME
   new_ffp(tibble::tibble(.rowid = 1:vctrs::vec_size(x), .p = p),
           type = "Crisp Conditioning")
@@ -76,28 +76,13 @@ crisp.ts <- function(x, condition) {
 
 #' @rdname crisp
 #' @export
-crisp.xts <- function(x, condition) {
+crisp.xts <- function(x, lgl) {
   assertthat::assert_that(
-    assertthat::are_equal(vctrs::vec_size(x), vctrs::vec_size(condition))
+    assertthat::are_equal(vctrs::vec_size(x), vctrs::vec_size(lgl))
   )
-  vctrs::vec_assert(condition, logical())
+  vctrs::vec_assert(lgl, logical())
 
-  p <- make_crisp(x, condition)
-
-  #FIXME
-  new_ffp(tibble::tibble(.rowid = 1:vctrs::vec_size(x), .p = p),
-          type = "Crisp Conditioning")
-}
-
-#' @rdname crisp
-#' @export
-crisp.data.frame <- function(x, condition) {
-  assertthat::assert_that(
-    assertthat::are_equal(vctrs::vec_size(x), vctrs::vec_size(condition))
-  )
-  vctrs::vec_assert(condition, logical())
-
-  p <- make_crisp(x, condition)
+  p <- make_crisp(x, lgl)
 
   #FIXME
   new_ffp(tibble::tibble(.rowid = 1:vctrs::vec_size(x), .p = p),
@@ -106,13 +91,28 @@ crisp.data.frame <- function(x, condition) {
 
 #' @rdname crisp
 #' @export
-crisp.tbl_df <- function(x, condition) {
+crisp.data.frame <- function(x, lgl) {
   assertthat::assert_that(
-    assertthat::are_equal(vctrs::vec_size(x), vctrs::vec_size(condition))
+    assertthat::are_equal(vctrs::vec_size(x), vctrs::vec_size(lgl))
   )
-  vctrs::vec_assert(condition, logical())
+  vctrs::vec_assert(lgl, logical())
 
-  p <- make_crisp(x, condition)
+  p <- make_crisp(x, lgl)
+
+  #FIXME
+  new_ffp(tibble::tibble(.rowid = 1:vctrs::vec_size(x), .p = p),
+          type = "Crisp Conditioning")
+}
+
+#' @rdname crisp
+#' @export
+crisp.tbl_df <- function(x, lgl) {
+  assertthat::assert_that(
+    assertthat::are_equal(vctrs::vec_size(x), vctrs::vec_size(lgl))
+  )
+  vctrs::vec_assert(lgl, logical())
+
+  p <- make_crisp(x, lgl)
 
   #FIXME
   new_ffp(tibble::tibble(.rowid = 1:vctrs::vec_size(x), .p = p),

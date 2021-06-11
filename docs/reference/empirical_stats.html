@@ -129,42 +129,42 @@
     <p>Computes some of the most commonly used statistics by portfolio managers.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>empirical_stats</span><span class='op'>(</span><span class='va'>.x</span>, <span class='va'>.p</span>, .level <span class='op'>=</span> <span class='fl'>0.01</span><span class='op'>)</span>
+    <pre class="usage"><span class='fu'>empirical_stats</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>p</span>, level <span class='op'>=</span> <span class='fl'>0.01</span><span class='op'>)</span>
 
 <span class='co'># S3 method for default</span>
-<span class='fu'>empirical_stats</span><span class='op'>(</span><span class='va'>.x</span>, <span class='va'>.p</span>, .level <span class='op'>=</span> <span class='fl'>0.01</span><span class='op'>)</span>
+<span class='fu'>empirical_stats</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>p</span>, level <span class='op'>=</span> <span class='fl'>0.01</span><span class='op'>)</span>
 
 <span class='co'># S3 method for numeric</span>
-<span class='fu'>empirical_stats</span><span class='op'>(</span><span class='va'>.x</span>, <span class='va'>.p</span>, .level <span class='op'>=</span> <span class='fl'>0.01</span><span class='op'>)</span>
+<span class='fu'>empirical_stats</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>p</span>, level <span class='op'>=</span> <span class='fl'>0.01</span><span class='op'>)</span>
 
 <span class='co'># S3 method for matrix</span>
-<span class='fu'>empirical_stats</span><span class='op'>(</span><span class='va'>.x</span>, <span class='va'>.p</span>, .level <span class='op'>=</span> <span class='fl'>0.01</span><span class='op'>)</span>
+<span class='fu'>empirical_stats</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>p</span>, level <span class='op'>=</span> <span class='fl'>0.01</span><span class='op'>)</span>
 
 <span class='co'># S3 method for xts</span>
-<span class='fu'>empirical_stats</span><span class='op'>(</span><span class='va'>.x</span>, <span class='va'>.p</span>, .level <span class='op'>=</span> <span class='fl'>0.01</span><span class='op'>)</span>
+<span class='fu'>empirical_stats</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>p</span>, level <span class='op'>=</span> <span class='fl'>0.01</span><span class='op'>)</span>
 
 <span class='co'># S3 method for ts</span>
-<span class='fu'>empirical_stats</span><span class='op'>(</span><span class='va'>.x</span>, <span class='va'>.p</span>, .level <span class='op'>=</span> <span class='fl'>0.01</span><span class='op'>)</span>
+<span class='fu'>empirical_stats</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>p</span>, level <span class='op'>=</span> <span class='fl'>0.01</span><span class='op'>)</span>
 
 <span class='co'># S3 method for data.frame</span>
-<span class='fu'>empirical_stats</span><span class='op'>(</span><span class='va'>.x</span>, <span class='va'>.p</span>, .level <span class='op'>=</span> <span class='fl'>0.01</span><span class='op'>)</span>
+<span class='fu'>empirical_stats</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>p</span>, level <span class='op'>=</span> <span class='fl'>0.01</span><span class='op'>)</span>
 
 <span class='co'># S3 method for tbl_df</span>
-<span class='fu'>empirical_stats</span><span class='op'>(</span><span class='va'>.x</span>, <span class='va'>.p</span>, .level <span class='op'>=</span> <span class='fl'>0.01</span><span class='op'>)</span></pre>
+<span class='fu'>empirical_stats</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>p</span>, level <span class='op'>=</span> <span class='fl'>0.01</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>.x</th>
+      <th>x</th>
       <td><p>A set of joint-scenarios of risk-drivers.</p></td>
     </tr>
     <tr>
-      <th>.p</th>
+      <th>p</th>
       <td><p>A numeric vector with flexible probabilities.</p></td>
     </tr>
     <tr>
-      <th>.level</th>
+      <th>level</th>
       <td><p>A number with the desired confidence level.</p></td>
     </tr>
     </table>
@@ -189,7 +189,7 @@
     <pre class="examples"><div class='input'><span class='va'>ret</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/diff.html'>diff</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span><span class='va'>EuStockMarkets</span><span class='op'>)</span><span class='op'>)</span>
 <span class='va'>ew</span>  <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='fl'>1</span> <span class='op'>/</span> <span class='fu'><a href='https://rdrr.io/r/base/nrow.html'>nrow</a></span><span class='op'>(</span><span class='va'>ret</span><span class='op'>)</span>, <span class='fu'><a href='https://rdrr.io/r/base/nrow.html'>nrow</a></span><span class='op'>(</span><span class='va'>ret</span><span class='op'>)</span><span class='op'>)</span>
 
-<span class='fu'>empirical_stats</span><span class='op'>(</span>.x <span class='op'>=</span> <span class='va'>ret</span>, .p <span class='op'>=</span> <span class='va'>ew</span><span class='op'>)</span>
+<span class='fu'>empirical_stats</span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>ret</span>, p <span class='op'>=</span> <span class='va'>ew</span><span class='op'>)</span>
 </div><div class='output co'>#&gt; <span style='color: #949494;'># A tibble: 6 x 5</span><span>
 #&gt;   .stat       DAX       SMI       CAC     FTSE
 #&gt;   </span><span style='color: #949494;font-style: italic;'>&lt;fct&gt;</span><span>     </span><span style='color: #949494;font-style: italic;'>&lt;dbl&gt;</span><span>     </span><span style='color: #949494;font-style: italic;'>&lt;dbl&gt;</span><span>     </span><span style='color: #949494;font-style: italic;'>&lt;dbl&gt;</span><span>    </span><span style='color: #949494;font-style: italic;'>&lt;dbl&gt;</span><span>

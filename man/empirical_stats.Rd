@@ -11,28 +11,28 @@
 \alias{empirical_stats.tbl_df}
 \title{Summary Statistics for Empirical Distributions}
 \usage{
-empirical_stats(.x, .p, .level = 0.01)
+empirical_stats(x, p, level = 0.01)
 
-\method{empirical_stats}{default}(.x, .p, .level = 0.01)
+\method{empirical_stats}{default}(x, p, level = 0.01)
 
-\method{empirical_stats}{numeric}(.x, .p, .level = 0.01)
+\method{empirical_stats}{numeric}(x, p, level = 0.01)
 
-\method{empirical_stats}{matrix}(.x, .p, .level = 0.01)
+\method{empirical_stats}{matrix}(x, p, level = 0.01)
 
-\method{empirical_stats}{xts}(.x, .p, .level = 0.01)
+\method{empirical_stats}{xts}(x, p, level = 0.01)
 
-\method{empirical_stats}{ts}(.x, .p, .level = 0.01)
+\method{empirical_stats}{ts}(x, p, level = 0.01)
 
-\method{empirical_stats}{data.frame}(.x, .p, .level = 0.01)
+\method{empirical_stats}{data.frame}(x, p, level = 0.01)
 
-\method{empirical_stats}{tbl_df}(.x, .p, .level = 0.01)
+\method{empirical_stats}{tbl_df}(x, p, level = 0.01)
 }
 \arguments{
-\item{.x}{A set of joint-scenarios of risk-drivers.}
+\item{x}{A set of joint-scenarios of risk-drivers.}
 
-\item{.p}{A numeric vector with flexible probabilities.}
+\item{p}{A numeric vector with flexible probabilities.}
 
-\item{.level}{A number with the desired confidence level.}
+\item{level}{A number with the desired confidence level.}
 }
 \value{
 A table with 6 components:
@@ -56,5 +56,5 @@ The data in \code{x} and \code{p} are expected to have the same number of rows
 ret <- diff(log(EuStockMarkets))
 ew  <- rep(1 / nrow(ret), nrow(ret))
 
-empirical_stats(.x = ret, .p = ew)
+empirical_stats(x = ret, p = ew)
 }

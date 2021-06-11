@@ -1,6 +1,7 @@
 #' Plot Scenario Densities
 #'
-#' SSSS.
+#' This function is designed make it easy to visualize the impact of a view in the
+#' distribution of the P&L.
 #'
 #' @param x An univariate marginal distribution
 #' @param p A vector of fully flexible probabilities.

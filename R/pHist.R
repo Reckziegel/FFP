@@ -10,7 +10,8 @@ pHist <- function(X, p) {
   for (s in 1:N) {
     Index <- (X >= x[s] - D / 2) & (X <= x[s] + D / 2)
     np[s] <- sum(p[Index])
-    f <- np / D
+    #f <- np / D
+    f = np
   }
   cbind(x, f)
 }

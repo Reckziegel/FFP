@@ -32,12 +32,24 @@ reference:
 
     - title: Utilities
       contents:
+      - bind_probs
       - bootstrap_scenarios
       - entropy_pooling
       - empirical_stats
+      - half_life
+
+    - title: Vizualization
+      contents:
+      - scenario_density
+
+    - title: Class
+      contents:
+      - new_ffp
+
     - title: Data
       contents:
       - db
+      - db_tbl
 
 
 

@@ -3,7 +3,7 @@ title: "Replicating-the-Paper"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Replicating-the-Paper}
-  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEngine{knitr::knitr}
   %\VignetteEncoding{UTF-8}
 ---
 

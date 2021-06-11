@@ -35,8 +35,8 @@ Imports:
     xts (>= 0.12.1)
 Suggests: 
     covr,
-    knitr,
-    rmarkdown (>= 2.0.1),
+    knitr (>= 1.33),
+    markdown,
     roxygen2,
     spelling,
     testthat (>= 3.0.0)

@@ -35,7 +35,7 @@ kernel_normal(x, mean, sigma)
 \item{sigma}{A number with the uncertainty (volatility) around mean.}
 }
 \value{
-A vector with the new probabilities distribution.
+A \code{tibble} with the new probabilities distribution.
 }
 \description{
 In this framework, historical realizations receive a weight proportional to
@@ -47,5 +47,5 @@ ret <- diff(log(EuStockMarkets[ , 1]))
 mean <- -0.01 # scenarios around -1\%
 sigma <- var(diff(ret))
 
-plot(kernel_normal(ret, mean, sigma), type = 'l')
+kernel_normal(ret, mean, sigma)
 }

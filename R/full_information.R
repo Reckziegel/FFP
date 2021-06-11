@@ -9,7 +9,7 @@
 #' @param condition A \code{logical} vector with TRUE's and FALSE's indicating
 #' which scenarios should considered.
 #'
-#' @return A vector with the new probabilities distribution.
+#' @return A \code{tibble} with the new probabilities distribution.
 #'
 #' @export
 #'
@@ -18,8 +18,7 @@
 #' ret <- diff(log(EuStockMarkets))[ , 1]
 #'
 #' # full weight on scenarios above 2%
-#' probs <- crisp(x = ret, ret > 0.02)
-#' plot(probs, type = 'l')
+#' crisp(x = ret, ret > 0.02)
 crisp <- function(x, condition) {
   UseMethod("crisp", x)
 }
@@ -38,7 +37,11 @@ crisp.numeric <- function(x, condition) {
   )
   vctrs::vec_assert(condition, logical())
 
-  make_crisp(x, condition)
+  p <- make_crisp(x, condition)
+
+  # FIXME
+  new_ffp(tibble::tibble(.rowid = 1:vctrs::vec_size(x), .p = p),
+          type = "Crisp Conditioning")
 }
 
 #' @rdname crisp
@@ -49,7 +52,12 @@ crisp.matrix <- function(x, condition) {
   )
   vctrs::vec_assert(condition, logical())
 
-  make_crisp(x, condition)
+  p <- make_crisp(x, condition)
+
+  #FIXME
+  new_ffp(tibble::tibble(.rowid = 1:vctrs::vec_size(x), .p = p),
+          type = "Crisp Conditioning")
+
 }
 
 #' @rdname crisp
@@ -60,7 +68,10 @@ crisp.ts <- function(x, condition) {
   )
   vctrs::vec_assert(condition, logical())
 
-  make_crisp(x, condition)
+  p <- make_crisp(x, condition)
+  #FIXME
+  new_ffp(tibble::tibble(.rowid = 1:vctrs::vec_size(x), .p = p),
+          type = "Crisp Conditioning")
 }
 
 #' @rdname crisp
@@ -71,7 +82,11 @@ crisp.xts <- function(x, condition) {
   )
   vctrs::vec_assert(condition, logical())
 
-  make_crisp(x, condition)
+  p <- make_crisp(x, condition)
+
+  #FIXME
+  new_ffp(tibble::tibble(.rowid = 1:vctrs::vec_size(x), .p = p),
+          type = "Crisp Conditioning")
 }
 
 #' @rdname crisp
@@ -82,7 +97,11 @@ crisp.data.frame <- function(x, condition) {
   )
   vctrs::vec_assert(condition, logical())
 
-  make_crisp(x, condition)
+  p <- make_crisp(x, condition)
+
+  #FIXME
+  new_ffp(tibble::tibble(.rowid = 1:vctrs::vec_size(x), .p = p),
+          type = "Crisp Conditioning")
 }
 
 #' @rdname crisp
@@ -93,7 +112,11 @@ crisp.tbl_df <- function(x, condition) {
   )
   vctrs::vec_assert(condition, logical())
 
-  make_crisp(x, condition)
+  p <- make_crisp(x, condition)
+
+  #FIXME
+  new_ffp(tibble::tibble(.rowid = 1:vctrs::vec_size(x), .p = p),
+          type = "Crisp Conditioning")
 }
 
 
@@ -114,20 +137,12 @@ crisp.tbl_df <- function(x, condition) {
 #' @param x A vector of risk-drivers.
 #' @param lambda A number with the decay parameter that generated the half-life.
 #'
-#' @return A vector with the new probabilities distribution.
+#' @return A \code{tibble} with the new probabilities distribution.
 #'
 #' @export
 #'
 #' @examples
-#' ffp1 <- smoothing(EuStockMarkets, 0.015)
-#' ffp2 <- smoothing(EuStockMarkets, 0.01)
-#' ffp3 <- smoothing(EuStockMarkets, 0.0075)
-#' ffp4 <- smoothing(EuStockMarkets, 0.005)
-#'
-#' plot(ffp1, type = 'l')
-#' lines(ffp2, type = 'l', col = 'red')
-#' lines(ffp3, type = 'l', col = 'blue')
-#' lines(ffp4, type = 'l', col = 'green')
+#' smoothing(EuStockMarkets, 0.015)
 smoothing <- function(x, lambda) {
   UseMethod("smoothing", x)
 }
@@ -143,42 +158,66 @@ smoothing.default <- function(x, lambda) {
 #' @export
 smoothing.numeric <- function(x, lambda) {
   vctrs::vec_assert(lambda, double(), 1)
-  make_smoothing(x, lambda)
+  p <- make_smoothing(x, lambda)
+
+  #FIXME
+  new_ffp(tibble::tibble(.rowid = 1:vctrs::vec_size(x), .p = p),
+          type = "Exponential Smoothing")
 }
 
 #' @rdname smoothing
 #' @export
 smoothing.matrix <- function(x, lambda) {
   vctrs::vec_assert(lambda, double(), 1)
-  make_smoothing(x, lambda)
+  p <- make_smoothing(x, lambda)
+
+  #FIXME
+  new_ffp(tibble::tibble(.rowid = 1:vctrs::vec_size(x), .p = p),
+          type = "Exponential Smoothing")
 }
 
 #' @rdname smoothing
 #' @export
 smoothing.ts <- function(x, lambda) {
   vctrs::vec_assert(lambda, double(), 1)
-  make_smoothing(x, lambda)
+  p <- make_smoothing(x, lambda)
+
+  #FIXME
+  new_ffp(tibble::tibble(.rowid = 1:vctrs::vec_size(x), .p = p),
+          type = "Exponential Smoothing")
 }
 
 #' @rdname smoothing
 #' @export
 smoothing.xts <- function(x, lambda) {
   vctrs::vec_assert(lambda, double(), 1)
-  make_smoothing(x, lambda)
+  p <- make_smoothing(x, lambda)
+
+  #FIXME
+  new_ffp(tibble::tibble(.rowid = 1:vctrs::vec_size(x), .p = p),
+          type = "Exponential Smoothing")
 }
 
 #' @rdname smoothing
 #' @export
 smoothing.data.frame <- function(x, lambda) {
   vctrs::vec_assert(lambda, double(), 1)
-  make_smoothing(x, lambda)
+  p <- make_smoothing(x, lambda)
+
+  #FIXME
+  new_ffp(tibble::tibble(.rowid = 1:vctrs::vec_size(x), .p = p),
+          type = "Exponential Smoothing")
 }
 
 #' @rdname smoothing
 #' @export
 smoothing.tbl <- function(x, lambda) {
   vctrs::vec_assert(lambda, double(), 1)
-  make_smoothing(x, lambda)
+  p <- make_smoothing(x, lambda)
+
+  #FIXME
+  new_ffp(tibble::tibble(.rowid = 1:vctrs::vec_size(x), .p = p),
+          type = "Exponential Smoothing")
 }
 
 
@@ -194,7 +233,7 @@ smoothing.tbl <- function(x, lambda) {
 #' @param mean A number in which the kernel should be centered.
 #' @param sigma A number with the uncertainty (volatility) around mean.
 #'
-#' @return A vector with the new probabilities distribution.
+#' @return A \code{tibble} with the new probabilities distribution.
 #'
 #' @export
 #'
@@ -203,7 +242,7 @@ smoothing.tbl <- function(x, lambda) {
 #' mean <- -0.01 # scenarios around -1%
 #' sigma <- var(diff(ret))
 #'
-#' plot(kernel_normal(ret, mean, sigma), type = 'l')
+#' kernel_normal(ret, mean, sigma)
 kernel_normal <- function(x, mean, sigma) {
   UseMethod("kernel_normal", x)
 }
@@ -220,7 +259,14 @@ kernel_normal.numeric <- function(x, mean, sigma) {
   vctrs::vec_assert(mean, double(), 1)
   vctrs::vec_assert(sigma, double(), 1)
 
-  make_kernel_normal(x = x, mean, sigma)
+  call_label <- dplyr::as_label(match.call())
+
+  p <- make_kernel_normal(x = x, mean, sigma)
+
+  #FIXME
+  #call_label <- dplyr::as_label(match.call())
+  new_ffp(tibble::tibble(.rowid = 1:vctrs::vec_size(x), .p = p),
+          type = "Kernel Damping")
 }
 
 #' @rdname kernel_normal
@@ -234,7 +280,11 @@ kernel_normal.matrix <- function(x, mean, sigma) {
     assert_is_equal_size(mean, sigma)
   }
 
-  make_kernel_normal(x = x, mean, sigma)
+  p <- make_kernel_normal(x = x, mean, sigma)
+
+  #FIXME
+  new_ffp(tibble::tibble(.rowid = 1:vctrs::vec_size(x), .p = p),
+          type = "Kernel Damping")
 
 }
 
@@ -249,7 +299,11 @@ kernel_normal.ts <- function(x, mean, sigma) {
     assert_is_equal_size(mean, sigma)
   }
 
-  make_kernel_normal(x = x, mean, sigma)
+  p <- make_kernel_normal(x = x, mean, sigma)
+
+  #FIXME
+  new_ffp(tibble::tibble(.rowid = 1:vctrs::vec_size(x), .p = p),
+          type = "Kernel Damping")
 
 }
 
@@ -264,7 +318,11 @@ kernel_normal.xts <- function(x, mean, sigma) {
     assert_is_equal_size(mean, sigma)
   }
 
-  make_kernel_normal(x = x, mean, sigma)
+  p <- make_kernel_normal(x = x, mean, sigma)
+
+  #FIXME
+  new_ffp(tibble::tibble(.rowid = 1:vctrs::vec_size(x), .p = p),
+          type = "Kernel Damping")
 }
 
 #' @rdname kernel_normal
@@ -280,7 +338,11 @@ kernel_normal.tbl_df <- function(x, mean, sigma) {
   x <- dplyr::select(x, where(is.numeric) & where(is.double))
   x <- as_ffp_mat(x)
 
-  make_kernel_normal(x = x, mean, sigma)
+  p <- make_kernel_normal(x = x, mean, sigma)
+
+  #FIXME
+  new_ffp(tibble::tibble(.rowid = 1:vctrs::vec_size(x), .p = p),
+          type = "Kernel Damping")
 
 }
 
@@ -297,7 +359,11 @@ kernel_normal.data.frame <- function(x, mean, sigma) {
   x <- dplyr::select(x, where(is.numeric) & where(is.double))
   x <- as_ffp_mat(x)
 
-  make_kernel_normal(x = x, mean, sigma)
+  p <- make_kernel_normal(x = x, mean, sigma)
+
+  #FIXME
+  new_ffp(tibble::tibble(.rowid = 1:vctrs::vec_size(x), .p = p),
+          type = "Kernel Damping")
 }
 
 

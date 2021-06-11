@@ -37,7 +37,7 @@ matrix.}
 structure.}
 }
 \value{
-A vector with the new probabilities distribution.
+A \code{tibble} with the new probabilities distribution.
 }
 \description{
 This function uses entropy-pooling to match different decay factors on the
@@ -47,5 +47,5 @@ covariance matrix.
 l_c <- 0.0055
 l_s <- 0.0166
 ret <- diff(log(EuStockMarkets))
-plot(double_decay(ret, l_c, l_s), type = "l")
+double_decay(ret, l_c, l_s)
 }

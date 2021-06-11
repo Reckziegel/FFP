@@ -10,6 +10,7 @@ any_is_double <- function(x) {
   any(purrr::map_lgl(x, ~ is.double(.) && is.numeric(.)))
 }
 
+#' @keywords internal
 is_empty <- function(x) length(x) == 0
 
 #' @keywords internal
@@ -32,3 +33,4 @@ get_double_col <- function(x) {
 
 #' @keywords internal
 has_dim <- function(x) !is.null(dim(x))
+

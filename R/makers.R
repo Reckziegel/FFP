@@ -91,7 +91,7 @@ make_empirical_stats <- function(x, p, level = 0.01) {
 
   # VaR & CVaR
   if (N == 1) {
-    tmp <- sort(x, index.return = TRUE)
+    tmp <- sort(as.vector(x), index.return = TRUE)
     SortedEps <- tmp$x
     idx <- tmp$ix
     SortedP <- p[idx]
@@ -116,13 +116,18 @@ make_empirical_stats <- function(x, p, level = 0.01) {
     }
   }
 
-  out <- cbind(mu, sd, sk, kurt, -VaR, -CVaR)
-  colnames(out) <- c("mu", "sd", "skewness", "kurtosis", "VaR", "CVaR")
-  if (!is.null(colnames(x))) {
-    rownames(out) <- colnames(x)
+  out <- rbind(mu, sd, sk, kurt, VaR, CVaR)
+  out_name <- colnames(x)
+  if (is.null(out_name)) {
+    colnames(out) <- "V1"
+  } else {
+    colnames(out) <- out_name
   }
 
-  out
+  tibble::as_tibble(out) %>%
+    dplyr::mutate(.stat = c("Mu", "Std", "Skew", "Kurt", "VaR", "CVaR")) %>%
+    dplyr::mutate(.stat = as.factor(.data$.stat)) %>%
+    dplyr::select(.data$.stat, dplyr::everything())
 
 }
 

@@ -42,72 +42,149 @@ test_that("error if sizes differ", {
 # doubles
 crisp_numeric_u <- crisp(xu, cond)
 test_that("works on univariate doubles", {
-  expect_type(crisp_numeric_u, "double")
-  expect_length(crisp_numeric_u, vctrs::vec_size(xu))
+  # type
+  expect_type(crisp_numeric_u, "list")
+  expect_s3_class(crisp_numeric_u, "tbl_df")
+  expect_equal(purrr::map(crisp_numeric_u, class), list(.rowid = "integer", .p = "numeric"))
+  # names
+  expect_named(crisp_numeric_u, c(".rowid", ".p"))
+  # size
+  expect_equal(nrow(crisp_numeric_u), NROW(xu))
+  expect_equal(ncol(crisp_numeric_u), 2L)
 })
 
 
 # matrices
 crisp_matu <- crisp(xu_mat, cond)
 test_that("works on univariate matrices", {
-  expect_type(crisp_matu, "double")
-  expect_length(crisp_matu, vctrs::vec_size(xu_mat))
+  # type
+  expect_type(crisp_matu, "list")
+  expect_s3_class(crisp_matu, "tbl_df")
+  expect_equal(purrr::map(crisp_matu, class), list(.rowid = "integer", .p = "numeric"))
+  # names
+  expect_named(crisp_matu, c(".rowid", ".p"))
+  # size
+  expect_equal(nrow(crisp_matu), NROW(xu_mat))
+  expect_equal(ncol(crisp_matu), 2L)
 })
 
 crisp_matm <- crisp(xm_mat, cond)
 test_that("works on multivariate matrices", {
-  expect_type(crisp_matm, "double")
-  expect_length(crisp_matm, vctrs::vec_size(xm_mat))
+  # type
+  expect_type(crisp_matm, "list")
+  expect_s3_class(crisp_matm, "tbl_df")
+  expect_equal(purrr::map(crisp_matm, class), list(.rowid = "integer", .p = "numeric"))
+  # names
+  expect_named(crisp_matm, c(".rowid", ".p"))
+  # size
+  expect_equal(nrow(crisp_matm), NROW(xm_mat))
+  expect_equal(ncol(crisp_matm), 2L)
 })
 
 # ts
 crisp_tsu <- crisp(xu_ts, cond)
 test_that("works on univariate ts", {
-  expect_type(crisp_tsu, "double")
-  expect_length(crisp_tsu, vctrs::vec_size(xu_ts))
+  # type
+  expect_type(crisp_tsu, "list")
+  expect_s3_class(crisp_tsu, "tbl_df")
+  expect_equal(purrr::map(crisp_tsu, class), list(.rowid = "integer", .p = "numeric"))
+  # names
+  expect_named(crisp_tsu, c(".rowid", ".p"))
+  # size
+  expect_equal(nrow(crisp_tsu), NROW(xu_ts))
+  expect_equal(ncol(crisp_tsu), 2L)
 })
 
 crisp_tsm <- crisp(xm_ts, cond)
 test_that("works on multivariate ts", {
-  expect_type(crisp_tsm, "double")
-  expect_length(crisp_tsm, vctrs::vec_size(xm_ts))
+  # type
+  expect_type(crisp_tsm, "list")
+  expect_s3_class(crisp_tsm, "tbl_df")
+  expect_equal(purrr::map(crisp_tsm, class), list(.rowid = "integer", .p = "numeric"))
+  # names
+  expect_named(crisp_tsm, c(".rowid", ".p"))
+  # size
+  expect_equal(nrow(crisp_tsm), NROW(xm_ts))
+  expect_equal(ncol(crisp_tsm), 2L)
 })
 
 # xts
 crisp_xtsu <- crisp(xu_xts, cond)
 test_that("works on univariate xts", {
-  expect_type(crisp_xtsu, "double")
-  expect_length(crisp_xtsu, vctrs::vec_size(xu_xts))
+  # type
+  expect_type(crisp_xtsu, "list")
+  expect_s3_class(crisp_xtsu, "tbl_df")
+  expect_equal(purrr::map(crisp_xtsu, class), list(.rowid = "integer", .p = "numeric"))
+  # names
+  expect_named(crisp_xtsu, c(".rowid", ".p"))
+  # size
+  expect_equal(nrow(crisp_xtsu), NROW(xu_xts))
+  expect_equal(ncol(crisp_xtsu), 2L)
 })
 
 crisp_xtsm <- crisp(xm_xts, cond)
 test_that("works on multivariate xts", {
-  expect_type(crisp_xtsm, "double")
-  expect_length(crisp_xtsm, vctrs::vec_size(xm_xts))
+  # type
+  expect_type(crisp_xtsm, "list")
+  expect_s3_class(crisp_xtsm, "tbl_df")
+  expect_equal(purrr::map(crisp_xtsm, class), list(.rowid = "integer", .p = "numeric"))
+  # names
+  expect_named(crisp_xtsm, c(".rowid", ".p"))
+  # size
+  expect_equal(nrow(crisp_xtsm), NROW(xm_xts))
+  expect_equal(ncol(crisp_xtsm), 2L)
 })
 
 # data.frame
 crisp_dfu <- crisp(xu_df, cond)
 test_that("works on univariate data.frames", {
-  expect_type(crisp_dfu, "double")
-  expect_length(crisp_dfu, vctrs::vec_size(xu_df))
+  # type
+  expect_type(crisp_dfu, "list")
+  expect_s3_class(crisp_dfu, "tbl_df")
+  expect_equal(purrr::map(crisp_dfu, class), list(.rowid = "integer", .p = "numeric"))
+  # names
+  expect_named(crisp_dfu, c(".rowid", ".p"))
+  # size
+  expect_equal(nrow(crisp_dfu), NROW(xu_df))
+  expect_equal(ncol(crisp_dfu), 2L)
 })
 
 crisp_dfm <- crisp(xm_df, cond)
 test_that("works on multivariate data.frames", {
-  expect_type(crisp_dfm, "double")
-  expect_length(crisp_dfm, vctrs::vec_size(xm_df))
+  # type
+  expect_type(crisp_dfm, "list")
+  expect_s3_class(crisp_dfm, "tbl_df")
+  expect_equal(purrr::map(crisp_dfm, class), list(.rowid = "integer", .p = "numeric"))
+  # names
+  expect_named(crisp_dfm, c(".rowid", ".p"))
+  # size
+  expect_equal(nrow(crisp_dfm), NROW(xm_df))
+  expect_equal(ncol(crisp_dfm), 2L)
 })
 
 # tbl
 crisp_tblu <- crisp(xu_tbl, cond)
 test_that("works on univariate tibbles", {
-  expect_type(crisp_tblu, "double")
-  expect_length(crisp_tblu, vctrs::vec_size(xu_tbl))
+  # type
+  expect_type(crisp_tblu, "list")
+  expect_s3_class(crisp_tblu, "tbl_df")
+  expect_equal(purrr::map(crisp_tblu, class), list(.rowid = "integer", .p = "numeric"))
+  # names
+  expect_named(crisp_tblu, c(".rowid", ".p"))
+  # size
+  expect_equal(nrow(crisp_tblu), NROW(xu_tbl))
+  expect_equal(ncol(crisp_tblu), 2L)
 })
 
 crisp_tblm <- crisp(xm_tbl, cond)
 test_that("works on multivariate tibbles", {
-  expect_type(crisp_tblm, "double")
-  expect_length(crisp_tblm, vctrs::vec_size(xm_tbl))
+  # type
+  expect_type(crisp_tblm, "list")
+  expect_s3_class(crisp_tblm, "tbl_df")
+  expect_equal(purrr::map(crisp_tblm, class), list(.rowid = "integer", .p = "numeric"))
+  # names
+  expect_named(crisp_tblm, c(".rowid", ".p"))
+  # size
+  expect_equal(nrow(crisp_tblm), NROW(xm_tbl))
+  expect_equal(ncol(crisp_tblm), 2L)
 })

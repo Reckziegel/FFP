@@ -33,7 +33,7 @@ smoothing(x, lambda)
 \item{lambda}{A number with the decay parameter that generated the half-life.}
 }
 \value{
-A vector with the new probabilities distribution.
+A \code{tibble} with the new probabilities distribution.
 }
 \description{
 Exponential smoothing twists probabilities by giving relatively more weight
@@ -48,13 +48,5 @@ For example: log(2) / 0.0166 is approximately 42. So, a parameter lambda of
 0.0166 can be associated with a half-life of two-months.
 }
 \examples{
-ffp1 <- smoothing(EuStockMarkets, 0.015)
-ffp2 <- smoothing(EuStockMarkets, 0.01)
-ffp3 <- smoothing(EuStockMarkets, 0.0075)
-ffp4 <- smoothing(EuStockMarkets, 0.005)
-
-plot(ffp1, type = 'l')
-lines(ffp2, type = 'l', col = 'red')
-lines(ffp3, type = 'l', col = 'blue')
-lines(ffp4, type = 'l', col = 'green')
+smoothing(EuStockMarkets, 0.015)
 }

@@ -34,7 +34,7 @@ crisp(x, condition)
 which scenarios should considered.}
 }
 \value{
-A vector with the new probabilities distribution.
+A \code{tibble} with the new probabilities distribution.
 }
 \description{
 In this function probabilities are given full weight when a certain macroeconomic
@@ -45,6 +45,5 @@ condition satisfy a logical statement.
 ret <- diff(log(EuStockMarkets))[ , 1]
 
 # full weight on scenarios above 2\%
-probs <- crisp(x = ret, ret > 0.02)
-plot(probs, type = 'l')
+crisp(x = ret, ret > 0.02)
 }

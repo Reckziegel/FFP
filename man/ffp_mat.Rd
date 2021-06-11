@@ -6,77 +6,19 @@
 \alias{ffp_mat}
 \alias{is_ffp_mat}
 \alias{as_ffp_mat}
-\title{# ffp_tbl ----------------------------------------------------------------}
+\title{Internal class ffp_mat}
 \usage{
-new_ffp_mat(x)
+new_ffp_mat(.x)
 
-validate_ffp_mat(x)
+validate_ffp_mat(.x)
 
-ffp_mat(x, ...)
+ffp_mat(.x, ...)
 
-is_ffp_mat(x)
+is_ffp_mat(.x)
 
-as_ffp_mat(x)
+as_ffp_mat(.x)
 }
 \description{
-# constructor
-#' Internal ffp_tbl class
-#'
-#' @rdname ffp_tbl
-#' @keywords internal
-new_ffp_tbl <- function(x, ...) {
-  #stopifnot(tibble::is_tibble(x))
-  validate_ffp_tbl(ffp_tbl(x, ...))
-}
-}
-\details{
-# validator
-#' @rdname ffp_tbl
-#' @keywords internal
-validate_ffp_tbl <- function(x) {
-  # stopifnot(tibble::is_tibble(x))
-  # if (purrr::is_empty(x)) {
-  #   stop("The argument x is empty.", call. = FALSE)
-  # }
-  # if (!any_is_double(x)) {
-  #   stop("There is no numeric columns in x.", call. = FALSE)
-  # }
-  if (inherits(x, "grouped_df")) {
-    stop("Don't know how to deal with grouped tibbles.", call. = FALSE)
-  }
-  tibble::validate_tibble(x)
-  x
-}
-
-# helper
-#' @rdname ffp_tbl
-#' @keywords internal
-ffp_tbl <- function(x, ...) {
-
-  # old_attr <- attributes(x)
-  # if (any_is_date(x)) {
-  #   date_attr <- vector("list", 2L)
-  #   date_attr$date_col <- which_is_date(x)
-  #   date_attr$series  <- dplyr::select(x, date_attr$date_col)
-  # } else {
-  #   date_attr <- NULL
-  # }
-  #
-  # x <- dplyr::select(x, where(is.double) & where(is.numeric))
-
-  tibble::new_tibble(x = x,
-                     date_info = ...,
-                     nrow = vctrs::vec_size(x),
-                     class = "ffp_tbl")
-}
-
-#' @rdname ffp_tbl
-#' @keywords internal
-is_ffp_tbl <- function(x) inherits(x, "ffp_tbl")
-
-#' @rdname ffp_tbl
-#' @keywords internal
-as_ffp_tbl <- function(x) new_ffp_tbl(x)
 Internal class ffp_mat
 }
 \keyword{internal}

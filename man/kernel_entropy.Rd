@@ -36,7 +36,7 @@ kernel_entropy(x, mean, sigma = NULL)
 the mean is constrained.}
 }
 \value{
-A vector with the new probabilities distribution.
+A \code{tibble} with the new probabilities distribution.
 }
 \description{
 This function uses entropy-pooling to find the probability mass that can
@@ -47,7 +47,7 @@ ret <- diff(log(EuStockMarkets[ , 1]))
 mean <- -0.01 # scenarios around -1\%
 sigma <- var(diff(ret))
 
-plot(kernel_entropy(ret, mean, sigma), type = 'l')
+kernel_entropy(ret, mean, sigma)
 }
 \references{
 De Santis, G., R. Litterman, A. Vesval, and K. Winkelmann, 2003,

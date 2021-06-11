@@ -36,7 +36,7 @@ Imports:
 Suggests: 
     covr,
     knitr,
-    rmarkdown,
+    rmarkdown (>= 2.0.1),
     roxygen2,
     spelling,
     testthat (>= 3.0.0)

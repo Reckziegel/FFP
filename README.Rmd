@@ -13,7 +13,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-# Fully-Flexible Probabilities
+# Fully Flexible Probabilities
 
 <!-- badges: start -->
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
@@ -23,7 +23,7 @@ knitr::opts_chunk$set(
 
 > Functions for Scenario Analysis and Risk-Management
 
-Oftentimes, the econometrician needs to stress-test the potential outcomes for a given set of risk-drivers. This process can be computationally costly when the entire set of scenarios needs to be repriced (bootsraped, resampled, etc.). 
+Oftentimes, the econometrician needs to stress-test the potential outcomes for a given set of risk-drivers. This process can be computationally costly when the entire set of scenarios needs to be repriced (bootstraped, resampled, etc.). 
 
 To overcome this difficulty, the Fully-Flexible Probabilities (FFP) approach offers an inexpensive way for scenario generation: it reprices the _probabilities_ associated to each scenario, instead of the scenarios themselves. Once the new probabilities have been defined, the computations can be performed very quickly because the burden associated with scenario generation and valuation is left aside.
 
@@ -44,7 +44,7 @@ The package `ffp` comes with five functions to extract probabilities from the hi
 - `crisp()`: selects scenarios where a certain logical macroeconomic statement is satisfied;
 - `kernel_normal()`: generalizes the `crisp` condition by wrapping scenarios over 
 a normal kernel;
-- `kernel_entropy()`: uses entropy-polling to satisfy a conditioning statement by distorting the least the prior probabilities;
+- `kernel_entropy()`: uses entropy-polling to satisfy a conditioning statement;
 - `double_decay()`: uses entropy-polling and double-decay factor to constrain the first two moments of a distribution.
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.align='center', out.width="70%", out.height="70%"}

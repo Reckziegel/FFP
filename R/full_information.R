@@ -2,10 +2,10 @@
 
 #' Full Information by Market Conditioning
 #'
-#' In this function probabilities are given full weight when a certain macroeconomic
+#' In this function probabilities are given full weight when a macroeconomic
 #' condition satisfy a logical statement.
 #'
-#' @param x A vector of risk-drivers.
+#' @param x The risk-drivers.
 #' @param lgl A \code{logical} vector with TRUE's and FALSE's indicating
 #' which scenarios should considered.
 #'
@@ -13,12 +13,20 @@
 #'
 #' @export
 #'
-#' @examples
-#' # invariance (stationarity)
-#' ret <- diff(log(EuStockMarkets))[ , 1]
+#' @seealso \code{\link{smoothing}} \code{\link{kernel_normal}}
 #'
-#' # full weight on scenarios above 2%
-#' crisp(x = ret, ret > 0.02)
+#' @examples
+#' library(ggplot2)
+#' # invariance (stationarity)
+#' ret <- diff(log(EuStockMarkets))
+#'
+#' # full weight on scenarios where CAC operated above 2%
+#' market_condition <- crisp(x = ret, ret[ , 3] > 0.02)
+#' market_condition
+#'
+#' ggplot(market_condition, aes(x = .rowid, y = .p, color = .p)) +
+#'   geom_line(show.legend = FALSE) +
+#'   scale_color_viridis_c()
 crisp <- function(x, lgl) {
   UseMethod("crisp", x)
 }
@@ -131,18 +139,34 @@ crisp.tbl_df <- function(x, lgl) {
 #'
 #' \code{HL = log(2) / lambda}.
 #'
-#' For example: log(2) / 0.0166 is approximately 42. So, a parameter lambda of
+#' For example: log(2) / 0.0166 is approximately 42. So, a parameter `lambda` of
 #' 0.0166 can be associated with a half-life of two-months.
 #'
-#' @param x A vector of risk-drivers.
+#' @param x The risk-drivers.
 #' @param lambda A number with the decay parameter that generated the half-life.
 #'
 #' @return A \code{tibble} with the new probabilities distribution.
 #'
+#' @seealso \code{\link{crisp}} \code{\link{kernel_normal}} \code{\link{half_life}}
+#'
 #' @export
 #'
 #' @examples
-#' smoothing(EuStockMarkets, 0.015)
+#' library(ggplot2)
+#'
+#' # long half_life
+#' long_hl <- smoothing(EuStockMarkets, 0.001)
+#' long_hl
+#'
+#' ggplot(long_hl, aes(x = .rowid, y = .p, color = .p)) +
+#'   geom_line(show.legend = FALSE) +
+#'   scale_color_viridis_c()
+#'
+#' # short half_life
+#' short_hl <- smoothing(EuStockMarkets, 0.015)
+#' ggplot(short_hl, aes(x = .rowid, y = .p, color = .p)) +
+#'   geom_line(show.legend = FALSE) +
+#'   scale_color_viridis_c()
 smoothing <- function(x, lambda) {
   UseMethod("smoothing", x)
 }
@@ -226,23 +250,40 @@ smoothing.tbl <- function(x, lambda) {
 #' Full Information by Kernel-Damping
 #'
 #' In this framework, historical realizations receive a weight proportional to
-#' the distance from the target mean, which is enveloped
+#' it's distance from the target mean, which is enveloped by
 #' normal kernel with a bandwidth equal sigma.
 #'
-#' @param x An univariate set of risk-drivers.
-#' @param mean A number in which the kernel should be centered.
-#' @param sigma A number with the uncertainty (volatility) around mean.
+#' @param x The risk-drivers.
+#' @param mean The point in which the kernel should be centered.
+#' @param sigma A number with the uncertainty (volatility) around the mean.
 #'
 #' @return A \code{tibble} with the new probabilities distribution.
 #'
 #' @export
 #'
+#' @seealso \code{\link{crisp}} \code{\link{smoothing}}
+#'
 #' @examples
+#' library(ggplot2)
+#'
 #' ret <- diff(log(EuStockMarkets[ , 1]))
 #' mean <- -0.01 # scenarios around -1%
 #' sigma <- var(diff(ret))
 #'
-#' kernel_normal(ret, mean, sigma)
+#' kn <- kernel_normal(ret, mean, sigma)
+#' kn
+#'
+#' ggplot(kn, aes(x = .rowid, y = .p, color = .p)) +
+#'   geom_line(show.legend = FALSE) +
+#'   scale_color_viridis_c()
+#'
+#' # Spread the distribution with a larger sigma
+#' sigma <- var(diff(ret)) / 0.05
+#' kn <- kernel_normal(ret, mean, sigma)
+#'
+#' ggplot(kn, aes(x = .rowid, y = .p, color = .p)) +
+#'   geom_line(show.legend = FALSE) +
+#'   scale_color_viridis_c()
 kernel_normal <- function(x, mean, sigma) {
   UseMethod("kernel_normal", x)
 }
@@ -258,8 +299,6 @@ kernel_normal.default <- function(x, mean, sigma) {
 kernel_normal.numeric <- function(x, mean, sigma) {
   vctrs::vec_assert(mean, double(), 1)
   vctrs::vec_assert(sigma, double(), 1)
-
-  call_label <- dplyr::as_label(match.call())
 
   p <- make_kernel_normal(x = x, mean, sigma)
 

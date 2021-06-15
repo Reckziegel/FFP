@@ -1,8 +1,8 @@
 ---
-title: "Replicating-the-Paper"
+title: "Replicating Meucci's Paper"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Replicating-the-Paper}
+  %\VignetteIndexEntry{Replicating Meucci's Paper}
   %\VignetteEngine{knitr::knitr}
   %\VignetteEncoding{UTF-8}
 ---
@@ -17,7 +17,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-Consider, as in _Historical Scenarios with Fully Flexible Probabilities_, that we would like to price and stress-test a book of long-short call options, in which the underlying is the S&P500 index. The `db_tbl` dataset contains information on the interest-rates, US stock market and implied volatility. It also provides $6$ macroeconomic variables that can be used to filter the state of the economy.
+Consider, as in [_Historical Scenarios with Fully Flexible Probabilities_](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=1696802), that we would like to price and stress-test a book of long-short call options, in which the underlying is the S&P500 index. The `db_tbl` dataset contains information on the interest-rates, US stock market and implied volatility. It also provides $6$ macroeconomic variables that can be used to filter the state of the economy.
 
 ### Prepare the Data
 
@@ -99,11 +99,14 @@ pnl <- tibble::tibble(K = K, Expiry = Expiry, panel = as.factor(1:20), S_0, vol_
   dplyr::select(id, panel, dplyr::everything()) %>%
   # portfolio scenarios
   dplyr::mutate(
+    # Pricing
     call_open  = call_price(p = S_0, k = K, r = rf_0, t = Expiry, s = vol_0),
     call_close = call_price(p = S_T, k = K, r = rf_T, t = Expiry - 1 / 252, s = vol_T),
     pnl        = call_close - call_open,
+    # Units to buy and sell
     u          = rep(c(1, -1), each = nrow(paths) * 10)
   ) %>%
+  # Aggregate by "day" (here represented by the "id" variable)
   dplyr::group_by(id) %>%
   dplyr::summarise(pnl_u = as.double(pnl %*% u))
 pnl
@@ -181,3 +184,4 @@ Finally, the main statistics of the scenarios at hand can be assessed with `empi
 ```{r}
 empirical_stats(pnl, fp_es1)
 ```
+

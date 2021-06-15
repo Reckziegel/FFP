@@ -13,7 +13,7 @@ navbar:
       href: articles/index.html
       menu:
         - text: "Replicating Meucci's Paper"
-          href: articles/Replicating-the-Paper.html
+          href: articles/Replicating-Meucci-Paper.html
     - text: "News"
       href: news/index.html
 

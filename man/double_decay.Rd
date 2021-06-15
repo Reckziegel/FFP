@@ -28,7 +28,7 @@ double_decay(x, decay_low, decay_high)
 \method{double_decay}{data.frame}(x, decay_low, decay_high)
 }
 \arguments{
-\item{x}{A multivariate set of risk-drivers.}
+\item{x}{The risk-drivers.}
 
 \item{decay_low}{A number with the long half-life (slow decay) for the correlation
 matrix.}
@@ -40,12 +40,28 @@ structure.}
 A \code{tibble} with the new probabilities distribution.
 }
 \description{
-This function uses entropy-pooling to match different decay factors on the
+This function uses entropy-pooling to match different decay-factors on the
 covariance matrix.
 }
 \examples{
+library(ggplot2)
+
 l_c <- 0.0055
 l_s <- 0.0166
 ret <- diff(log(EuStockMarkets))
-double_decay(ret, l_c, l_s)
+
+dd <- double_decay(ret, l_c, l_s)
+dd
+
+ggplot(dd, aes(x = .rowid, y = .p, color = .p)) +
+  geom_line(show.legend = FALSE) +
+  scale_color_viridis_c()
+}
+\references{
+De Santis, G., R. Litterman, A. Vesval, and K. Winkelmann, 2003,
+Covariance matrix estimation, Modern investment management: an equilibrium
+approach, Wiley.
+}
+\seealso{
+\code{\link{kernel_entropy}} \code{\link{half_life}}
 }

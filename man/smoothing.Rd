@@ -28,7 +28,7 @@ smoothing(x, lambda)
 \method{smoothing}{tbl}(x, lambda)
 }
 \arguments{
-\item{x}{A vector of risk-drivers.}
+\item{x}{The risk-drivers.}
 
 \item{lambda}{A number with the decay parameter that generated the half-life.}
 }
@@ -44,9 +44,26 @@ The half-life is computed as:
 
 \code{HL = log(2) / lambda}.
 
-For example: log(2) / 0.0166 is approximately 42. So, a parameter lambda of
+For example: log(2) / 0.0166 is approximately 42. So, a parameter \code{lambda} of
 0.0166 can be associated with a half-life of two-months.
 }
 \examples{
-smoothing(EuStockMarkets, 0.015)
+library(ggplot2)
+
+# long half_life
+long_hl <- smoothing(EuStockMarkets, 0.001)
+long_hl
+
+ggplot(long_hl, aes(x = .rowid, y = .p, color = .p)) +
+  geom_line(show.legend = FALSE) +
+  scale_color_viridis_c()
+
+# short half_life
+short_hl <- smoothing(EuStockMarkets, 0.015)
+ggplot(short_hl, aes(x = .rowid, y = .p, color = .p)) +
+  geom_line(show.legend = FALSE) +
+  scale_color_viridis_c()
+}
+\seealso{
+\code{\link{crisp}} \code{\link{kernel_normal}} \code{\link{half_life}}
 }

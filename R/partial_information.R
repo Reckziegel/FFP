@@ -2,29 +2,33 @@
 
 #' Partial Information Kernel-Damping
 #'
-#' This function uses entropy-pooling to find the probability mass that can
+#' This function uses entropy-pooling to find the probability distribution that can
 #' constrain the first two moments while imposing the minimal structure in the data.
 #'
-#' @param x An univariate set of risk-drivers.
+#' @param x The risk-drivers.
 #' @param mean A number in which the kernel should be centered.
 #' @param sigma A number with the uncertainty around mean. When \code{NULL}, only
 #' the mean is constrained.
 #'
 #' @return A \code{tibble} with the new probabilities distribution.
 #'
-#' @references
-#' De Santis, G., R. Litterman, A. Vesval, and K. Winkelmann, 2003,
-#' Covariance matrix estimation, Modern investment management: an equilibrium
-#' approach, Wiley.
-#'
 #' @export
 #'
+#' @seealso \code{\link{double_decay}}
+#'
 #' @examples
+#' library(ggplot2)
+#'
 #' ret <- diff(log(EuStockMarkets[ , 1]))
 #' mean <- -0.01 # scenarios around -1%
 #' sigma <- var(diff(ret))
 #'
-#' kernel_entropy(ret, mean, sigma)
+#' ke <- kernel_entropy(ret, mean, sigma)
+#' ke
+#'
+#' ggplot(ke, aes(x = .rowid, y = .p, color = .p)) +
+#'   geom_line(show.legend = FALSE) +
+#'   scale_color_viridis_c()
 kernel_entropy <- function(x, mean, sigma = NULL) {
   UseMethod("kernel_entropy", x)
 }
@@ -167,10 +171,10 @@ kernel_entropy.data.frame <- function(x, mean, sigma = NULL) {
 
 #' Flexible Probabilities using Partial Information
 #'
-#' This function uses entropy-pooling to match different decay factors on the
+#' This function uses entropy-pooling to match different decay-factors on the
 #' covariance matrix.
 #'
-#' @param x A multivariate set of risk-drivers.
+#' @param x The risk-drivers.
 #' @param decay_low A number with the long half-life (slow decay) for the correlation
 #' matrix.
 #' @param decay_high A number with the short-life (high decay) for the volatility
@@ -180,11 +184,26 @@ kernel_entropy.data.frame <- function(x, mean, sigma = NULL) {
 #'
 #' @export
 #'
+#' @seealso \code{\link{kernel_entropy}} \code{\link{half_life}}
+#'
+#' @references
+#' De Santis, G., R. Litterman, A. Vesval, and K. Winkelmann, 2003,
+#' Covariance matrix estimation, Modern investment management: an equilibrium
+#' approach, Wiley.
+#'
 #' @examples
+#' library(ggplot2)
+#'
 #' l_c <- 0.0055
 #' l_s <- 0.0166
 #' ret <- diff(log(EuStockMarkets))
-#' double_decay(ret, l_c, l_s)
+#'
+#' dd <- double_decay(ret, l_c, l_s)
+#' dd
+#'
+#' ggplot(dd, aes(x = .rowid, y = .p, color = .p)) +
+#'   geom_line(show.legend = FALSE) +
+#'   scale_color_viridis_c()
 double_decay <- function(x, decay_low, decay_high) {
   UseMethod("double_decay", x)
 }

@@ -28,7 +28,7 @@ kernel_entropy(x, mean, sigma = NULL)
 \method{kernel_entropy}{data.frame}(x, mean, sigma = NULL)
 }
 \arguments{
-\item{x}{An univariate set of risk-drivers.}
+\item{x}{The risk-drivers.}
 
 \item{mean}{A number in which the kernel should be centered.}
 
@@ -39,18 +39,23 @@ the mean is constrained.}
 A \code{tibble} with the new probabilities distribution.
 }
 \description{
-This function uses entropy-pooling to find the probability mass that can
+This function uses entropy-pooling to find the probability distribution that can
 constrain the first two moments while imposing the minimal structure in the data.
 }
 \examples{
+library(ggplot2)
+
 ret <- diff(log(EuStockMarkets[ , 1]))
 mean <- -0.01 # scenarios around -1\%
 sigma <- var(diff(ret))
 
-kernel_entropy(ret, mean, sigma)
+ke <- kernel_entropy(ret, mean, sigma)
+ke
+
+ggplot(ke, aes(x = .rowid, y = .p, color = .p)) +
+  geom_line(show.legend = FALSE) +
+  scale_color_viridis_c()
 }
-\references{
-De Santis, G., R. Litterman, A. Vesval, and K. Winkelmann, 2003,
-Covariance matrix estimation, Modern investment management: an equilibrium
-approach, Wiley.
+\seealso{
+\code{\link{double_decay}}
 }

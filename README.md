@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# Fully-Flexible Probabilities
+# Fully Flexible Probabilities
 
 <!-- badges: start -->
 
@@ -17,7 +17,7 @@ coverage](https://codecov.io/gh/Reckziegel/FFP/branch/main/graph/badge.svg)](htt
 Oftentimes, the econometrician needs to stress-test the potential
 outcomes for a given set of risk-drivers. This process can be
 computationally costly when the entire set of scenarios needs to be
-repriced (bootsraped, resampled, etc.).
+repriced (bootstraped, resampled, etc.).
 
 To overcome this difficulty, the Fully-Flexible Probabilities (FFP)
 approach offers an inexpensive way for scenario generation: it reprices
@@ -47,7 +47,7 @@ from the historical scenarios:
 -   `kernel_normal()`: generalizes the `crisp` condition by wrapping
     scenarios over a normal kernel;
 -   `kernel_entropy()`: uses entropy-polling to satisfy a conditioning
-    statement by distorting the least the prior probabilities;
+    statement;
 -   `double_decay()`: uses entropy-polling and double-decay factor to
     constrain the first two moments of a distribution.
 

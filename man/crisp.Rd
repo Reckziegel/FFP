@@ -28,7 +28,7 @@ crisp(x, lgl)
 \method{crisp}{tbl_df}(x, lgl)
 }
 \arguments{
-\item{x}{A vector of risk-drivers.}
+\item{x}{The risk-drivers.}
 
 \item{lgl}{A \code{logical} vector with TRUE's and FALSE's indicating
 which scenarios should considered.}
@@ -37,13 +37,22 @@ which scenarios should considered.}
 A \code{tibble} with the new probabilities distribution.
 }
 \description{
-In this function probabilities are given full weight when a certain macroeconomic
+In this function probabilities are given full weight when a macroeconomic
 condition satisfy a logical statement.
 }
 \examples{
+library(ggplot2)
 # invariance (stationarity)
-ret <- diff(log(EuStockMarkets))[ , 1]
+ret <- diff(log(EuStockMarkets))
 
-# full weight on scenarios above 2\%
-crisp(x = ret, ret > 0.02)
+# full weight on scenarios where CAC operated above 2\%
+market_condition <- crisp(x = ret, ret[ , 3] > 0.02)
+market_condition
+
+ggplot(market_condition, aes(x = .rowid, y = .p, color = .p)) +
+  geom_line(show.legend = FALSE) +
+  scale_color_viridis_c()
+}
+\seealso{
+\code{\link{smoothing}} \code{\link{kernel_normal}}
 }

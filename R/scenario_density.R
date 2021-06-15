@@ -1,28 +1,28 @@
 #' Plot Scenario Densities
 #'
 #' This function is designed make it easy to visualize the impact of a view in the
-#' distribution of the P&L.
+#' P&L distribution.
 #'
-#' @param x An univariate marginal distribution
+#' @param x An univariate marginal distribution.
 #' @param p A vector of fully flexible probabilities.
 #'
 #' @return A \code{ggplot2} object.
 #' @export
 #'
 #' @examples
-#' ret <- diff(log(EuStockMarkets))[, 1]
-#' p <- smoothing(ret, 0.005)
-#' scenario_density(ret, p)
+#' pnl <- diff(log(EuStockMarkets))[, 1]
+#' p <- smoothing(pnl, 0.005)
+#' scenario_density(pnl, p)
+#'
+#' p2 <- double_decay(pnl, 0.01, 0.001)
+#' scenario_density(pnl, p2)
 scenario_density <- function(x, p) {
 
   assert_is_equal_size(x, p)
   .size <- vctrs::vec_size(x)
 
   scenarios_conditional <- bootstrap_scenarios(x, p, 10000)[[1]]
-  #mean_conditional <- mean(scenarios_conditional, na.rm = TRUE)
-
   scenarios_unconditional <- bootstrap_scenarios(x, rep(1 / .size, .size), 10000)[[1]]
-  #mean_unconditional <- mean(scenarios_unconditional, na.rm = TRUE)
 
   tib_cond  <- tibble::tibble(.pnl  = scenarios_conditional, scenario = as.factor("Conditional"))
   tib_uncon <- tibble::tibble(.pnl = scenarios_unconditional, scenario = as.factor("Unconditional"))

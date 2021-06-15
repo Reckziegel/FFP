@@ -7,7 +7,7 @@
 scenario_density(x, p)
 }
 \arguments{
-\item{x}{An univariate marginal distribution}
+\item{x}{An univariate marginal distribution.}
 
 \item{p}{A vector of fully flexible probabilities.}
 }
@@ -16,10 +16,13 @@ A \code{ggplot2} object.
 }
 \description{
 This function is designed make it easy to visualize the impact of a view in the
-distribution of the P&L.
+P&L distribution.
 }
 \examples{
-ret <- diff(log(EuStockMarkets))[, 1]
-p <- smoothing(ret, 0.005)
-scenario_density(ret, p)
+pnl <- diff(log(EuStockMarkets))[, 1]
+p <- smoothing(pnl, 0.005)
+scenario_density(pnl, p)
+
+p2 <- double_decay(pnl, 0.01, 0.001)
+scenario_density(pnl, p2)
 }

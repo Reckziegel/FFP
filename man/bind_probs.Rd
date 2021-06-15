@@ -13,8 +13,8 @@ bind_probs(...)
 A tidy \code{tibble}.
 }
 \description{
-This function mimics \code{\link[dplyr]{bind}} to stack probabilities in
-the tidy format.
+This function mimics \code{dplyr} \code{\link[dplyr]{bind}}. It's useful if you
+have different \code{ffp} objects and want to stack them in the \code{tidy} (long) format.
 }
 \examples{
 x <- smoothing(EuStockMarkets, 0.001)

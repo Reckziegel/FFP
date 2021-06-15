@@ -9,15 +9,14 @@
 #' @param p A numeric vector with flexible probabilities.
 #' @param level A number with the desired confidence level.
 #'
-#' @return A table with 6 components:
-#'     \itemize{
-#'       \item{\code{mu}}: A \code{numeric} with the location parameter.
-#'       \item{\code{sd}}: A \code{numeric} with the standard deviation.
-#'       \item{\code{skew}}: A \code{numeric} with the skewness.
-#'       \item{\code{kurtosis}}: A \code{numeric} with the kurtosis.
-#'       \item{\code{VaR}}: A \code{numeric} with the Value-at-Risk.
-#'       \item{\code{CVaR}}: A \code{numeric} with the Expected-Shortfall.
-#'     }
+#' @return A \code{tibble} with 6 rows and the following components:
+#'   * Mu,
+#'   * Std
+#'   * Skew
+#'   * Skew
+#'   * Kurt
+#'   * Var
+#'   * CVaR
 #'
 #' @export
 #'
@@ -26,9 +25,14 @@
 #'
 #' @examples
 #' ret <- diff(log(EuStockMarkets))
-#' ew  <- rep(1 / nrow(ret), nrow(ret))
 #'
+#' # with equal weights
+#' ew  <- rep(1 / nrow(ret), nrow(ret))
 #' empirical_stats(x = ret, p = ew)
+#'
+#' # with ffp
+#' exp_smooth <- smoothing(ret, 0.015)
+#' empirical_stats(ret, exp_smooth)
 empirical_stats <- function(x, p, level = 0.01) {
   UseMethod("empirical_stats", x)
 }

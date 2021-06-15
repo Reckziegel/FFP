@@ -47,7 +47,7 @@ from the historical scenarios:
 -   `kernel_normal()`: generalizes the `crisp` condition by wrapping
     scenarios over a normal kernel;
 -   `kernel_entropy()`: uses entropy-polling to satisfy a conditioning
-    statement by distorting the least the prior probabilities;
+    statement;
 -   `double_decay()`: uses entropy-polling and double-decay factor to
     constrain the first two moments of a distribution.
 

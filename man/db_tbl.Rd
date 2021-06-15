@@ -3,7 +3,8 @@
 \docType{data}
 \name{db_tbl}
 \alias{db_tbl}
-\title{Dataset used in Historical Scenarios with Fully Flexible Probabilities}
+\title{Dataset used in Historical Scenarios with Fully Flexible Probabilities
+(\code{tibble} format).}
 \format{
 An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 1083 rows and 9 columns.
 }
@@ -12,6 +13,7 @@ db_tbl
 }
 \description{
 Dataset used in Historical Scenarios with Fully Flexible Probabilities
+(\code{tibble} format).
 }
 \references{
 Meucci, Attilio, Historical Scenarios with Fully Flexible Probabilities

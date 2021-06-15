@@ -1,7 +1,7 @@
 #' Stack Flexible-Probabilities
 #'
-#' This function mimics \code{\link[dplyr]{bind}} to stack probabilities in
-#' the tidy format.
+#' This function mimics `dplyr` \code{\link[dplyr]{bind}}. It's useful if you
+#' have different `ffp` objects and want to stack them in the `tidy` (long) format.
 #'
 #' @param ... Different \code{tibble} objects with the `ffp` signature to combine.
 #'

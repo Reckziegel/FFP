@@ -28,24 +28,42 @@ kernel_normal(x, mean, sigma)
 \method{kernel_normal}{data.frame}(x, mean, sigma)
 }
 \arguments{
-\item{x}{An univariate set of risk-drivers.}
+\item{x}{The risk-drivers.}
 
-\item{mean}{A number in which the kernel should be centered.}
+\item{mean}{The point in which the kernel should be centered.}
 
-\item{sigma}{A number with the uncertainty (volatility) around mean.}
+\item{sigma}{A number with the uncertainty (volatility) around the mean.}
 }
 \value{
 A \code{tibble} with the new probabilities distribution.
 }
 \description{
 In this framework, historical realizations receive a weight proportional to
-the distance from the target mean, which is enveloped
+it's distance from the target mean, which is enveloped by
 normal kernel with a bandwidth equal sigma.
 }
 \examples{
+library(ggplot2)
+
 ret <- diff(log(EuStockMarkets[ , 1]))
 mean <- -0.01 # scenarios around -1\%
 sigma <- var(diff(ret))
 
-kernel_normal(ret, mean, sigma)
+kn <- kernel_normal(ret, mean, sigma)
+kn
+
+ggplot(kn, aes(x = .rowid, y = .p, color = .p)) +
+  geom_line(show.legend = FALSE) +
+  scale_color_viridis_c()
+
+# Spread the distribution with a larger sigma
+sigma <- var(diff(ret)) / 0.05
+kn <- kernel_normal(ret, mean, sigma)
+
+ggplot(kn, aes(x = .rowid, y = .p, color = .p)) +
+  geom_line(show.legend = FALSE) +
+  scale_color_viridis_c()
+}
+\seealso{
+\code{\link{crisp}} \code{\link{smoothing}}
 }

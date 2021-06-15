@@ -40,7 +40,7 @@
 
 
 <meta property="og:title" content="Partial Information Kernel-Damping — kernel_entropy" />
-<meta property="og:description" content="This function uses entropy-pooling to find the probability mass that can
+<meta property="og:description" content="This function uses entropy-pooling to find the probability distribution that can
 constrain the first two moments while imposing the minimal structure in the data." />
 
 
@@ -93,7 +93,7 @@ constrain the first two moments while imposing the minimal structure in the data
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/Replicating-the-Paper.html">Replicating Meucci's Paper</a>
+      <a href="../articles/Replicating-Meucci-Paper.html">Replicating Meucci's Paper</a>
     </li>
   </ul>
 </li>
@@ -127,7 +127,7 @@ constrain the first two moments while imposing the minimal structure in the data
     </div>
 
     <div class="ref-description">
-    <p>This function uses entropy-pooling to find the probability mass that can
+    <p>This function uses entropy-pooling to find the probability distribution that can
 constrain the first two moments while imposing the minimal structure in the data.</p>
     </div>
 
@@ -159,7 +159,7 @@ constrain the first two moments while imposing the minimal structure in the data
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>x</th>
-      <td><p>An univariate set of risk-drivers.</p></td>
+      <td><p>The risk-drivers.</p></td>
     </tr>
     <tr>
       <th>mean</th>
@@ -175,33 +175,38 @@ the mean is constrained.</p></td>
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>A <code>tibble</code> with the new probabilities distribution.</p>
-    <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
+    <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <p>De Santis, G., R. Litterman, A. Vesval, and K. Winkelmann, 2003,
-Covariance matrix estimation, Modern investment management: an equilibrium
-approach, Wiley.</p>
+    <div class='dont-index'><p><code><a href='double_decay.html'>double_decay</a></code></p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='va'>ret</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/diff.html'>diff</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span><span class='va'>EuStockMarkets</span><span class='op'>[</span> , <span class='fl'>1</span><span class='op'>]</span><span class='op'>)</span><span class='op'>)</span>
+    <pre class="examples"><div class='input'><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://ggplot2.tidyverse.org'>ggplot2</a></span><span class='op'>)</span>
+
+<span class='va'>ret</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/diff.html'>diff</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span><span class='va'>EuStockMarkets</span><span class='op'>[</span> , <span class='fl'>1</span><span class='op'>]</span><span class='op'>)</span><span class='op'>)</span>
 <span class='va'>mean</span> <span class='op'>&lt;-</span> <span class='op'>-</span><span class='fl'>0.01</span> <span class='co'># scenarios around -1%</span>
 <span class='va'>sigma</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/cor.html'>var</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/diff.html'>diff</a></span><span class='op'>(</span><span class='va'>ret</span><span class='op'>)</span><span class='op'>)</span>
 
-<span class='fu'>kernel_entropy</span><span class='op'>(</span><span class='va'>ret</span>, <span class='va'>mean</span>, <span class='va'>sigma</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; # <span style='color: #0000BB;font-weight: bold;'>Fully-Flexible Probability</span><span> 
-#&gt; </span><span style='color: #949494;'># A tibble: 1,859 x 2</span><span>
+<span class='va'>ke</span> <span class='op'>&lt;-</span> <span class='fu'>kernel_entropy</span><span class='op'>(</span><span class='va'>ret</span>, <span class='va'>mean</span>, <span class='va'>sigma</span><span class='op'>)</span>
+<span class='va'>ke</span>
+</div><div class='output co'>#&gt; # <span style='color: #0000BB; font-weight: bold;'>Fully-Flexible Probability</span> 
+#&gt; <span style='color: #949494;'># A tibble: 1,859 x 2</span>
 #&gt;    .rowid       .p
-#&gt;     </span><span style='color: #949494;font-style: italic;'>&lt;int&gt;</span><span>    </span><span style='color: #949494;font-style: italic;'>&lt;dbl&gt;</span><span>
-#&gt; </span><span style='color: #BCBCBC;'> 1</span><span>      1 0.000</span><span style='text-decoration: underline;'>926</span><span>
-#&gt; </span><span style='color: #BCBCBC;'> 2</span><span>      2 0.000</span><span style='text-decoration: underline;'>600</span><span>
-#&gt; </span><span style='color: #BCBCBC;'> 3</span><span>      3 0.000</span><span style='text-decoration: underline;'>154</span><span>
-#&gt; </span><span style='color: #BCBCBC;'> 4</span><span>      4 0.000</span><span style='text-decoration: underline;'>468</span><span>
-#&gt; </span><span style='color: #BCBCBC;'> 5</span><span>      5 0.000</span><span style='text-decoration: underline;'>614</span><span>
-#&gt; </span><span style='color: #BCBCBC;'> 6</span><span>      6 0.000</span><span style='text-decoration: underline;'>104</span><span>
-#&gt; </span><span style='color: #BCBCBC;'> 7</span><span>      7 0.000</span><span style='text-decoration: underline;'>219</span><span>
-#&gt; </span><span style='color: #BCBCBC;'> 8</span><span>      8 0.000</span><span style='text-decoration: underline;'>519</span><span>
-#&gt; </span><span style='color: #BCBCBC;'> 9</span><span>      9 0.000</span><span style='text-decoration: underline;'>205</span><span>
-#&gt; </span><span style='color: #BCBCBC;'>10</span><span>     10 0.000</span><span style='text-decoration: underline;'>350</span><span>
-#&gt; </span><span style='color: #949494;'># ... with 1,849 more rows</span><span></div></span></pre>
+#&gt;     <span style='color: #949494; font-style: italic;'>&lt;int&gt;</span>    <span style='color: #949494; font-style: italic;'>&lt;dbl&gt;</span>
+#&gt; <span style='color: #BCBCBC;'> 1</span>      1 0.000<span style='text-decoration: underline;'>926</span>
+#&gt; <span style='color: #BCBCBC;'> 2</span>      2 0.000<span style='text-decoration: underline;'>600</span>
+#&gt; <span style='color: #BCBCBC;'> 3</span>      3 0.000<span style='text-decoration: underline;'>154</span>
+#&gt; <span style='color: #BCBCBC;'> 4</span>      4 0.000<span style='text-decoration: underline;'>468</span>
+#&gt; <span style='color: #BCBCBC;'> 5</span>      5 0.000<span style='text-decoration: underline;'>614</span>
+#&gt; <span style='color: #BCBCBC;'> 6</span>      6 0.000<span style='text-decoration: underline;'>104</span>
+#&gt; <span style='color: #BCBCBC;'> 7</span>      7 0.000<span style='text-decoration: underline;'>219</span>
+#&gt; <span style='color: #BCBCBC;'> 8</span>      8 0.000<span style='text-decoration: underline;'>519</span>
+#&gt; <span style='color: #BCBCBC;'> 9</span>      9 0.000<span style='text-decoration: underline;'>205</span>
+#&gt; <span style='color: #BCBCBC;'>10</span>     10 0.000<span style='text-decoration: underline;'>350</span>
+#&gt; <span style='color: #949494;'># ... with 1,849 more rows</span></div><div class='input'>
+<span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='va'>ke</span>, <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>.rowid</span>, y <span class='op'>=</span> <span class='va'>.p</span>, color <span class='op'>=</span> <span class='va'>.p</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_path.html'>geom_line</a></span><span class='op'>(</span>show.legend <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_viridis.html'>scale_color_viridis_c</a></span><span class='op'>(</span><span class='op'>)</span>
+</div><div class='img'><img src='kernel_entropy-1.png' alt='' width='700' height='433' /></div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

@@ -3,7 +3,7 @@
 \docType{data}
 \name{db}
 \alias{db}
-\title{Dataset used in Historical Scenarios with Fully Flexible Probabilities}
+\title{Dataset used in Historical Scenarios with Fully Flexible Probabilities.}
 \format{
 An object of class \code{matrix} (inherits from \code{array}) with 1083 rows and 9 columns.
 }
@@ -11,7 +11,7 @@ An object of class \code{matrix} (inherits from \code{array}) with 1083 rows and
 db
 }
 \description{
-Dataset used in Historical Scenarios with Fully Flexible Probabilities
+Dataset used in Historical Scenarios with Fully Flexible Probabilities.
 }
 \references{
 Meucci, Attilio, Historical Scenarios with Fully Flexible Probabilities

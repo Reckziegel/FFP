@@ -19,3 +19,6 @@ This function computes the implied half-life of a decay parameter.
 half_life(0.0166)
 half_life(0.01)
 }
+\seealso{
+\code{\link{smoothing}} \code{\link{double_decay}}
+}

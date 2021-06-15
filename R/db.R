@@ -1,4 +1,4 @@
-#' Dataset used in Historical Scenarios with Fully Flexible Probabilities
+#' Dataset used in Historical Scenarios with Fully Flexible Probabilities.
 #'
 #' @seealso  \code{\link{db_tbl}}
 #'

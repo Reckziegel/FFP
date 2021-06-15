@@ -1,13 +1,17 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# Fully Flexible Probabilities
+# Fully-Flexible Probabilities
 
 <!-- badges: start -->
 
 [![Lifecycle:
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 [![R-CMD-check](https://github.com/Reckziegel/FFP/workflows/R-CMD-check/badge.svg)](https://github.com/Reckziegel/FFP/actions)
+[![Travis build
+status](https://travis-ci.com/Reckziegel/FFP.svg?branch=main)](https://travis-ci.com/Reckziegel/FFP)
+[![AppVeyor build
+status](https://ci.appveyor.com/api/projects/status/github/Reckziegel/FFP?branch=main&svg=true)](https://ci.appveyor.com/project/Reckziegel/FFP)
 [![Codecov test
 coverage](https://codecov.io/gh/Reckziegel/FFP/branch/main/graph/badge.svg)](https://codecov.io/gh/Reckziegel/FFP?branch=main)
 <!-- badges: end -->

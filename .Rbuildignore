@@ -7,3 +7,7 @@
 ^docs$
 ^pkgdown$
 ^codecov\.yml$
+^\.travis\.yml$
+^appveyor\.yml$
+^\.circleci$
+^\.circleci/config\.yml$

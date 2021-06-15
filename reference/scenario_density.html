@@ -41,7 +41,7 @@
 
 <meta property="og:title" content="Plot Scenario Densities — scenario_density" />
 <meta property="og:description" content="This function is designed make it easy to visualize the impact of a view in the
-distribution of the P&amp;amp;L." />
+P&amp;amp;L distribution." />
 
 
 
@@ -93,7 +93,7 @@ distribution of the P&amp;amp;L." />
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/Replicating-the-Paper.html">Replicating Meucci's Paper</a>
+      <a href="../articles/Replicating-Meucci-Paper.html">Replicating Meucci's Paper</a>
     </li>
   </ul>
 </li>
@@ -128,7 +128,7 @@ distribution of the P&amp;amp;L." />
 
     <div class="ref-description">
     <p>This function is designed make it easy to visualize the impact of a view in the
-distribution of the P&amp;L.</p>
+P&amp;L distribution.</p>
     </div>
 
     <pre class="usage"><span class='fu'>scenario_density</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>p</span><span class='op'>)</span></pre>
@@ -138,7 +138,7 @@ distribution of the P&amp;L.</p>
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>x</th>
-      <td><p>An univariate marginal distribution</p></td>
+      <td><p>An univariate marginal distribution.</p></td>
     </tr>
     <tr>
       <th>p</th>
@@ -151,10 +151,13 @@ distribution of the P&amp;L.</p>
     <p>A <code>ggplot2</code> object.</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='va'>ret</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/diff.html'>diff</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span><span class='va'>EuStockMarkets</span><span class='op'>)</span><span class='op'>)</span><span class='op'>[</span>, <span class='fl'>1</span><span class='op'>]</span>
-<span class='va'>p</span> <span class='op'>&lt;-</span> <span class='fu'><a href='smoothing.html'>smoothing</a></span><span class='op'>(</span><span class='va'>ret</span>, <span class='fl'>0.005</span><span class='op'>)</span>
-<span class='fu'>scenario_density</span><span class='op'>(</span><span class='va'>ret</span>, <span class='va'>p</span><span class='op'>)</span>
-</div><div class='img'><img src='scenario_density-1.png' alt='' width='700' height='433' /></div></pre>
+    <pre class="examples"><div class='input'><span class='va'>pnl</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/diff.html'>diff</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span><span class='va'>EuStockMarkets</span><span class='op'>)</span><span class='op'>)</span><span class='op'>[</span>, <span class='fl'>1</span><span class='op'>]</span>
+<span class='va'>p</span> <span class='op'>&lt;-</span> <span class='fu'><a href='smoothing.html'>smoothing</a></span><span class='op'>(</span><span class='va'>pnl</span>, <span class='fl'>0.005</span><span class='op'>)</span>
+<span class='fu'>scenario_density</span><span class='op'>(</span><span class='va'>pnl</span>, <span class='va'>p</span><span class='op'>)</span>
+</div><div class='img'><img src='scenario_density-1.png' alt='' width='700' height='433' /></div><div class='input'>
+<span class='va'>p2</span> <span class='op'>&lt;-</span> <span class='fu'><a href='double_decay.html'>double_decay</a></span><span class='op'>(</span><span class='va'>pnl</span>, <span class='fl'>0.01</span>, <span class='fl'>0.001</span><span class='op'>)</span>
+<span class='fu'>scenario_density</span><span class='op'>(</span><span class='va'>pnl</span>, <span class='va'>p2</span><span class='op'>)</span>
+</div><div class='img'><img src='scenario_density-2.png' alt='' width='700' height='433' /></div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

@@ -40,7 +40,7 @@
 
 
 <meta property="og:title" content="Full Information by Market Conditioning — crisp" />
-<meta property="og:description" content="In this function probabilities are given full weight when a certain macroeconomic
+<meta property="og:description" content="In this function probabilities are given full weight when a macroeconomic
 condition satisfy a logical statement." />
 
 
@@ -93,7 +93,7 @@ condition satisfy a logical statement." />
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/Replicating-the-Paper.html">Replicating Meucci's Paper</a>
+      <a href="../articles/Replicating-Meucci-Paper.html">Replicating Meucci's Paper</a>
     </li>
   </ul>
 </li>
@@ -127,7 +127,7 @@ condition satisfy a logical statement." />
     </div>
 
     <div class="ref-description">
-    <p>In this function probabilities are given full weight when a certain macroeconomic
+    <p>In this function probabilities are given full weight when a macroeconomic
 condition satisfy a logical statement.</p>
     </div>
 
@@ -159,7 +159,7 @@ condition satisfy a logical statement.</p>
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>x</th>
-      <td><p>A vector of risk-drivers.</p></td>
+      <td><p>The risk-drivers.</p></td>
     </tr>
     <tr>
       <th>lgl</th>
@@ -171,13 +171,18 @@ which scenarios should considered.</p></td>
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>A <code>tibble</code> with the new probabilities distribution.</p>
+    <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
+
+    <div class='dont-index'><p><code><a href='smoothing.html'>smoothing</a></code> <code><a href='kernel_normal.html'>kernel_normal</a></code></p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='co'># invariance (stationarity)</span>
-<span class='va'>ret</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/diff.html'>diff</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span><span class='va'>EuStockMarkets</span><span class='op'>)</span><span class='op'>)</span><span class='op'>[</span> , <span class='fl'>1</span><span class='op'>]</span>
+    <pre class="examples"><div class='input'><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://ggplot2.tidyverse.org'>ggplot2</a></span><span class='op'>)</span>
+<span class='co'># invariance (stationarity)</span>
+<span class='va'>ret</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/diff.html'>diff</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span><span class='va'>EuStockMarkets</span><span class='op'>)</span><span class='op'>)</span>
 
-<span class='co'># full weight on scenarios above 2%</span>
-<span class='fu'>crisp</span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>ret</span>, <span class='va'>ret</span> <span class='op'>&gt;</span> <span class='fl'>0.02</span><span class='op'>)</span>
+<span class='co'># full weight on scenarios where CAC operated above 2%</span>
+<span class='va'>market_condition</span> <span class='op'>&lt;-</span> <span class='fu'>crisp</span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>ret</span>, <span class='va'>ret</span><span class='op'>[</span> , <span class='fl'>3</span><span class='op'>]</span> <span class='op'>&gt;</span> <span class='fl'>0.02</span><span class='op'>)</span>
+<span class='va'>market_condition</span>
 </div><div class='output co'>#&gt; # <span style='color: #0000BB; font-weight: bold;'>Fully-Flexible Probability</span> 
 #&gt; <span style='color: #949494;'># A tibble: 1,859 x 2</span>
 #&gt;    .rowid    .p
@@ -192,7 +197,11 @@ which scenarios should considered.</p></td>
 #&gt; <span style='color: #BCBCBC;'> 8</span>      8     0
 #&gt; <span style='color: #BCBCBC;'> 9</span>      9     0
 #&gt; <span style='color: #BCBCBC;'>10</span>     10     0
-#&gt; <span style='color: #949494;'># … with 1,849 more rows</span></div></pre>
+#&gt; <span style='color: #949494;'># … with 1,849 more rows</span></div><div class='input'>
+<span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='va'>market_condition</span>, <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>.rowid</span>, y <span class='op'>=</span> <span class='va'>.p</span>, color <span class='op'>=</span> <span class='va'>.p</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_path.html'>geom_line</a></span><span class='op'>(</span>show.legend <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_viridis.html'>scale_color_viridis_c</a></span><span class='op'>(</span><span class='op'>)</span>
+</div><div class='img'><img src='crisp-1.png' alt='' width='700' height='433' /></div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

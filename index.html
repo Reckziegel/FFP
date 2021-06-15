@@ -12,8 +12,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="pkgdown.css" rel="stylesheet">
 <script src="pkgdown.js"></script><meta property="og:title" content="Fully Flexible Probabilities">
-<meta property="og:description" content="State and time-dependent risk management through Flexible
-    Probabilities.">
+<meta property="og:description" content="Fully-Flexible Probabilities through entropy-pooling.">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
@@ -52,7 +51,7 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
-      <a href="articles/Replicating-the-Paper.html">Replicating Meucci's Paper</a>
+      <a href="articles/Replicating-Meucci-Paper.html">Replicating Meucci's Paper</a>
     </li>
   </ul>
 </li>
@@ -81,13 +80,13 @@
   <div class="contents col-md-9">
 <div id="fully-flexible-probabilities" class="section level1">
 <div class="page-header"><h1 class="hasAnchor">
-<a href="#fully-flexible-probabilities" class="anchor"></a>Fully-Flexible Probabilities</h1></div>
+<a href="#fully-flexible-probabilities" class="anchor"></a>Fully Flexible Probabilities</h1></div>
 <!-- badges: start -->
 
 <blockquote>
 <p>Functions for Scenario Analysis and Risk-Management</p>
 </blockquote>
-<p>Oftentimes, the econometrician needs to stress-test the potential outcomes for a given set of risk-drivers. This process can be computationally costly when the entire set of scenarios needs to be repriced (bootsraped, resampled, etc.).</p>
+<p>Oftentimes, the econometrician needs to stress-test the potential outcomes for a given set of risk-drivers. This process can be computationally costly when the entire set of scenarios needs to be repriced (bootstraped, resampled, etc.).</p>
 <p>To overcome this difficulty, the Fully-Flexible Probabilities (FFP) approach offers an inexpensive way for scenario generation: it reprices the <em>probabilities</em> associated to each scenario, instead of the scenarios themselves. Once the new probabilities have been defined, the computations can be performed very quickly because the burden associated with scenario generation and valuation is left aside.</p>
 <div id="installation" class="section level2">
 <h2 class="hasAnchor">
@@ -109,7 +108,7 @@
 <li>
 <code><a href="reference/kernel_normal.html">kernel_normal()</a></code>: generalizes the <code>crisp</code> condition by wrapping scenarios over a normal kernel;</li>
 <li>
-<code><a href="reference/kernel_entropy.html">kernel_entropy()</a></code>: uses entropy-polling to satisfy a conditioning statement by distorting the least the prior probabilities;</li>
+<code><a href="reference/kernel_entropy.html">kernel_entropy()</a></code>: uses entropy-polling to satisfy a conditioning statement;</li>
 <li>
 <code><a href="reference/double_decay.html">double_decay()</a></code>: uses entropy-polling and double-decay factor to constrain the first two moments of a distribution.</li>
 </ul>

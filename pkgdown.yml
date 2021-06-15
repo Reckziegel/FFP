@@ -2,6 +2,6 @@ pandoc: 2.7.3
 pkgdown: 1.6.1
 pkgdown_sha: ~
 articles:
-  Replicating-the-Paper: Replicating-the-Paper.html
-last_built: 2021-06-11T20:18Z
+  Replicating-Meucci-Paper: Replicating-Meucci-Paper.html
+last_built: 2021-06-15T03:56Z
 

@@ -92,7 +92,7 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/Replicating-the-Paper.html">Replicating Meucci's Paper</a>
+      <a href="../articles/Replicating-Meucci-Paper.html">Replicating Meucci's Paper</a>
     </li>
   </ul>
 </li>
@@ -171,13 +171,14 @@
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>A table with 6 components:</p><ul>
-<li><p><code>mu</code>: A <code>numeric</code> with the location parameter.</p></li>
-<li><p><code>sd</code>: A <code>numeric</code> with the standard deviation.</p></li>
-<li><p><code>skew</code>: A <code>numeric</code> with the skewness.</p></li>
-<li><p><code>kurtosis</code>: A <code>numeric</code> with the kurtosis.</p></li>
-<li><p><code>VaR</code>: A <code>numeric</code> with the Value-at-Risk.</p></li>
-<li><p><code>CVaR</code>: A <code>numeric</code> with the Expected-Shortfall.</p></li>
+    <p>A <code>tibble</code> with 6 rows and the following components:</p><ul>
+<li><p>Mu,</p></li>
+<li><p>Std</p></li>
+<li><p>Skew</p></li>
+<li><p>Skew</p></li>
+<li><p>Kurt</p></li>
+<li><p>Var</p></li>
+<li><p>CVaR</p></li>
 </ul>
 
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
@@ -187,8 +188,9 @@
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='va'>ret</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/diff.html'>diff</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span><span class='va'>EuStockMarkets</span><span class='op'>)</span><span class='op'>)</span>
-<span class='va'>ew</span>  <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='fl'>1</span> <span class='op'>/</span> <span class='fu'><a href='https://rdrr.io/r/base/nrow.html'>nrow</a></span><span class='op'>(</span><span class='va'>ret</span><span class='op'>)</span>, <span class='fu'><a href='https://rdrr.io/r/base/nrow.html'>nrow</a></span><span class='op'>(</span><span class='va'>ret</span><span class='op'>)</span><span class='op'>)</span>
 
+<span class='co'># with equal weights</span>
+<span class='va'>ew</span>  <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='fl'>1</span> <span class='op'>/</span> <span class='fu'><a href='https://rdrr.io/r/base/nrow.html'>nrow</a></span><span class='op'>(</span><span class='va'>ret</span><span class='op'>)</span>, <span class='fu'><a href='https://rdrr.io/r/base/nrow.html'>nrow</a></span><span class='op'>(</span><span class='va'>ret</span><span class='op'>)</span><span class='op'>)</span>
 <span class='fu'>empirical_stats</span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>ret</span>, p <span class='op'>=</span> <span class='va'>ew</span><span class='op'>)</span>
 </div><div class='output co'>#&gt; <span style='color: #949494;'># A tibble: 6 x 5</span>
 #&gt;   .stat       DAX       SMI       CAC     FTSE
@@ -198,7 +200,19 @@
 #&gt; <span style='color: #BCBCBC;'>3</span> Skew  -<span style='color: #BB0000;'>0.531</span>    -<span style='color: #BB0000;'>0.557</span>    -<span style='color: #BB0000;'>0.217</span>    0.051<span style='text-decoration: underline;'>5</span>  
 #&gt; <span style='color: #BCBCBC;'>4</span> Kurt   9.23      8.70      5.40     5.62    
 #&gt; <span style='color: #BCBCBC;'>5</span> VaR    0.027<span style='text-decoration: underline;'>9</span>    0.026<span style='text-decoration: underline;'>4</span>    0.028<span style='text-decoration: underline;'>3</span>   0.021<span style='text-decoration: underline;'>0</span>  
-#&gt; <span style='color: #BCBCBC;'>6</span> CVaR   0.037<span style='text-decoration: underline;'>5</span>    0.034<span style='text-decoration: underline;'>9</span>    0.036<span style='text-decoration: underline;'>5</span>   0.025<span style='text-decoration: underline;'>6</span>  </div></pre>
+#&gt; <span style='color: #BCBCBC;'>6</span> CVaR   0.037<span style='text-decoration: underline;'>5</span>    0.034<span style='text-decoration: underline;'>9</span>    0.036<span style='text-decoration: underline;'>5</span>   0.025<span style='text-decoration: underline;'>6</span>  </div><div class='input'>
+<span class='co'># with ffp</span>
+<span class='va'>exp_smooth</span> <span class='op'>&lt;-</span> <span class='fu'><a href='smoothing.html'>smoothing</a></span><span class='op'>(</span><span class='va'>ret</span>, <span class='fl'>0.015</span><span class='op'>)</span>
+<span class='fu'>empirical_stats</span><span class='op'>(</span><span class='va'>ret</span>, <span class='va'>exp_smooth</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span style='color: #949494;'># A tibble: 6 x 5</span>
+#&gt;   .stat       DAX       SMI      CAC      FTSE
+#&gt;   <span style='color: #949494; font-style: italic;'>&lt;fct&gt;</span>     <span style='color: #949494; font-style: italic;'>&lt;dbl&gt;</span>     <span style='color: #949494; font-style: italic;'>&lt;dbl&gt;</span>    <span style='color: #949494; font-style: italic;'>&lt;dbl&gt;</span>     <span style='color: #949494; font-style: italic;'>&lt;dbl&gt;</span>
+#&gt; <span style='color: #BCBCBC;'>1</span> Mu     0.000<span style='text-decoration: underline;'>376</span>  0.000<span style='text-decoration: underline;'>430</span> 0.000<span style='text-decoration: underline;'>558</span> -<span style='color: #BB0000;'>0.000</span><span style='color: #BB0000; text-decoration: underline;'>785</span>
+#&gt; <span style='color: #BCBCBC;'>2</span> Std    0.013<span style='text-decoration: underline;'>6</span>    0.012<span style='text-decoration: underline;'>8</span>   0.012<span style='text-decoration: underline;'>8</span>    0.010<span style='text-decoration: underline;'>6</span>  
+#&gt; <span style='color: #BCBCBC;'>3</span> Skew  -<span style='color: #BB0000;'>0.367</span>    -<span style='color: #BB0000;'>0.457</span>    0.098<span style='text-decoration: underline;'>8</span>   -<span style='color: #BB0000;'>0.478</span>   
+#&gt; <span style='color: #BCBCBC;'>4</span> Kurt   3.12      3.45     3.13      3.02    
+#&gt; <span style='color: #BCBCBC;'>5</span> VaR    0.032<span style='text-decoration: underline;'>6</span>    0.036<span style='text-decoration: underline;'>2</span>   0.025<span style='text-decoration: underline;'>7</span>    0.029<span style='text-decoration: underline;'>1</span>  
+#&gt; <span style='color: #BCBCBC;'>6</span> CVaR   0.043<span style='text-decoration: underline;'>3</span>    0.043<span style='text-decoration: underline;'>2</span>   0.029<span style='text-decoration: underline;'>9</span>    0.029<span style='text-decoration: underline;'>8</span>  </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

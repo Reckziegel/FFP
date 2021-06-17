@@ -21,6 +21,23 @@ assert_is_univariate <- function(x) {
 }
 
 
+assert_is_probability <- function(x) {
+  inhe_num <- inherits(x, "numeric")
+  inhe_ffp <- inherits(x, "ffp")
+  if (!(inhe_num | inhe_ffp)) {
+    stop("`p` must be numeric of an object of the ffp class.", call. = FALSE)
+  }
+  if (inhe_num) {
+    if (sum(x) > 1.00001) {
+      stop("Probabilities can't exceed 1.", call. = FALSE)
+    }
+    if (any(x < 0)) {
+      stop("Probabilities can't be negative")
+    }
+  }
+}
+
+
 # assertetion - fi_kernel -------------------------------------------------
 
 assert_kernel_mean <- function(mean) {

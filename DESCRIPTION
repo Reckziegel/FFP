@@ -2,8 +2,8 @@ Type: Package
 Package: ffp
 Title: Fully Flexible Probabilities
 Version: 0.1.9000
-Author: Bernardo Reckziegel
-Maintainer: Bernardo Reckziegel <bernardo_cse@hotmail.com>
+Authors@R: person("Bernardo", "Reckziegel", email = "bernardo_cse@hotmail.com",
+                  role = c("aut", "cre"))
 Description:  Fully-Flexible Probabilities through entropy-pooling.
 License: MIT + file LICENSE
 URL: https://github.com/Reckziegel/FFP

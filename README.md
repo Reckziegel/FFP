@@ -78,10 +78,10 @@ computed with `empirical_stats()`.
 -   Meucci, Attilio, Fully Flexible Views: Theory and Practice (August
     8, 2008). Fully Flexible Views: Theory and Practice, Risk, Vol. 21,
     No. 10, pp. 97-102, October 2008, Available at SSRN:
-    <https://ssrn.com/abstract=1213325>
+    <https://www.ssrn.com/abstract=1213325>
 
 -   Meucci, Attilio, Historical Scenarios with Fully Flexible
     Probabilities (October 23, 2010). GARP Risk Professional, pp. 47-51,
     December 2010, Available at SSRN:
-    <https://ssrn.com/abstract=1696802> or
+    <https://www.ssrn.com/abstract=1696802> or
     <http://dx.doi.org/10.2139/ssrn.1696802>

@@ -79,10 +79,10 @@ fp_emc <- double_decay(invariants, decay_low = 0.0055, decay_high = 0.0166)
 bind_probs(fp_es1, fp_es2, fp_cc, fp_kd, fp_ekd, fp_emc) %>% 
   ggplot2::ggplot(ggplot2::aes(x = .rowid, y = .p, color = .key)) + 
   ggplot2::geom_line(show.legend = FALSE) + 
-  ggplot2::facet_wrap(~.key, 
+  ggplot2::facet_wrap(~.key,
                       labeller = ggplot2::labeller(
-                        .key = c("1" = "Exp. Smoothing", "2" = "Exp. Smoothing", 
-                                 "3" = "Market-Conditioning", "4" = "Normal Kernel", 
+                        .key = c("1" = "Exp. Smoothing", "2" = "Exp. Smoothing",
+                                 "3" = "Market-Conditioning", "4" = "Normal Kernel",
                                  "5" = "FFP Kernel", "6" = "FFP Double-Decay"))) +
   ggplot2::scale_y_continuous(labels = scales::percent_format()) + 
   ggplot2::scale_x_continuous(labels = NULL, breaks = NULL) + 
@@ -104,7 +104,7 @@ Once the probabilities have been estimated, `bootstrap_scenarios()` can be used 
 matrix estimation, Modern investment management: an equilibrium
 approach, Wiley.
 
-- Meucci, Attilio, Fully Flexible Views: Theory and Practice (August 8, 2008). Fully Flexible Views: Theory and Practice, Risk, Vol. 21, No. 10, pp. 97-102, October 2008, Available at SSRN: https://ssrn.com/abstract=1213325
+- Meucci, Attilio, Fully Flexible Views: Theory and Practice (August 8, 2008). Fully Flexible Views: Theory and Practice, Risk, Vol. 21, No. 10, pp. 97-102, October 2008, Available at SSRN: https://www.ssrn.com/abstract=1213325
 
-- Meucci, Attilio, Historical Scenarios with Fully Flexible Probabilities (October 23, 2010). GARP Risk Professional, pp. 47-51, December 2010, Available at SSRN: https://ssrn.com/abstract=1696802 or http://dx.doi.org/10.2139/ssrn.1696802
+- Meucci, Attilio, Historical Scenarios with Fully Flexible Probabilities (October 23, 2010). GARP Risk Professional, pp. 47-51, December 2010, Available at SSRN: https://www.ssrn.com/abstract=1696802 or http://dx.doi.org/10.2139/ssrn.1696802
 

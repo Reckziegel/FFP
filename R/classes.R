@@ -14,6 +14,7 @@ new_ffp <- function(x, ...) {
 
 # validator
 #' @keywords internal
+#' @rdname ffp
 validate_ffp <- function(x) {
   if (inherits(x, "grouped_df")) {
     stop("Don't know how to deal with grouped tibbles.", call. = FALSE)
@@ -24,6 +25,7 @@ validate_ffp <- function(x) {
 
 # helper
 #' @keywords internal
+#' @rdname ffp
 ffp <- function(x, ...) {
   tibble::new_tibble(x = x,
                      ffp_attr = ...,
@@ -32,15 +34,19 @@ ffp <- function(x, ...) {
 }
 
 #' @rdname ffp
+#' @keywords internal
 is_ffp <- function(x) inherits(x, "ffp")
 
 #' @rdname ffp
+#' @keywords internal
 as_ffp <- function(x) new_ffp(x)
 
 # Print ffp ----
 #' @export
 print.ffp <- function(x, ...) {
-  cat("#", crayon::bold(crayon::blue("Fully-Flexible Probability")), "\n")
+  cat(
+    crayon::yellow("#"), crayon::bold(crayon::blue("Fully-Flexible Probability")), "\n"
+    )
   class(x) <- class(x)[!(class(x) %in% "ffp")]
   print(x, ...)
 }

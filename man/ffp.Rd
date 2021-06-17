@@ -2,11 +2,17 @@
 % Please edit documentation in R/classes.R
 \name{new_ffp}
 \alias{new_ffp}
+\alias{validate_ffp}
+\alias{ffp}
 \alias{is_ffp}
 \alias{as_ffp}
 \title{Internal ffp class}
 \usage{
 new_ffp(x, ...)
+
+validate_ffp(x)
+
+ffp(x, ...)
 
 is_ffp(x)
 
@@ -20,3 +26,4 @@ as_ffp(x)
 \description{
 Internal ffp class
 }
+\keyword{internal}

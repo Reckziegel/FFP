@@ -154,7 +154,7 @@ have different <code>ffp</code> objects and want to stack them in the <code>tidy
     <pre class="examples"><div class='input'><span class='va'>x</span> <span class='op'>&lt;-</span> <span class='fu'><a href='smoothing.html'>smoothing</a></span><span class='op'>(</span><span class='va'>EuStockMarkets</span>, <span class='fl'>0.001</span><span class='op'>)</span>
 <span class='va'>y</span> <span class='op'>&lt;-</span> <span class='fu'><a href='smoothing.html'>smoothing</a></span><span class='op'>(</span><span class='va'>EuStockMarkets</span>, <span class='fl'>0.002</span><span class='op'>)</span>
 <span class='fu'>bind_probs</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>y</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; # <span style='color: #0000BB; font-weight: bold;'>Fully-Flexible Probability</span> 
+</div><div class='output co'>#&gt; <span style='color: #BBBB00;'>#</span> <span style='color: #0000BB; font-weight: bold;'>Fully-Flexible Probability</span> 
 #&gt; <span style='color: #949494;'># A tibble: 3,720 x 3</span>
 #&gt;    .rowid       .p .key 
 #&gt;     <span style='color: #949494; font-style: italic;'>&lt;int&gt;</span>    <span style='color: #949494; font-style: italic;'>&lt;dbl&gt;</span> <span style='color: #949494; font-style: italic;'>&lt;fct&gt;</span>

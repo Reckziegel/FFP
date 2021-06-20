@@ -27,7 +27,7 @@ bootstrap_scenarios(x, p, n)
 \arguments{
 \item{x}{A time-series defining the scenario-probability distribution.}
 
-\item{p}{A vector of probabilities.}
+\item{p}{A numeric vector or an object of the \code{ffp} class.}
 
 \item{n}{An \code{integer} scalar with the number of scenarios to be generated.}
 }

@@ -49,9 +49,7 @@ ret <- diff(log(EuStockMarkets))
 market_condition <- crisp(x = ret, ret[ , 3] > 0.02)
 market_condition
 
-ggplot(market_condition, aes(x = .rowid, y = .p, color = .p)) +
-  geom_line(show.legend = FALSE) +
-  scale_color_viridis_c()
+autoplot(market_condition)
 }
 \seealso{
 \code{\link{smoothing}} \code{\link{kernel_normal}}

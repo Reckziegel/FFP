@@ -52,9 +52,7 @@ sigma <- var(diff(ret))
 ke <- kernel_entropy(ret, mean, sigma)
 ke
 
-ggplot(ke, aes(x = .rowid, y = .p, color = .p)) +
-  geom_line(show.legend = FALSE) +
-  scale_color_viridis_c()
+autoplot(ke)
 }
 \seealso{
 \code{\link{double_decay}}

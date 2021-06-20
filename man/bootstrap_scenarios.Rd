@@ -43,5 +43,5 @@ set.seed(123)
 ret <- diff(log(EuStockMarkets))
 ew  <- rep(1 / nrow(ret), nrow(ret))
 
-bootstrap_scenarios(x = ret, p = ew, n = 10)
+bootstrap_scenarios(x = ret, p = as_ffp(ew), n = 10)
 }

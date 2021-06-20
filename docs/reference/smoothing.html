@@ -182,34 +182,19 @@ to recent observations at an exponential rate.</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://ggplot2.tidyverse.org'>ggplot2</a></span><span class='op'>)</span>
-
 <span class='co'># long half_life</span>
 <span class='va'>long_hl</span> <span class='op'>&lt;-</span> <span class='fu'>smoothing</span><span class='op'>(</span><span class='va'>EuStockMarkets</span>, <span class='fl'>0.001</span><span class='op'>)</span>
 <span class='va'>long_hl</span>
-</div><div class='output co'>#&gt; # <span style='color: #0000BB; font-weight: bold;'>Fully-Flexible Probability</span> 
-#&gt; <span style='color: #949494;'># A tibble: 1,860 x 2</span>
-#&gt;    .rowid       .p
-#&gt;     <span style='color: #949494; font-style: italic;'>&lt;int&gt;</span>    <span style='color: #949494; font-style: italic;'>&lt;dbl&gt;</span>
-#&gt; <span style='color: #BCBCBC;'> 1</span>      1 0.000<span style='text-decoration: underline;'>184</span>
-#&gt; <span style='color: #BCBCBC;'> 2</span>      2 0.000<span style='text-decoration: underline;'>185</span>
-#&gt; <span style='color: #BCBCBC;'> 3</span>      3 0.000<span style='text-decoration: underline;'>185</span>
-#&gt; <span style='color: #BCBCBC;'> 4</span>      4 0.000<span style='text-decoration: underline;'>185</span>
-#&gt; <span style='color: #BCBCBC;'> 5</span>      5 0.000<span style='text-decoration: underline;'>185</span>
-#&gt; <span style='color: #BCBCBC;'> 6</span>      6 0.000<span style='text-decoration: underline;'>185</span>
-#&gt; <span style='color: #BCBCBC;'> 7</span>      7 0.000<span style='text-decoration: underline;'>186</span>
-#&gt; <span style='color: #BCBCBC;'> 8</span>      8 0.000<span style='text-decoration: underline;'>186</span>
-#&gt; <span style='color: #BCBCBC;'> 9</span>      9 0.000<span style='text-decoration: underline;'>186</span>
-#&gt; <span style='color: #BCBCBC;'>10</span>     10 0.000<span style='text-decoration: underline;'>186</span>
-#&gt; <span style='color: #949494;'># ... with 1,850 more rows</span></div><div class='input'>
-<span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='va'>long_hl</span>, <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>.rowid</span>, y <span class='op'>=</span> <span class='va'>.p</span>, color <span class='op'>=</span> <span class='va'>.p</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_path.html'>geom_line</a></span><span class='op'>(</span>show.legend <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_viridis.html'>scale_color_viridis_c</a></span><span class='op'>(</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; &lt;ffp[1860]&gt;
+#&gt; 0.0001844669 0.0001846515 0.0001848363 0.0001850212 0.0001852063 0.0001853916  ... 0.0001853916</div><div class='input'>
+<span class='co'># long half_file</span>
+<span class='fu'><a href='https://ggplot2.tidyverse.org/reference/autoplot.html'>autoplot</a></span><span class='op'>(</span><span class='va'>long_hl</span><span class='op'>)</span>
 </div><div class='img'><img src='smoothing-1.png' alt='' width='700' height='433' /></div><div class='input'>
 <span class='co'># short half_life</span>
 <span class='va'>short_hl</span> <span class='op'>&lt;-</span> <span class='fu'>smoothing</span><span class='op'>(</span><span class='va'>EuStockMarkets</span>, <span class='fl'>0.015</span><span class='op'>)</span>
-<span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='va'>short_hl</span>, <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>.rowid</span>, y <span class='op'>=</span> <span class='va'>.p</span>, color <span class='op'>=</span> <span class='va'>.p</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_path.html'>geom_line</a></span><span class='op'>(</span>show.legend <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_viridis.html'>scale_color_viridis_c</a></span><span class='op'>(</span><span class='op'>)</span>
+<span class='va'>short_hl</span>
+</div><div class='output co'>#&gt; &lt;ffp[1860]&gt;
+#&gt; 1.154879e-14 1.172333e-14 1.19005e-14 1.208036e-14 1.226293e-14 1.244826e-14  ... 1.244826e-14</div><div class='input'><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/autoplot.html'>autoplot</a></span><span class='op'>(</span><span class='va'>short_hl</span><span class='op'>)</span>
 </div><div class='img'><img src='smoothing-2.png' alt='' width='700' height='433' /></div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

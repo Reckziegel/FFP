@@ -24,9 +24,7 @@
 #' market_condition <- crisp(x = ret, ret[ , 3] > 0.02)
 #' market_condition
 #'
-#' ggplot(market_condition, aes(x = .rowid, y = .p, color = .p)) +
-#'   geom_line(show.legend = FALSE) +
-#'   scale_color_viridis_c()
+#' autoplot(market_condition)
 crisp <- function(x, lgl) {
   UseMethod("crisp", x)
 }
@@ -47,9 +45,7 @@ crisp.numeric <- function(x, lgl) {
 
   p <- make_crisp(x, lgl)
 
-  # FIXME
-  new_ffp(tibble::tibble(.rowid = 1:vctrs::vec_size(x), .p = p),
-          type = "Crisp Conditioning")
+  ffp(p)
 }
 
 #' @rdname crisp
@@ -62,9 +58,7 @@ crisp.matrix <- function(x, lgl) {
 
   p <- make_crisp(x, lgl)
 
-  #FIXME
-  new_ffp(tibble::tibble(.rowid = 1:vctrs::vec_size(x), .p = p),
-          type = "Crisp Conditioning")
+  ffp(p)
 
 }
 
@@ -77,9 +71,7 @@ crisp.ts <- function(x, lgl) {
   vctrs::vec_assert(lgl, logical())
 
   p <- make_crisp(x, lgl)
-  #FIXME
-  new_ffp(tibble::tibble(.rowid = 1:vctrs::vec_size(x), .p = p),
-          type = "Crisp Conditioning")
+  ffp(p)
 }
 
 #' @rdname crisp
@@ -92,9 +84,7 @@ crisp.xts <- function(x, lgl) {
 
   p <- make_crisp(x, lgl)
 
-  #FIXME
-  new_ffp(tibble::tibble(.rowid = 1:vctrs::vec_size(x), .p = p),
-          type = "Crisp Conditioning")
+  ffp(p)
 }
 
 #' @rdname crisp
@@ -107,9 +97,7 @@ crisp.data.frame <- function(x, lgl) {
 
   p <- make_crisp(x, lgl)
 
-  #FIXME
-  new_ffp(tibble::tibble(.rowid = 1:vctrs::vec_size(x), .p = p),
-          type = "Crisp Conditioning")
+  ffp(p)
 }
 
 #' @rdname crisp
@@ -122,9 +110,7 @@ crisp.tbl_df <- function(x, lgl) {
 
   p <- make_crisp(x, lgl)
 
-  #FIXME
-  new_ffp(tibble::tibble(.rowid = 1:vctrs::vec_size(x), .p = p),
-          type = "Crisp Conditioning")
+  ffp(p)
 }
 
 
@@ -153,20 +139,17 @@ crisp.tbl_df <- function(x, lgl) {
 #'
 #' @examples
 #' library(ggplot2)
-#'
 #' # long half_life
 #' long_hl <- smoothing(EuStockMarkets, 0.001)
 #' long_hl
 #'
-#' ggplot(long_hl, aes(x = .rowid, y = .p, color = .p)) +
-#'   geom_line(show.legend = FALSE) +
-#'   scale_color_viridis_c()
+#' # long half_file
+#' autoplot(long_hl)
 #'
 #' # short half_life
 #' short_hl <- smoothing(EuStockMarkets, 0.015)
-#' ggplot(short_hl, aes(x = .rowid, y = .p, color = .p)) +
-#'   geom_line(show.legend = FALSE) +
-#'   scale_color_viridis_c()
+#' short_hl
+#' autoplot(short_hl)
 smoothing <- function(x, lambda) {
   UseMethod("smoothing", x)
 }
@@ -183,10 +166,7 @@ smoothing.default <- function(x, lambda) {
 smoothing.numeric <- function(x, lambda) {
   vctrs::vec_assert(lambda, double(), 1)
   p <- make_smoothing(x, lambda)
-
-  #FIXME
-  new_ffp(tibble::tibble(.rowid = 1:vctrs::vec_size(x), .p = p),
-          type = "Exponential Smoothing")
+  ffp(p)
 }
 
 #' @rdname smoothing
@@ -194,10 +174,7 @@ smoothing.numeric <- function(x, lambda) {
 smoothing.matrix <- function(x, lambda) {
   vctrs::vec_assert(lambda, double(), 1)
   p <- make_smoothing(x, lambda)
-
-  #FIXME
-  new_ffp(tibble::tibble(.rowid = 1:vctrs::vec_size(x), .p = p),
-          type = "Exponential Smoothing")
+  ffp(p)
 }
 
 #' @rdname smoothing
@@ -205,10 +182,7 @@ smoothing.matrix <- function(x, lambda) {
 smoothing.ts <- function(x, lambda) {
   vctrs::vec_assert(lambda, double(), 1)
   p <- make_smoothing(x, lambda)
-
-  #FIXME
-  new_ffp(tibble::tibble(.rowid = 1:vctrs::vec_size(x), .p = p),
-          type = "Exponential Smoothing")
+  ffp(p)
 }
 
 #' @rdname smoothing
@@ -216,10 +190,7 @@ smoothing.ts <- function(x, lambda) {
 smoothing.xts <- function(x, lambda) {
   vctrs::vec_assert(lambda, double(), 1)
   p <- make_smoothing(x, lambda)
-
-  #FIXME
-  new_ffp(tibble::tibble(.rowid = 1:vctrs::vec_size(x), .p = p),
-          type = "Exponential Smoothing")
+  ffp(p)
 }
 
 #' @rdname smoothing
@@ -227,10 +198,7 @@ smoothing.xts <- function(x, lambda) {
 smoothing.data.frame <- function(x, lambda) {
   vctrs::vec_assert(lambda, double(), 1)
   p <- make_smoothing(x, lambda)
-
-  #FIXME
-  new_ffp(tibble::tibble(.rowid = 1:vctrs::vec_size(x), .p = p),
-          type = "Exponential Smoothing")
+  ffp(p)
 }
 
 #' @rdname smoothing
@@ -238,10 +206,7 @@ smoothing.data.frame <- function(x, lambda) {
 smoothing.tbl <- function(x, lambda) {
   vctrs::vec_assert(lambda, double(), 1)
   p <- make_smoothing(x, lambda)
-
-  #FIXME
-  new_ffp(tibble::tibble(.rowid = 1:vctrs::vec_size(x), .p = p),
-          type = "Exponential Smoothing")
+  ffp(p)
 }
 
 
@@ -273,17 +238,13 @@ smoothing.tbl <- function(x, lambda) {
 #' kn <- kernel_normal(ret, mean, sigma)
 #' kn
 #'
-#' ggplot(kn, aes(x = .rowid, y = .p, color = .p)) +
-#'   geom_line(show.legend = FALSE) +
-#'   scale_color_viridis_c()
+#' autoplot(kn)
 #'
 #' # Spread the distribution with a larger sigma
 #' sigma <- var(diff(ret)) / 0.05
 #' kn <- kernel_normal(ret, mean, sigma)
 #'
-#' ggplot(kn, aes(x = .rowid, y = .p, color = .p)) +
-#'   geom_line(show.legend = FALSE) +
-#'   scale_color_viridis_c()
+#' autoplot(kn)
 kernel_normal <- function(x, mean, sigma) {
   UseMethod("kernel_normal", x)
 }
@@ -301,11 +262,7 @@ kernel_normal.numeric <- function(x, mean, sigma) {
   vctrs::vec_assert(sigma, double(), 1)
 
   p <- make_kernel_normal(x = x, mean, sigma)
-
-  #FIXME
-  #call_label <- dplyr::as_label(match.call())
-  new_ffp(tibble::tibble(.rowid = 1:vctrs::vec_size(x), .p = p),
-          type = "Kernel Damping")
+  ffp(p)
 }
 
 #' @rdname kernel_normal
@@ -321,9 +278,7 @@ kernel_normal.matrix <- function(x, mean, sigma) {
 
   p <- make_kernel_normal(x = x, mean, sigma)
 
-  #FIXME
-  new_ffp(tibble::tibble(.rowid = 1:vctrs::vec_size(x), .p = p),
-          type = "Kernel Damping")
+  ffp(p)
 
 }
 
@@ -340,9 +295,7 @@ kernel_normal.ts <- function(x, mean, sigma) {
 
   p <- make_kernel_normal(x = x, mean, sigma)
 
-  #FIXME
-  new_ffp(tibble::tibble(.rowid = 1:vctrs::vec_size(x), .p = p),
-          type = "Kernel Damping")
+  ffp(p)
 
 }
 
@@ -359,9 +312,7 @@ kernel_normal.xts <- function(x, mean, sigma) {
 
   p <- make_kernel_normal(x = x, mean, sigma)
 
-  #FIXME
-  new_ffp(tibble::tibble(.rowid = 1:vctrs::vec_size(x), .p = p),
-          type = "Kernel Damping")
+  ffp(p)
 }
 
 #' @rdname kernel_normal
@@ -379,9 +330,7 @@ kernel_normal.tbl_df <- function(x, mean, sigma) {
 
   p <- make_kernel_normal(x = x, mean, sigma)
 
-  #FIXME
-  new_ffp(tibble::tibble(.rowid = 1:vctrs::vec_size(x), .p = p),
-          type = "Kernel Damping")
+  ffp(p)
 
 }
 
@@ -400,9 +349,7 @@ kernel_normal.data.frame <- function(x, mean, sigma) {
 
   p <- make_kernel_normal(x = x, mean, sigma)
 
-  #FIXME
-  new_ffp(tibble::tibble(.rowid = 1:vctrs::vec_size(x), .p = p),
-          type = "Kernel Damping")
+  ffp(p)
 }
 
 

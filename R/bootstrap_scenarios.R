@@ -16,7 +16,7 @@
 #' ret <- diff(log(EuStockMarkets))
 #' ew  <- rep(1 / nrow(ret), nrow(ret))
 #'
-#' bootstrap_scenarios(x = ret, p = ew, n = 10)
+#' bootstrap_scenarios(x = ret, p = as_ffp(ew), n = 10)
 bootstrap_scenarios <- function(x, p, n) {
   UseMethod("bootstrap_scenarios", x)
 }
@@ -25,15 +25,12 @@ bootstrap_scenarios <- function(x, p, n) {
 #' @export
 bootstrap_scenarios.numeric <- function(x, p, n) {
   vctrs::vec_assert(n, double(), 1)
-  # vctrs::vec_assert(p, double())
+  stopifnot(inherits(p, "ffp"))
   assertthat::assert_that(
     assertthat::are_equal(vctrs::vec_size(x), vctrs::vec_size(p))
   )
 
-  p <- as_ffp_mat(purrr::keep(p, is.double))
-  assert_is_univariate(p)
   x <- as_ffp_mat(x)
-
   out <- make_scenarios(x, p, n)
 
   # FIXME
@@ -44,13 +41,11 @@ bootstrap_scenarios.numeric <- function(x, p, n) {
 #' @export
 bootstrap_scenarios.matrix <- function(x, p, n) {
   vctrs::vec_assert(n, double(), 1)
-  #vctrs::vec_assert(p, double())
+  stopifnot(inherits(p, "ffp"))
   assertthat::assert_that(
     assertthat::are_equal(vctrs::vec_size(x), vctrs::vec_size(p))
   )
 
-  p <- as_ffp_mat(purrr::keep(p, is.double))
-  assert_is_univariate(p)
   x <- as_ffp_mat(x)
 
   out <- make_scenarios(x, p, n)
@@ -63,13 +58,11 @@ bootstrap_scenarios.matrix <- function(x, p, n) {
 #' @export
 bootstrap_scenarios.ts <- function(x, p, n) {
   vctrs::vec_assert(n, double(), 1)
-  #vctrs::vec_assert(p, double())
+  stopifnot(inherits(p, "ffp"))
   assertthat::assert_that(
     assertthat::are_equal(vctrs::vec_size(x), vctrs::vec_size(p))
   )
 
-  p <- as_ffp_mat(purrr::keep(p, is.double))
-  assert_is_univariate(p)
   x <- as_ffp_mat(x)
 
   out <- make_scenarios(x, p, n)
@@ -82,13 +75,11 @@ bootstrap_scenarios.ts <- function(x, p, n) {
 #' @export
 bootstrap_scenarios.xts <- function(x, p, n) {
   vctrs::vec_assert(n, double(), 1)
-  #vctrs::vec_assert(p, double())
+  stopifnot(inherits(p, "ffp"))
   assertthat::assert_that(
     assertthat::are_equal(vctrs::vec_size(x), vctrs::vec_size(p))
   )
 
-  p <- as_ffp_mat(purrr::keep(p, is.double))
-  assert_is_univariate(p)
   x <- as_ffp_mat(x)
 
   out <- make_scenarios(x, p, n)
@@ -101,13 +92,11 @@ bootstrap_scenarios.xts <- function(x, p, n) {
 #' @export
 bootstrap_scenarios.tbl <- function(x, p, n) {
   vctrs::vec_assert(n, double(), 1)
-  #vctrs::vec_assert(p, double())
+  stopifnot(inherits(p, "ffp"))
   assertthat::assert_that(
     assertthat::are_equal(vctrs::vec_size(x), vctrs::vec_size(p))
   )
 
-  p <- as_ffp_mat(purrr::keep(p, is.double))
-  assert_is_univariate(p)
   x <- as_ffp_mat(purrr::keep(x, is.double))
 
   out <- make_scenarios(x, p, n)
@@ -120,13 +109,10 @@ bootstrap_scenarios.tbl <- function(x, p, n) {
 #' @export
 bootstrap_scenarios.data.frame <- function(x, p, n) {
   vctrs::vec_assert(n, double(), 1)
-  #vctrs::vec_assert(p, double())
+  stopifnot(inherits(p, "ffp"))
   assertthat::assert_that(
     assertthat::are_equal(vctrs::vec_size(x), vctrs::vec_size(p))
   )
-
-  p <- as_ffp_mat(purrr::keep(p, is.double))
-  assert_is_univariate(p)
   x <- as_ffp_mat(purrr::keep(x, is.double))
 
   out <- make_scenarios(x, p, n)

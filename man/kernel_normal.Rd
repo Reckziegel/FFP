@@ -52,17 +52,13 @@ sigma <- var(diff(ret))
 kn <- kernel_normal(ret, mean, sigma)
 kn
 
-ggplot(kn, aes(x = .rowid, y = .p, color = .p)) +
-  geom_line(show.legend = FALSE) +
-  scale_color_viridis_c()
+autoplot(kn)
 
 # Spread the distribution with a larger sigma
 sigma <- var(diff(ret)) / 0.05
 kn <- kernel_normal(ret, mean, sigma)
 
-ggplot(kn, aes(x = .rowid, y = .p, color = .p)) +
-  geom_line(show.legend = FALSE) +
-  scale_color_viridis_c()
+autoplot(kn)
 }
 \seealso{
 \code{\link{crisp}} \code{\link{smoothing}}

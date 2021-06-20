@@ -40,11 +40,14 @@ reference:
 
     - title: Vizualization
       contents:
+      - autoplot.ffp
       - scenario_density
 
     - title: Class
       contents:
-      - new_ffp
+      - ffp
+      - as_ffp
+      - is_ffp
 
     - title: Data
       contents:

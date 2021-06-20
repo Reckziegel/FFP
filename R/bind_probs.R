@@ -35,9 +35,11 @@ bind_probs <- function(...) {
  #types <- purrr::map(dots, attributes) %>% purrr::map_chr("type")
  #type_to_add <- rep(types, each = unique_rows)
 
- dplyr::bind_rows(dots) %>%
-   dplyr::mutate(.key = as.factor(seq_to_add))
-                 #.type = as.factor(type_to_add))
+ purrr::map(dots, tibble::as_tibble) %>%
+    purrr::map(tibble::rowid_to_column) %>%
+    dplyr::bind_rows() %>%
+    dplyr::rename(probs = "value") %>%
+    dplyr::mutate(key = as.factor(seq_to_add))
 
 }
 

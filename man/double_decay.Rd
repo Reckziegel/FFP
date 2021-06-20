@@ -53,9 +53,7 @@ ret <- diff(log(EuStockMarkets))
 dd <- double_decay(ret, l_c, l_s)
 dd
 
-ggplot(dd, aes(x = .rowid, y = .p, color = .p)) +
-  geom_line(show.legend = FALSE) +
-  scale_color_viridis_c()
+autoplot(dd)
 }
 \references{
 De Santis, G., R. Litterman, A. Vesval, and K. Winkelmann, 2003,

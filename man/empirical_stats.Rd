@@ -58,7 +58,7 @@ ret <- diff(log(EuStockMarkets))
 
 # with equal weights
 ew  <- rep(1 / nrow(ret), nrow(ret))
-empirical_stats(x = ret, p = ew)
+empirical_stats(x = ret, p = as_ffp(ew))
 
 # with ffp
 exp_smooth <- smoothing(ret, 0.015)

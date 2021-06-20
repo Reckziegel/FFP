@@ -49,20 +49,17 @@ For example: log(2) / 0.0166 is approximately 42. So, a parameter \code{lambda} 
 }
 \examples{
 library(ggplot2)
-
 # long half_life
 long_hl <- smoothing(EuStockMarkets, 0.001)
 long_hl
 
-ggplot(long_hl, aes(x = .rowid, y = .p, color = .p)) +
-  geom_line(show.legend = FALSE) +
-  scale_color_viridis_c()
+# long half_file
+autoplot(long_hl)
 
 # short half_life
 short_hl <- smoothing(EuStockMarkets, 0.015)
-ggplot(short_hl, aes(x = .rowid, y = .p, color = .p)) +
-  geom_line(show.legend = FALSE) +
-  scale_color_viridis_c()
+short_hl
+autoplot(short_hl)
 }
 \seealso{
 \code{\link{crisp}} \code{\link{kernel_normal}} \code{\link{half_life}}

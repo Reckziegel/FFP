@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Full Information by Kernel-Damping — kernel_normal • ffp</title>
+<title>Inspection of a ffp object with ggplot2 — autoplot.ffp • ffp</title>
 
 
 <!-- jquery -->
@@ -39,10 +39,8 @@
 
 
 
-<meta property="og:title" content="Full Information by Kernel-Damping — kernel_normal" />
-<meta property="og:description" content="In this framework, historical realizations receive a weight proportional to
-it's distance from the target mean, which is enveloped by
-normal kernel with a bandwidth equal sigma." />
+<meta property="og:title" content="Inspection of a ffp object with ggplot2 — autoplot.ffp" />
+<meta property="og:description" content="This functions extends the autoplot method for the ffp class." />
 
 
 
@@ -122,86 +120,54 @@ normal kernel with a bandwidth equal sigma." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Full Information by Kernel-Damping</h1>
-    <small class="dont-index">Source: <a href='https://github.com/Reckziegel/FFP/blob/master/R/full_information.R'><code>R/full_information.R</code></a></small>
-    <div class="hidden name"><code>kernel_normal.Rd</code></div>
+    <h1>Inspection of a <code>ffp</code> object with ggplot2</h1>
+    <small class="dont-index">Source: <a href='https://github.com/Reckziegel/FFP/blob/master/R/ffp-ggplot2.R'><code>R/ffp-ggplot2.R</code></a></small>
+    <div class="hidden name"><code>autoplot.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>In this framework, historical realizations receive a weight proportional to
-it's distance from the target mean, which is enveloped by
-normal kernel with a bandwidth equal sigma.</p>
+    <p>This functions extends the <code>autoplot</code> method for the <code>ffp</code> class.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>kernel_normal</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>mean</span>, <span class='va'>sigma</span><span class='op'>)</span>
+    <pre class="usage"><span class='co'># S3 method for ffp</span>
+<span class='fu'>autoplot</span><span class='op'>(</span><span class='va'>object</span>, color <span class='op'>=</span> <span class='cn'>TRUE</span>, <span class='va'>...</span><span class='op'>)</span>
 
-<span class='co'># S3 method for default</span>
-<span class='fu'>kernel_normal</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>mean</span>, <span class='va'>sigma</span><span class='op'>)</span>
-
-<span class='co'># S3 method for numeric</span>
-<span class='fu'>kernel_normal</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>mean</span>, <span class='va'>sigma</span><span class='op'>)</span>
-
-<span class='co'># S3 method for matrix</span>
-<span class='fu'>kernel_normal</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>mean</span>, <span class='va'>sigma</span><span class='op'>)</span>
-
-<span class='co'># S3 method for ts</span>
-<span class='fu'>kernel_normal</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>mean</span>, <span class='va'>sigma</span><span class='op'>)</span>
-
-<span class='co'># S3 method for xts</span>
-<span class='fu'>kernel_normal</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>mean</span>, <span class='va'>sigma</span><span class='op'>)</span>
-
-<span class='co'># S3 method for tbl_df</span>
-<span class='fu'>kernel_normal</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>mean</span>, <span class='va'>sigma</span><span class='op'>)</span>
-
-<span class='co'># S3 method for data.frame</span>
-<span class='fu'>kernel_normal</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>mean</span>, <span class='va'>sigma</span><span class='op'>)</span></pre>
+<span class='co'># S3 method for ffp</span>
+<span class='fu'><a href='https://rdrr.io/r/graphics/plot.default.html'>plot</a></span><span class='op'>(</span><span class='va'>object</span>, <span class='va'>...</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>x</th>
-      <td><p>The risk-drivers.</p></td>
+      <th>object</th>
+      <td><p>An objected of the class <code>ffp</code>.</p></td>
     </tr>
     <tr>
-      <th>mean</th>
-      <td><p>The point in which the kernel should be centered.</p></td>
+      <th>color</th>
+      <td><p>A <code>logical</code> indicating whether or not the <code>color</code> argument
+should be added to the <code>ggplot2</code> aesthetics.</p></td>
     </tr>
     <tr>
-      <th>sigma</th>
-      <td><p>A number with the uncertainty (volatility) around the mean.</p></td>
+      <th>...</th>
+      <td><p>Currently not used.</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>A S3 vector of class <code>ffp</code> with the new probabilities
-distribution.</p>
-    <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
-
-    <div class='dont-index'><p><code><a href='crisp.html'>crisp</a></code> <code><a href='smoothing.html'>smoothing</a></code></p></div>
+    <p>A <code>ggplot2</code> object.</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://ggplot2.tidyverse.org'>ggplot2</a></span><span class='op'>)</span>
 
-<span class='va'>ret</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/diff.html'>diff</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span><span class='va'>EuStockMarkets</span><span class='op'>[</span> , <span class='fl'>1</span><span class='op'>]</span><span class='op'>)</span><span class='op'>)</span>
-<span class='va'>mean</span> <span class='op'>&lt;-</span> <span class='op'>-</span><span class='fl'>0.01</span> <span class='co'># scenarios around -1%</span>
-<span class='va'>sigma</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/cor.html'>var</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/diff.html'>diff</a></span><span class='op'>(</span><span class='va'>ret</span><span class='op'>)</span><span class='op'>)</span>
+<span class='va'>x</span> <span class='op'>&lt;-</span> <span class='fu'><a href='smoothing.html'>smoothing</a></span><span class='op'>(</span><span class='va'>EuStockMarkets</span>, <span class='fl'>0.001</span><span class='op'>)</span>
+<span class='va'>y</span> <span class='op'>&lt;-</span> <span class='fu'><a href='smoothing.html'>smoothing</a></span><span class='op'>(</span><span class='va'>EuStockMarkets</span>, <span class='fl'>0.01</span><span class='op'>)</span>
 
-<span class='va'>kn</span> <span class='op'>&lt;-</span> <span class='fu'>kernel_normal</span><span class='op'>(</span><span class='va'>ret</span>, <span class='va'>mean</span>, <span class='va'>sigma</span><span class='op'>)</span>
-<span class='va'>kn</span>
-</div><div class='output co'>#&gt; &lt;ffp[1859]&gt;
-#&gt; 0.0007806016 0.0007261808 0.0003335773 0.0006663388 0.0007309458 ... 7.07516e-05</div><div class='input'>
-<span class='fu'><a href='https://ggplot2.tidyverse.org/reference/autoplot.html'>autoplot</a></span><span class='op'>(</span><span class='va'>kn</span><span class='op'>)</span> <span class='op'>+</span>
+<span class='fu'><a href='https://ggplot2.tidyverse.org/reference/autoplot.html'>autoplot</a></span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_viridis.html'>scale_color_viridis_c</a></span><span class='op'>(</span><span class='op'>)</span>
-</div><div class='img'><img src='kernel_normal-1.png' alt='' width='700' height='433' /></div><div class='input'>
-<span class='co'># Spread the distribution with a larger sigma</span>
-<span class='va'>sigma</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/cor.html'>var</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/diff.html'>diff</a></span><span class='op'>(</span><span class='va'>ret</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>/</span> <span class='fl'>0.05</span>
-<span class='va'>kn</span> <span class='op'>&lt;-</span> <span class='fu'>kernel_normal</span><span class='op'>(</span><span class='va'>ret</span>, <span class='va'>mean</span>, <span class='va'>sigma</span><span class='op'>)</span>
-
-<span class='fu'><a href='https://ggplot2.tidyverse.org/reference/autoplot.html'>autoplot</a></span><span class='op'>(</span><span class='va'>kn</span><span class='op'>)</span> <span class='op'>+</span>
+</div><div class='img'><img src='autoplot-1.png' alt='' width='700' height='433' /></div><div class='input'><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/autoplot.html'>autoplot</a></span><span class='op'>(</span><span class='va'>y</span><span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_viridis.html'>scale_color_viridis_c</a></span><span class='op'>(</span><span class='op'>)</span>
-</div><div class='img'><img src='kernel_normal-2.png' alt='' width='700' height='433' /></div></pre>
+</div><div class='img'><img src='autoplot-2.png' alt='' width='700' height='433' /></div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

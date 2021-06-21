@@ -174,7 +174,8 @@ the mean is constrained.</p></td>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>A <code>tibble</code> with the new probabilities distribution.</p>
+    <p>A S3 vector of class <code>ffp</code> with the new probabilities
+distribution.</p>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <div class='dont-index'><p><code><a href='double_decay.html'>double_decay</a></code></p></div>
@@ -188,23 +189,9 @@ the mean is constrained.</p></td>
 
 <span class='va'>ke</span> <span class='op'>&lt;-</span> <span class='fu'>kernel_entropy</span><span class='op'>(</span><span class='va'>ret</span>, <span class='va'>mean</span>, <span class='va'>sigma</span><span class='op'>)</span>
 <span class='va'>ke</span>
-</div><div class='output co'>#&gt; <span style='color: #BBBB00;'>#</span> <span style='color: #0000BB; font-weight: bold;'>Fully-Flexible Probability</span> 
-#&gt; <span style='color: #949494;'># A tibble: 1,859 x 2</span>
-#&gt;    .rowid       .p
-#&gt;     <span style='color: #949494; font-style: italic;'>&lt;int&gt;</span>    <span style='color: #949494; font-style: italic;'>&lt;dbl&gt;</span>
-#&gt; <span style='color: #BCBCBC;'> 1</span>      1 0.000<span style='text-decoration: underline;'>926</span>
-#&gt; <span style='color: #BCBCBC;'> 2</span>      2 0.000<span style='text-decoration: underline;'>600</span>
-#&gt; <span style='color: #BCBCBC;'> 3</span>      3 0.000<span style='text-decoration: underline;'>154</span>
-#&gt; <span style='color: #BCBCBC;'> 4</span>      4 0.000<span style='text-decoration: underline;'>468</span>
-#&gt; <span style='color: #BCBCBC;'> 5</span>      5 0.000<span style='text-decoration: underline;'>614</span>
-#&gt; <span style='color: #BCBCBC;'> 6</span>      6 0.000<span style='text-decoration: underline;'>104</span>
-#&gt; <span style='color: #BCBCBC;'> 7</span>      7 0.000<span style='text-decoration: underline;'>219</span>
-#&gt; <span style='color: #BCBCBC;'> 8</span>      8 0.000<span style='text-decoration: underline;'>519</span>
-#&gt; <span style='color: #BCBCBC;'> 9</span>      9 0.000<span style='text-decoration: underline;'>205</span>
-#&gt; <span style='color: #BCBCBC;'>10</span>     10 0.000<span style='text-decoration: underline;'>350</span>
-#&gt; <span style='color: #949494;'># … with 1,849 more rows</span></div><div class='input'>
-<span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='va'>ke</span>, <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>.rowid</span>, y <span class='op'>=</span> <span class='va'>.p</span>, color <span class='op'>=</span> <span class='va'>.p</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_path.html'>geom_line</a></span><span class='op'>(</span>show.legend <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>+</span>
+</div><div class='output co'>#&gt; &lt;ffp[1859]&gt;
+#&gt; 0.000925556 0.0005999121 0.000153732 0.0004681872 0.000614081 ... 3.258178e-05</div><div class='input'>
+<span class='fu'><a href='https://ggplot2.tidyverse.org/reference/autoplot.html'>autoplot</a></span><span class='op'>(</span><span class='va'>ke</span><span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_viridis.html'>scale_color_viridis_c</a></span><span class='op'>(</span><span class='op'>)</span>
 </div><div class='img'><img src='kernel_entropy-1.png' alt='' width='700' height='433' /></div></pre>
   </div>

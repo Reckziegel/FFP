@@ -170,7 +170,7 @@ bind_probs(fp_es1, fp_es2, fp_cc, fp_kd, fp_ekd, fp_emc) %>%
 The new marginal distribution of the P&L that results from "tweaking" probabilities can be visualized, case by case, with `scenario_density()`.
 
 ```{r, fig.align='center', fig.height=5, fig.width=7}
-scenario_density(pnl, fp_es2) + 
+scenario_density(purrr::chuck(pnl, "pnl_u"), fp_es2) + 
   ggplot2::scale_y_continuous(labels = scales::percent_format()) + 
   ggplot2::scale_x_continuous(labels = scales::dollar_format(prefix = "U$ ")) + 
   ggplot2::labs(title = "Scenario Analysis with Fully-Flexible Probabilities (FFP)", 

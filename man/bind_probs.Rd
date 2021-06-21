@@ -7,19 +7,33 @@
 bind_probs(...)
 }
 \arguments{
-\item{...}{Different \code{tibble} objects with the \code{ffp} signature to combine.}
+\item{...}{Different \code{ffp} objects to combine.}
 }
 \value{
 A tidy \code{tibble}.
+
+The output adds two new columns:
+\itemize{
+\item \code{rowid} (an \code{integer}) with the row number of each realization
+\item \code{key} (a \code{factor}) that keeps track of the \code{ffp} inputs as separated objects.
+}
 }
 \description{
 This function mimics \code{dplyr} \code{\link[dplyr]{bind}}. It's useful if you
 have different \code{ffp} objects and want to stack them in the \code{tidy} (long) format.
 }
 \examples{
+library(ggplot2)
+library(dplyr, warn.conflicts = FALSE)
+
 x <- smoothing(EuStockMarkets, 0.001)
 y <- smoothing(EuStockMarkets, 0.002)
 bind_probs(x, y)
+
+bind_probs(x, y) \%>\%
+  ggplot(aes(x = rowid, y = probs, color = key)) +
+  geom_line() +
+  scale_color_viridis_d()
 }
 \seealso{
 \code{\link{crisp}} \code{\link{smoothing}} \code{\link{kernel_normal}}

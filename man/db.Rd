@@ -3,7 +3,8 @@
 \docType{data}
 \name{db}
 \alias{db}
-\title{Dataset used in Historical Scenarios with Fully Flexible Probabilities.}
+\title{Dataset used in Historical Scenarios with Fully Flexible Probabilities
+(\code{matrix} format).}
 \format{
 An object of class \code{matrix} (inherits from \code{array}) with 1083 rows and 9 columns.
 }
@@ -11,12 +12,13 @@ An object of class \code{matrix} (inherits from \code{array}) with 1083 rows and
 db
 }
 \description{
-Dataset used in Historical Scenarios with Fully Flexible Probabilities.
+Dataset used in Historical Scenarios with Fully Flexible Probabilities
+(\code{matrix} format).
 }
 \references{
 Meucci, Attilio, Historical Scenarios with Fully Flexible Probabilities
 (October 23, 2010). GARP Risk Professional, pp. 47-51, December 2010,
-Available at SSRN: https://ssrn.com/abstract=1696802 or http://dx.doi.org/10.2139/ssrn.1696802
+Available at SSRN: \url{https://ssrn.com/abstract=1696802} or \url{http://dx.doi.org/10.2139/ssrn.1696802}
 }
 \seealso{
 \code{\link{db_tbl}}

@@ -27,8 +27,8 @@ To overcome this difficulty, the Fully-Flexible Probabilities (FFP)
 approach offers an inexpensive way for scenario generation: it reprices
 the *probabilities* associated to each scenario, instead of the
 scenarios themselves. Once the new probabilities have been defined, the
-computations can be performed very quickly because the burden associated
-with scenario generation and valuation is left aside.
+computations can be performed very quickly because the burden of
+scenario generation and valuation is left aside.
 
 ## Installation
 

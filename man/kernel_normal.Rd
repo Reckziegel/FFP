@@ -35,7 +35,8 @@ kernel_normal(x, mean, sigma)
 \item{sigma}{A number with the uncertainty (volatility) around the mean.}
 }
 \value{
-A \code{tibble} with the new probabilities distribution.
+A S3 vector of class \code{ffp} with the new probabilities
+distribution.
 }
 \description{
 In this framework, historical realizations receive a weight proportional to
@@ -52,13 +53,15 @@ sigma <- var(diff(ret))
 kn <- kernel_normal(ret, mean, sigma)
 kn
 
-autoplot(kn)
+autoplot(kn) +
+  scale_color_viridis_c()
 
 # Spread the distribution with a larger sigma
 sigma <- var(diff(ret)) / 0.05
 kn <- kernel_normal(ret, mean, sigma)
 
-autoplot(kn)
+autoplot(kn) +
+  scale_color_viridis_c()
 }
 \seealso{
 \code{\link{crisp}} \code{\link{smoothing}}

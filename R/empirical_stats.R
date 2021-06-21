@@ -6,13 +6,12 @@
 #' (size).
 #'
 #' @param x A set of joint-scenarios of risk-drivers.
-#' @param p A numeric vector with flexible probabilities.
+#' @param p A probability from the `ffp` class.
 #' @param level A number with the desired confidence level.
 #'
 #' @return A \code{tibble} with 6 rows and the following components:
 #'   * Mu,
 #'   * Std
-#'   * Skew
 #'   * Skew
 #'   * Kurt
 #'   * Var

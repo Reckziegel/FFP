@@ -170,7 +170,8 @@ which scenarios should considered.</p></td>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>A <code>tibble</code> with the new probabilities distribution.</p>
+    <p>A S3 vector of class <code>ffp</code> with the new probabilities
+distribution.</p>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <div class='dont-index'><p><code><a href='smoothing.html'>smoothing</a></code> <code><a href='kernel_normal.html'>kernel_normal</a></code></p></div>
@@ -184,8 +185,9 @@ which scenarios should considered.</p></td>
 <span class='va'>market_condition</span> <span class='op'>&lt;-</span> <span class='fu'>crisp</span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>ret</span>, <span class='va'>ret</span><span class='op'>[</span> , <span class='fl'>3</span><span class='op'>]</span> <span class='op'>&gt;</span> <span class='fl'>0.02</span><span class='op'>)</span>
 <span class='va'>market_condition</span>
 </div><div class='output co'>#&gt; &lt;ffp[1859]&gt;
-#&gt; 0 0 0 0 0 0  ... 0</div><div class='input'>
-<span class='fu'><a href='https://ggplot2.tidyverse.org/reference/autoplot.html'>autoplot</a></span><span class='op'>(</span><span class='va'>market_condition</span><span class='op'>)</span>
+#&gt; 0 0 0 0 0 ... 0</div><div class='input'>
+<span class='fu'><a href='https://ggplot2.tidyverse.org/reference/autoplot.html'>autoplot</a></span><span class='op'>(</span><span class='va'>market_condition</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_viridis.html'>scale_color_viridis_c</a></span><span class='op'>(</span><span class='op'>)</span>
 </div><div class='img'><img src='crisp-1.png' alt='' width='700' height='433' /></div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

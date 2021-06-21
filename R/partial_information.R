@@ -10,7 +10,8 @@
 #' @param sigma A number with the uncertainty around mean. When \code{NULL}, only
 #' the mean is constrained.
 #'
-#' @return A \code{tibble} with the new probabilities distribution.
+#' @return A S3 vector of class \code{ffp} with the new probabilities
+#' distribution.
 #'
 #' @export
 #'
@@ -26,7 +27,8 @@
 #' ke <- kernel_entropy(ret, mean, sigma)
 #' ke
 #'
-#' autoplot(ke)
+#' autoplot(ke) +
+#'   scale_color_viridis_c()
 kernel_entropy <- function(x, mean, sigma = NULL) {
   UseMethod("kernel_entropy", x)
 }
@@ -166,7 +168,8 @@ kernel_entropy.data.frame <- function(x, mean, sigma = NULL) {
 #' @param decay_high A number with the short-life (high decay) for the volatility
 #' structure.
 #'
-#' @return A \code{tibble} with the new probabilities distribution.
+#' @return A S3 vector of class \code{ffp} with the new probabilities
+#' distribution.
 #'
 #' @export
 #'
@@ -187,7 +190,8 @@ kernel_entropy.data.frame <- function(x, mean, sigma = NULL) {
 #' dd <- double_decay(ret, l_c, l_s)
 #' dd
 #'
-#' autoplot(dd)
+#' autoplot(dd) +
+#'   scale_color_viridis_c()
 double_decay <- function(x, decay_low, decay_high) {
   UseMethod("double_decay", x)
 }

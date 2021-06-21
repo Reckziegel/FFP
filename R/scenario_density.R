@@ -4,7 +4,7 @@
 #' P&L distribution.
 #'
 #' @param x An univariate marginal distribution.
-#' @param p A vector of fully flexible probabilities.
+#' @param p A probability from the `ffp` class.
 #'
 #' @return A \code{ggplot2} object.
 #' @export
@@ -19,6 +19,7 @@
 scenario_density <- function(x, p) {
 
   stopifnot(inherits(p, "ffp"))
+  assert_is_univariate(x)
   assert_is_equal_size(x, p)
   .size <- vctrs::vec_size(x)
   ew <- as_ffp(rep(1 / .size, .size))

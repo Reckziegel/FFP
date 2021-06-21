@@ -2,26 +2,42 @@
 % Please edit documentation in R/ffp-vctrs.R
 \name{ffp}
 \alias{ffp}
+\alias{is_ffp}
+\alias{as_ffp}
+\alias{as_ffp.default}
+\alias{as_ffp.integer}
 \title{Fully-Flexible Probability Class}
 \usage{
 ffp(x = double())
+
+is_ffp(x)
+
+as_ffp(x)
+
+\method{as_ffp}{default}(x)
+
+\method{as_ffp}{integer}(x)
 }
 \arguments{
 \item{x}{\itemize{
 \item For \code{ffp()}: A numeric vector (must be a probability)
-\item For \code{is_ffp()}: An object to test.
-\item For \code{as_ffp()}: An object to convert.
+\item For \code{is_ffp()}: An object to test if the class is \code{ffp}
+\item For \code{as_ffp()}: An object to convert to \code{ffp}
 }}
 }
 \value{
-A S3 vector of class \code{ffp}.
+\itemize{
+\item \code{ffp()} and \code{as_ffp()} return a S3 vector of class \code{ffp}
+\item \code{is_ffp()} returns a \code{logical} object.
+}
 }
 \description{
-Functions associated with the \code{ffp} class.
+Functions to help the user to manipulate the \code{ffp} class.
 }
 \examples{
 set.seed(123)
 p <- runif(5)
 p <- p / sum(p)
 ffp(p)
+is_ffp(p)
 }

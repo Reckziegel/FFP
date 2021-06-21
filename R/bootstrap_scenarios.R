@@ -4,7 +4,7 @@
 #' approach.
 #'
 #' @param x A time-series defining the scenario-probability distribution.
-#' @param p A numeric vector or an object of the `ffp` class.
+#' @param p A probability from the `ffp` class.
 #' @param n An \code{integer} scalar with the number of scenarios to be generated.
 #'
 #' @return The argument `x` is supposed to have the same size of `p`.
@@ -26,7 +26,6 @@ bootstrap_scenarios <- function(x, p, n) {
 bootstrap_scenarios.numeric <- function(x, p, n) {
   vctrs::vec_assert(n, double(), 1)
   stopifnot(inherits(p, "ffp"))
-  assert_is_probability(p)
   assertthat::assert_that(
     assertthat::are_equal(vctrs::vec_size(x), vctrs::vec_size(p))
   )
@@ -43,7 +42,6 @@ bootstrap_scenarios.numeric <- function(x, p, n) {
 bootstrap_scenarios.matrix <- function(x, p, n) {
   vctrs::vec_assert(n, double(), 1)
   stopifnot(inherits(p, "ffp"))
-  assert_is_probability(p)
   assertthat::assert_that(
     assertthat::are_equal(vctrs::vec_size(x), vctrs::vec_size(p))
   )

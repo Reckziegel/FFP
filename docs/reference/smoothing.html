@@ -163,38 +163,43 @@ to recent observations at an exponential rate.</p>
     </tr>
     <tr>
       <th>lambda</th>
-      <td><p>A number with the decay parameter that generated the half-life.</p></td>
+      <td><p>A number for the decay parameter.</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>A <code>tibble</code> with the new probabilities distribution.</p>
+    <p>A S3 vector of class <code>ffp</code> with the new probabilities
+distribution.</p>
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>The half-life is computed as:</p>
-<p><code>HL = log(2) / lambda</code>.</p>
-<p>For example: log(2) / 0.0166 is approximately 42. So, a parameter <code>lambda</code> of
-0.0166 can be associated with a half-life of two-months.</p>
+    <p>The half-life is linked with the lambda parameter as follows:</p><ul>
+<li><p><code>HL = log(2) / lambda</code>.</p></li>
+</ul>
+
+<p>For example: log(2) / 0.0166 is approximately 42. So, a parameter <code>lambda</code> of 0.0166 can be associated with a half-life of two-months.</p>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <div class='dont-index'><p><code><a href='crisp.html'>crisp</a></code> <code><a href='kernel_normal.html'>kernel_normal</a></code> <code><a href='half_life.html'>half_life</a></code></p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://ggplot2.tidyverse.org'>ggplot2</a></span><span class='op'>)</span>
+
 <span class='co'># long half_life</span>
 <span class='va'>long_hl</span> <span class='op'>&lt;-</span> <span class='fu'>smoothing</span><span class='op'>(</span><span class='va'>EuStockMarkets</span>, <span class='fl'>0.001</span><span class='op'>)</span>
 <span class='va'>long_hl</span>
 </div><div class='output co'>#&gt; &lt;ffp[1860]&gt;
-#&gt; 0.0001844669 0.0001846515 0.0001848363 0.0001850212 0.0001852063 0.0001853916  ... 0.0001853916</div><div class='input'>
+#&gt; 0.0001844669 0.0001846515 0.0001848363 0.0001850212 0.0001852063 ... 0.001183783</div><div class='input'>
 <span class='co'># long half_file</span>
-<span class='fu'><a href='https://ggplot2.tidyverse.org/reference/autoplot.html'>autoplot</a></span><span class='op'>(</span><span class='va'>long_hl</span><span class='op'>)</span>
+<span class='fu'><a href='https://ggplot2.tidyverse.org/reference/autoplot.html'>autoplot</a></span><span class='op'>(</span><span class='va'>long_hl</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_viridis.html'>scale_color_viridis_c</a></span><span class='op'>(</span><span class='op'>)</span>
 </div><div class='img'><img src='smoothing-1.png' alt='' width='700' height='433' /></div><div class='input'>
 <span class='co'># short half_life</span>
 <span class='va'>short_hl</span> <span class='op'>&lt;-</span> <span class='fu'>smoothing</span><span class='op'>(</span><span class='va'>EuStockMarkets</span>, <span class='fl'>0.015</span><span class='op'>)</span>
 <span class='va'>short_hl</span>
 </div><div class='output co'>#&gt; &lt;ffp[1860]&gt;
-#&gt; 1.154879e-14 1.172333e-14 1.19005e-14 1.208036e-14 1.226293e-14 1.244826e-14  ... 1.244826e-14</div><div class='input'><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/autoplot.html'>autoplot</a></span><span class='op'>(</span><span class='va'>short_hl</span><span class='op'>)</span>
+#&gt; 1.154879e-14 1.172333e-14 1.19005e-14 1.208036e-14 1.226293e-14 ... 0.01488806</div><div class='input'><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/autoplot.html'>autoplot</a></span><span class='op'>(</span><span class='va'>short_hl</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_viridis.html'>scale_color_viridis_c</a></span><span class='op'>(</span><span class='op'>)</span>
 </div><div class='img'><img src='smoothing-2.png' alt='' width='700' height='433' /></div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

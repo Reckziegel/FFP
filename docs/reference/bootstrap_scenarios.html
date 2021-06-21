@@ -160,7 +160,7 @@ approach.</p>
     </tr>
     <tr>
       <th>p</th>
-      <td><p>A vector of probabilities.</p></td>
+      <td><p>An object of the <code>ffp</code> class.</p></td>
     </tr>
     <tr>
       <th>n</th>
@@ -177,7 +177,7 @@ approach.</p>
 <span class='va'>ret</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/diff.html'>diff</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span><span class='va'>EuStockMarkets</span><span class='op'>)</span><span class='op'>)</span>
 <span class='va'>ew</span>  <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='fl'>1</span> <span class='op'>/</span> <span class='fu'><a href='https://rdrr.io/r/base/nrow.html'>nrow</a></span><span class='op'>(</span><span class='va'>ret</span><span class='op'>)</span>, <span class='fu'><a href='https://rdrr.io/r/base/nrow.html'>nrow</a></span><span class='op'>(</span><span class='va'>ret</span><span class='op'>)</span><span class='op'>)</span>
 
-<span class='fu'>bootstrap_scenarios</span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>ret</span>, p <span class='op'>=</span> <span class='fu'><a href='is_ffp.html'>as_ffp</a></span><span class='op'>(</span><span class='va'>ew</span><span class='op'>)</span>, n <span class='op'>=</span> <span class='fl'>10</span><span class='op'>)</span>
+<span class='fu'>bootstrap_scenarios</span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>ret</span>, p <span class='op'>=</span> <span class='fu'><a href='ffp.html'>as_ffp</a></span><span class='op'>(</span><span class='va'>ew</span><span class='op'>)</span>, n <span class='op'>=</span> <span class='fl'>10</span><span class='op'>)</span>
 </div><div class='output co'>#&gt; <span style='color: #949494;'># A tibble: 10 x 4</span>
 #&gt;         DAX        SMI      CAC      FTSE
 #&gt;       <span style='color: #949494; font-style: italic;'>&lt;dbl&gt;</span>      <span style='color: #949494; font-style: italic;'>&lt;dbl&gt;</span>    <span style='color: #949494; font-style: italic;'>&lt;dbl&gt;</span>     <span style='color: #949494; font-style: italic;'>&lt;dbl&gt;</span>

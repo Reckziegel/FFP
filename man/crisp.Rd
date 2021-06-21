@@ -34,7 +34,8 @@ crisp(x, lgl)
 which scenarios should considered.}
 }
 \value{
-A \code{tibble} with the new probabilities distribution.
+A S3 vector of class \code{ffp} with the new probabilities
+distribution.
 }
 \description{
 In this function probabilities are given full weight when a macroeconomic
@@ -49,7 +50,8 @@ ret <- diff(log(EuStockMarkets))
 market_condition <- crisp(x = ret, ret[ , 3] > 0.02)
 market_condition
 
-autoplot(market_condition)
+autoplot(market_condition) +
+  scale_color_viridis_c()
 }
 \seealso{
 \code{\link{smoothing}} \code{\link{kernel_normal}}

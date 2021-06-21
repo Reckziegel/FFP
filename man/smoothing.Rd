@@ -30,36 +30,40 @@ smoothing(x, lambda)
 \arguments{
 \item{x}{The risk-drivers.}
 
-\item{lambda}{A number with the decay parameter that generated the half-life.}
+\item{lambda}{A number for the decay parameter.}
 }
 \value{
-A \code{tibble} with the new probabilities distribution.
+A S3 vector of class \code{ffp} with the new probabilities
+distribution.
 }
 \description{
 Exponential smoothing twists probabilities by giving relatively more weight
 to recent observations at an exponential rate.
 }
 \details{
-The half-life is computed as:
+The half-life is linked with the lambda parameter as follows:
+\itemize{
+\item \code{HL = log(2) / lambda}.
+}
 
-\code{HL = log(2) / lambda}.
-
-For example: log(2) / 0.0166 is approximately 42. So, a parameter \code{lambda} of
-0.0166 can be associated with a half-life of two-months.
+For example: log(2) / 0.0166 is approximately 42. So, a parameter \code{lambda} of 0.0166 can be associated with a half-life of two-months.
 }
 \examples{
 library(ggplot2)
+
 # long half_life
 long_hl <- smoothing(EuStockMarkets, 0.001)
 long_hl
 
 # long half_file
-autoplot(long_hl)
+autoplot(long_hl) +
+  scale_color_viridis_c()
 
 # short half_life
 short_hl <- smoothing(EuStockMarkets, 0.015)
 short_hl
-autoplot(short_hl)
+autoplot(short_hl) +
+  scale_color_viridis_c()
 }
 \seealso{
 \code{\link{crisp}} \code{\link{kernel_normal}} \code{\link{half_life}}

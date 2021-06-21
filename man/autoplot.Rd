@@ -3,14 +3,17 @@
 \name{autoplot.ffp}
 \alias{autoplot.ffp}
 \alias{plot.ffp}
-\title{Quick Inspection of a \code{ffp} object with ggplott2}
+\title{Inspection of a \code{ffp} object with ggplot2}
 \usage{
-\method{autoplot}{ffp}(object, ...)
+\method{autoplot}{ffp}(object, color = TRUE, ...)
 
 \method{plot}{ffp}(object, ...)
 }
 \arguments{
 \item{object}{An objected of the class \code{ffp}.}
+
+\item{color}{A \code{logical} indicating whether or not the \code{color} argument
+should be added to the \code{ggplot2} aesthetics.}
 
 \item{...}{Currently not used.}
 }
@@ -22,8 +25,12 @@ This functions extends the \code{autoplot} method for the \code{ffp} class.
 }
 \examples{
 library(ggplot2)
+
 x <- smoothing(EuStockMarkets, 0.001)
 y <- smoothing(EuStockMarkets, 0.01)
-autoplot(x)
-autoplot(y)
+
+autoplot(x) +
+  scale_color_viridis_c()
+autoplot(y) +
+  scale_color_viridis_c()
 }

@@ -1,15 +1,20 @@
 #' Fully-Flexible Probability Class
 #'
-#' Functions associated with the `ffp` class.
+#' Functions to help the user to manipulate the `ffp` class.
 #'
 #' @param x
 #' \itemize{
 #'   \item For `ffp()`: A numeric vector (must be a probability)
-#'   \item For `is_ffp()`: An object to test.
-#'   \item For `as_ffp()`: An object to convert.
+#'   \item For `is_ffp()`: An object to test if the class is `ffp`
+#'   \item For `as_ffp()`: An object to convert to `ffp`
 #' }
 #'
-#' @return A S3 vector of class `ffp`.
+#' @return
+#' \itemize{
+#'   \item `ffp()` and `as_ffp()` return a S3 vector of class `ffp`
+#'   \item `is_ffp()` returns a \code{logical} object.
+#' }
+#'
 #'
 #' @export
 #' @examples
@@ -17,30 +22,31 @@
 #' p <- runif(5)
 #' p <- p / sum(p)
 #' ffp(p)
+#' is_ffp(p)
 ffp <- function(x = double()) {
   vctrs::vec_cast(x, double())
   new_ffp(x)
 }
 
-#' @rdname ffp-vctrs
+#' @rdname ffp
 #' @export
 is_ffp <- function(x) {
   inherits(x, "ffp")
 }
 
-#' @rdname ffp-vctrs
+#' @rdname ffp
 #' @export
 as_ffp <- function(x) {
   UseMethod("as_ffp", x)
 }
 
-#' @rdname ffp-vctrs
+#' @rdname ffp
 #' @export
 as_ffp.default <- function(x) {
   vctrs::vec_cast(x, new_ffp())
 }
 
-#' @rdname ffp-vctrs
+#' @rdname ffp
 #' @export
 as_ffp.integer <- function(x) {
   vctrs::vec_cast(as.double(x), new_ffp())
@@ -95,11 +101,10 @@ vec_cast.double.ffp <- function(x, to, ...) vctrs::vec_data(x)
 #' @rdname ffp-vctrs
 #' @export
 obj_print_data.ffp <- function(x, ...) {
-  if (vctrs::vec_size(x) <= 6) {
+  if (vctrs::vec_size(x) <= 5) {
     cat(x)
   } else {
-    x <- utils::head(x)
-    cat(x, " ...", utils::tail(x, 1))
+    cat(utils::head(x, 5), "...", utils::tail(x, 1))
   }
 }
 

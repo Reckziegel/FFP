@@ -1,3 +1,4 @@
+
 assert_is_equal_size <- function(x, y) {
   assertthat::assert_that(
     vctrs::vec_size(x) == vctrs::vec_size(y)
@@ -25,10 +26,10 @@ assert_is_probability <- function(x) {
   inhe_num <- inherits(x, "numeric")
   inhe_ffp <- inherits(x, "ffp")
   if (!(inhe_num | inhe_ffp)) {
-    stop("`p` must be numeric of an object of the ffp class.", call. = FALSE)
+    stop("`p` must be numeric or an object of the ffp class.", call. = FALSE)
   }
   if (inhe_num) {
-    if (sum(x) > 1.00001) {
+    if (sum(x) > 1.001) {
       stop("Probabilities can't exceed 1.", call. = FALSE)
     }
     if (any(x < 0)) {

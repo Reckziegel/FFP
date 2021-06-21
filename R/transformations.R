@@ -4,7 +4,7 @@
 #'
 #' @param lambda A number.
 #'
-#' @return A number with the half-life in days.
+#' @return A single number with the half-life in days.
 #'
 #' @seealso \code{\link{smoothing}} \code{\link{double_decay}}
 #'

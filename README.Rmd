@@ -13,7 +13,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-# Fully-Flexible Probabilities
+# Fully Flexible Probabilities
 
 <!-- badges: start -->
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
@@ -27,7 +27,7 @@ knitr::opts_chunk$set(
 
 Oftentimes, the econometrician needs to stress-test the potential outcomes for a given set of risk-drivers. This process can be computationally costly when the entire set of scenarios needs to be repriced (bootstraped, resampled, etc.). 
 
-To overcome this difficulty, the Fully-Flexible Probabilities (FFP) approach offers an inexpensive way for scenario generation: it reprices the _probabilities_ associated to each scenario, instead of the scenarios themselves. Once the new probabilities have been defined, the computations can be performed very quickly because the burden associated with scenario generation and valuation is left aside.
+To overcome this difficulty, the Fully-Flexible Probabilities (FFP) approach offers an inexpensive way for scenario generation: it reprices the _probabilities_ associated to each scenario, instead of the scenarios themselves. Once the new probabilities have been defined, the computations can be performed very quickly because the burden of scenario generation and valuation is left aside.
 
 ## Installation
 
@@ -77,13 +77,13 @@ fp_ekd <- kernel_entropy(inflation, mean = 3, sigma = var(diff(inflation[[1]])))
 fp_emc <- double_decay(invariants, decay_low = 0.0055, decay_high = 0.0166)
 
 bind_probs(fp_es1, fp_es2, fp_cc, fp_kd, fp_ekd, fp_emc) %>% 
-  ggplot2::ggplot(ggplot2::aes(x = .rowid, y = .p, color = .key)) + 
+  ggplot2::ggplot(ggplot2::aes(x = rowid, y = probs, color = key)) + 
   ggplot2::geom_line(show.legend = FALSE) + 
-  ggplot2::facet_wrap(~.key,
+  ggplot2::facet_wrap(~key, 
                       labeller = ggplot2::labeller(
-                        .key = c("1" = "Exp. Smoothing", "2" = "Exp. Smoothing",
-                                 "3" = "Market-Conditioning", "4" = "Normal Kernel",
-                                 "5" = "FFP Kernel", "6" = "FFP Double-Decay"))) +
+                        key = c("1" = "Exp. Smoothing", "2" = "Exp. Smoothing", 
+                                "3" = "Market-Conditioning", "4" = "Normal Kernel", 
+                                "5" = "FFP Kernel", "6" = "FFP Double-Decay"))) +
   ggplot2::scale_y_continuous(labels = scales::percent_format()) + 
   ggplot2::scale_x_continuous(labels = NULL, breaks = NULL) + 
   ggplot2::scale_color_brewer(palette = "Paired") + 

@@ -20,17 +20,20 @@ navbar:
 
 reference:
     - title: Full Information
+      desc: Functions that completly describe a distribution.
       contents:
       - crisp
       - smoothing
       - kernel_normal
 
     - title: Partial Information
+      desc: Functions that partilly describe a distribution.
       contents:
       - kernel_entropy
       - double_decay
 
     - title: Utilities
+      desc: Functions to manipulate data.
       contents:
       - bind_probs
       - bootstrap_scenarios
@@ -39,12 +42,17 @@ reference:
       - half_life
 
     - title: Vizualization
+      desc: Functions to explore `ffp` objects with help of `ggplot2`.
       contents:
+      - autoplot.ffp
       - scenario_density
 
     - title: Class
+      desc: Functions to manipulate `ffp` objects.
       contents:
-      - new_ffp
+      - ffp
+      - as_ffp
+      - is_ffp
 
     - title: Data
       contents:

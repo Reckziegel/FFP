@@ -50,17 +50,10 @@ test_that("error if `decay_low` or `decay_high` are not a number of length 1", {
 double_decay_dbl <- double_decay(xu_vec, low_decay, high_decay)
 test_that("works on doubles", {
   # type
-  expect_type(double_decay_dbl, "list")
-  expect_s3_class(double_decay_dbl, "tbl_df")
-  expect_equal(purrr::map(double_decay_dbl, class), list(.rowid = "integer", .p = "numeric"))
-  # names
-  expect_named(double_decay_dbl, c(".rowid", ".p"))
+  expect_type(double_decay_dbl, "double")
+  expect_s3_class(double_decay_dbl, "ffp")
   # size
-  expect_equal(nrow(double_decay_dbl), NROW(xu))
-  expect_equal(ncol(double_decay_dbl), 2L)
-  # is_prob
-  expect_equal(sum(double_decay_dbl$.p), 1, tolerance = 0.001)
-  expect_true(all(double_decay_dbl$.p > 0))
+  expect_equal(vctrs::vec_size(double_decay_dbl), vctrs::vec_size(xu))
 })
 
 
@@ -68,165 +61,95 @@ test_that("works on doubles", {
 double_decay_matu <- double_decay(xu_mat, low_decay, high_decay)
 test_that("works on univariate matrices", {
   # type
-  expect_type(double_decay_matu, "list")
-  expect_s3_class(double_decay_matu, "tbl_df")
-  expect_equal(purrr::map(double_decay_matu, class), list(.rowid = "integer", .p = "numeric"))
-  # names
-  expect_named(double_decay_matu, c(".rowid", ".p"))
+  expect_type(double_decay_matu, "double")
+  expect_s3_class(double_decay_matu, "ffp")
   # size
-  expect_equal(nrow(double_decay_matu), NROW(xu))
-  expect_equal(ncol(double_decay_matu), 2L)
-  # is_prob
-  expect_equal(sum(double_decay_matu$.p), 1, tolerance = 0.001)
-  expect_true(all(double_decay_matu$.p > 0))
+  expect_equal(vctrs::vec_size(double_decay_matu), vctrs::vec_size(xu))
 })
 
 double_decay_matm <- double_decay(xm_mat, low_decay, high_decay)
 test_that("works on multivariate matrices", {
   # type
-  expect_type(double_decay_matm, "list")
-  expect_s3_class(double_decay_matm, "tbl_df")
-  expect_equal(purrr::map(double_decay_matm, class), list(.rowid = "integer", .p = "numeric"))
-  # names
-  expect_named(double_decay_matu, c(".rowid", ".p"))
+  expect_type(double_decay_matm, "double")
+  expect_s3_class(double_decay_matm, "ffp")
   # size
-  expect_equal(nrow(double_decay_matm), NROW(xu))
-  expect_equal(ncol(double_decay_matm), 2L)
-  # is_prob
-  expect_equal(sum(double_decay_matm$.p), 1, tolerance = 0.001)
-  expect_true(all(double_decay_matm$.p > 0))
+  expect_equal(vctrs::vec_size(double_decay_matm), vctrs::vec_size(xu))
 })
 
 # ts
 double_decay_tsu <- double_decay(xu_ts, low_decay, high_decay)
 test_that("works on univariate ts", {
   # type
-  expect_type(double_decay_tsu, "list")
-  expect_s3_class(double_decay_tsu, "tbl_df")
-  expect_equal(purrr::map(double_decay_tsu, class), list(.rowid = "integer", .p = "numeric"))
-  # names
-  expect_named(double_decay_matu, c(".rowid", ".p"))
+  expect_type(double_decay_tsu, "double")
+  expect_s3_class(double_decay_tsu, "ffp")
   # size
-  expect_equal(nrow(double_decay_tsu), NROW(xu))
-  expect_equal(ncol(double_decay_tsu), 2L)
-  # is_prob
-  expect_equal(sum(double_decay_tsu$.p), 1, tolerance = 0.001)
-  expect_true(all(double_decay_tsu$.p > 0))
+  expect_equal(vctrs::vec_size(double_decay_tsu), vctrs::vec_size(xu))
 })
 
 double_decay_tsm <- double_decay(xm_ts, low_decay, high_decay)
 test_that("works on multivariate ts", {
   # type
-  expect_type(double_decay_tsm, "list")
-  expect_s3_class(double_decay_tsm, "tbl_df")
-  expect_equal(purrr::map(double_decay_tsm, class), list(.rowid = "integer", .p = "numeric"))
-  # names
-  expect_named(double_decay_tsm, c(".rowid", ".p"))
+  expect_type(double_decay_tsm, "double")
+  expect_s3_class(double_decay_tsm, "ffp")
   # size
-  expect_equal(nrow(double_decay_tsm), NROW(xu))
-  expect_equal(ncol(double_decay_tsm), 2L)
-  # is_prob
-  expect_equal(sum(double_decay_tsm$.p), 1, tolerance = 0.001)
-  expect_true(all(double_decay_tsm$.p > 0))
+  expect_equal(vctrs::vec_size(double_decay_tsm), vctrs::vec_size(xu))
 })
 
 # xts
 double_decay_xtsu <- double_decay(xu_xts, low_decay, high_decay)
 test_that("works on univariate xts", {
   # type
-  expect_type(double_decay_xtsu, "list")
-  expect_s3_class(double_decay_xtsu, "tbl_df")
-  expect_equal(purrr::map(double_decay_xtsu, class), list(.rowid = "integer", .p = "numeric"))
-  # names
-  expect_named(double_decay_xtsu, c(".rowid", ".p"))
+  expect_type(double_decay_xtsu, "double")
+  expect_s3_class(double_decay_xtsu, "ffp")
   # size
-  expect_equal(nrow(double_decay_xtsu), NROW(xu))
-  expect_equal(ncol(double_decay_xtsu), 2L)
-  # is_prob
-  expect_equal(sum(double_decay_xtsu$.p), 1, tolerance = 0.001)
-  expect_true(all(double_decay_xtsu$.p > 0))
+  expect_equal(vctrs::vec_size(double_decay_xtsu), vctrs::vec_size(xu))
 })
 
 double_decay_xtsm <- double_decay(xm_xts, low_decay, high_decay)
 test_that("works on multivariate xts", {
   # type
-  expect_type(double_decay_xtsm, "list")
-  expect_s3_class(double_decay_xtsm, "tbl_df")
-  expect_equal(purrr::map(double_decay_xtsm, class), list(.rowid = "integer", .p = "numeric"))
-  # names
-  expect_named(double_decay_xtsm, c(".rowid", ".p"))
+  expect_type(double_decay_xtsm, "double")
+  expect_s3_class(double_decay_xtsm, "ffp")
   # size
-  expect_equal(nrow(double_decay_xtsm), NROW(xu))
-  expect_equal(ncol(double_decay_xtsm), 2L)
-  # is_prob
-  expect_equal(sum(double_decay_xtsm$.p), 1, tolerance = 0.001)
-  expect_true(all(double_decay_xtsm$.p > 0))
+  expect_equal(vctrs::vec_size(double_decay_xtsm), vctrs::vec_size(xu))
 })
 
 # data.frame
 double_decay_dfu <- double_decay(xu_df, low_decay, high_decay)
 test_that("works on univariate data.frames", {
   # type
-  expect_type(double_decay_dfu, "list")
-  expect_s3_class(double_decay_dfu, "tbl_df")
-  expect_equal(purrr::map(double_decay_dfu, class), list(.rowid = "integer", .p = "numeric"))
-  # names
-  expect_named(double_decay_dfu, c(".rowid", ".p"))
+  expect_type(double_decay_dfu, "double")
+  expect_s3_class(double_decay_dfu, "ffp")
   # size
-  expect_equal(nrow(double_decay_dfu), NROW(xu))
-  expect_equal(ncol(double_decay_dfu), 2L)
-  # is_prob
-  expect_equal(sum(double_decay_dfu$.p), 1, tolerance = 0.001)
-  expect_true(all(double_decay_dfu$.p > 0))
+  expect_equal(vctrs::vec_size(double_decay_dfu), vctrs::vec_size(xu))
 })
 
 double_decay_dfm <- double_decay(xm_df, low_decay, high_decay)
 test_that("works on multivariate data.frames", {
   # type
-  expect_type(double_decay_dfm, "list")
-  expect_s3_class(double_decay_dfm, "tbl_df")
-  expect_equal(purrr::map(double_decay_dfm, class), list(.rowid = "integer", .p = "numeric"))
-  # names
-  expect_named(double_decay_dfm, c(".rowid", ".p"))
+  expect_type(double_decay_dfm, "double")
+  expect_s3_class(double_decay_dfm, "ffp")
   # size
-  expect_equal(nrow(double_decay_dfm), NROW(xu))
-  expect_equal(ncol(double_decay_dfm), 2L)
-  # is_prob
-  expect_equal(sum(double_decay_dfm$.p), 1, tolerance = 0.001)
-  expect_true(all(double_decay_dfm$.p > 0))
+  expect_equal(vctrs::vec_size(double_decay_dfm), vctrs::vec_size(xu))
 })
 
 # tbl
 double_decay_tblu <- double_decay(xu_tbl, low_decay, high_decay)
 test_that("works on univariate on tibbles", {
   # type
-  expect_type(double_decay_tblu, "list")
-  expect_s3_class(double_decay_tblu, "tbl_df")
-  expect_equal(purrr::map(double_decay_tblu, class), list(.rowid = "integer", .p = "numeric"))
-  # names
-  expect_named(double_decay_tblu, c(".rowid", ".p"))
+  expect_type(double_decay_tblu, "double")
+  expect_s3_class(double_decay_tblu, "ffp")
   # size
-  expect_equal(nrow(double_decay_tblu), NROW(xu))
-  expect_equal(ncol(double_decay_tblu), 2L)
-  # is_prob
-  expect_equal(sum(double_decay_tblu$.p), 1, tolerance = 0.001)
-  expect_true(all(double_decay_tblu$.p > 0))
+  expect_equal(vctrs::vec_size(double_decay_tblu), vctrs::vec_size(xu))
 })
 
 double_decay_tblm <- double_decay(xm_tbl, low_decay, high_decay)
 test_that("works on multivariate tibbles", {
   # type
-  expect_type(double_decay_tblm, "list")
-  expect_s3_class(double_decay_tblm, "tbl_df")
-  expect_equal(purrr::map(double_decay_tblm, class), list(.rowid = "integer", .p = "numeric"))
-  # names
-  expect_named(double_decay_tblm, c(".rowid", ".p"))
+  expect_type(double_decay_tblm, "double")
+  expect_s3_class(double_decay_tblm, "ffp")
   # size
-  expect_equal(nrow(double_decay_tblm), NROW(xu))
-  expect_equal(ncol(double_decay_tblm), 2L)
-  # is_prob
-  expect_equal(sum(double_decay_tblm$.p), 1, tolerance = 0.001)
-  expect_true(all(double_decay_tblm$.p > 0))
+  expect_equal(vctrs::vec_size(double_decay_tblm), vctrs::vec_size(xu))
 })
 
 

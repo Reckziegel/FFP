@@ -6,13 +6,12 @@
 #' (size).
 #'
 #' @param x A set of joint-scenarios of risk-drivers.
-#' @param p A numeric vector with flexible probabilities.
+#' @param p A probability from the `ffp` class.
 #' @param level A number with the desired confidence level.
 #'
 #' @return A \code{tibble} with 6 rows and the following components:
 #'   * Mu,
 #'   * Std
-#'   * Skew
 #'   * Skew
 #'   * Kurt
 #'   * Var
@@ -28,7 +27,7 @@
 #'
 #' # with equal weights
 #' ew  <- rep(1 / nrow(ret), nrow(ret))
-#' empirical_stats(x = ret, p = ew)
+#' empirical_stats(x = ret, p = as_ffp(ew))
 #'
 #' # with ffp
 #' exp_smooth <- smoothing(ret, 0.015)
@@ -52,11 +51,9 @@ empirical_stats.numeric <- function(x, p, level = 0.01) {
     assertthat::are_equal(vctrs::vec_size(x), vctrs::vec_size(p))
   )
 
-  p <- as_ffp_mat(purrr::keep(p, is.double))
-  assert_is_univariate(p)
   x <- as_ffp_mat(x)
 
-  make_empirical_stats(x = x, p = p, level = level)
+  make_empirical_stats(x = x, p = as.matrix(p), level = level)
 
 }
 
@@ -69,11 +66,9 @@ empirical_stats.matrix <- function(x, p, level = 0.01) {
     assertthat::are_equal(vctrs::vec_size(x), vctrs::vec_size(p))
   )
 
-  p <- as_ffp_mat(purrr::keep(p, is.double))
-  assert_is_univariate(p)
   x <- as_ffp_mat(x)
 
-  make_empirical_stats(x = x, p = p, level = level)
+  make_empirical_stats(x = x, p = as.matrix(p), level = level)
 }
 
 #' @rdname empirical_stats
@@ -85,11 +80,9 @@ empirical_stats.xts <- function(x, p, level = 0.01) {
     assertthat::are_equal(vctrs::vec_size(x), vctrs::vec_size(p))
   )
 
-  p <- as_ffp_mat(purrr::keep(p, is.double))
-  assert_is_univariate(p)
   x <- as_ffp_mat(x)
 
-  make_empirical_stats(x = x, p = p, level = level)
+  make_empirical_stats(x = x, p = as.matrix(p), level = level)
 }
 
 #' @rdname empirical_stats
@@ -101,11 +94,9 @@ empirical_stats.ts <- function(x, p, level = 0.01) {
     assertthat::are_equal(vctrs::vec_size(x), vctrs::vec_size(p))
   )
 
-  p <- as_ffp_mat(purrr::keep(p, is.double))
-  assert_is_univariate(p)
   x <- as_ffp_mat(x)
 
-  make_empirical_stats(x = x, p = p, level = level)
+  make_empirical_stats(x = x, p = as.matrix(p), level = level)
 }
 
 #' @rdname empirical_stats
@@ -117,11 +108,9 @@ empirical_stats.data.frame <- function(x, p, level = 0.01) {
     assertthat::are_equal(vctrs::vec_size(x), vctrs::vec_size(p))
   )
 
-  p <- as_ffp_mat(purrr::keep(p, is.double))
-  assert_is_univariate(p)
   x <- as_ffp_mat(purrr::keep(x, is.double))
 
-  make_empirical_stats(x = x, p = p, level = level)
+  make_empirical_stats(x = x, p = as.matrix(p), level = level)
 }
 
 #' @rdname empirical_stats
@@ -133,11 +122,9 @@ empirical_stats.tbl_df <- function(x, p, level = 0.01) {
     assertthat::are_equal(vctrs::vec_size(x), vctrs::vec_size(p))
   )
 
-  p <- as_ffp_mat(purrr::keep(p, is.double))
-  assert_is_univariate(p)
   x <- as_ffp_mat(purrr::keep(x, is.double))
 
-  make_empirical_stats(x = x, p = p, level = level)
+  make_empirical_stats(x = x, p = as.matrix(p), level = level)
 }
 
 

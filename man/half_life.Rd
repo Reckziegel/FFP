@@ -10,7 +10,7 @@ half_life(lambda)
 \item{lambda}{A number.}
 }
 \value{
-A number with the half-life in days.
+A single number with the half-life in days.
 }
 \description{
 This function computes the implied half-life of a decay parameter.

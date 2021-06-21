@@ -37,7 +37,8 @@ matrix.}
 structure.}
 }
 \value{
-A \code{tibble} with the new probabilities distribution.
+A S3 vector of class \code{ffp} with the new probabilities
+distribution.
 }
 \description{
 This function uses entropy-pooling to match different decay-factors on the
@@ -53,8 +54,7 @@ ret <- diff(log(EuStockMarkets))
 dd <- double_decay(ret, l_c, l_s)
 dd
 
-ggplot(dd, aes(x = .rowid, y = .p, color = .p)) +
-  geom_line(show.legend = FALSE) +
+autoplot(dd) +
   scale_color_viridis_c()
 }
 \references{

@@ -36,7 +36,8 @@ kernel_entropy(x, mean, sigma = NULL)
 the mean is constrained.}
 }
 \value{
-A \code{tibble} with the new probabilities distribution.
+A S3 vector of class \code{ffp} with the new probabilities
+distribution.
 }
 \description{
 This function uses entropy-pooling to find the probability distribution that can
@@ -52,8 +53,7 @@ sigma <- var(diff(ret))
 ke <- kernel_entropy(ret, mean, sigma)
 ke
 
-ggplot(ke, aes(x = .rowid, y = .p, color = .p)) +
-  geom_line(show.legend = FALSE) +
+autoplot(ke) +
   scale_color_viridis_c()
 }
 \seealso{

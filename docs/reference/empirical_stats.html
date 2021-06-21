@@ -161,7 +161,7 @@
     </tr>
     <tr>
       <th>p</th>
-      <td><p>A numeric vector with flexible probabilities.</p></td>
+      <td><p>An object of the <code>ffp</code> class.</p></td>
     </tr>
     <tr>
       <th>level</th>
@@ -174,7 +174,6 @@
     <p>A <code>tibble</code> with 6 rows and the following components:</p><ul>
 <li><p>Mu,</p></li>
 <li><p>Std</p></li>
-<li><p>Skew</p></li>
 <li><p>Skew</p></li>
 <li><p>Kurt</p></li>
 <li><p>Var</p></li>
@@ -191,7 +190,7 @@
 
 <span class='co'># with equal weights</span>
 <span class='va'>ew</span>  <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='fl'>1</span> <span class='op'>/</span> <span class='fu'><a href='https://rdrr.io/r/base/nrow.html'>nrow</a></span><span class='op'>(</span><span class='va'>ret</span><span class='op'>)</span>, <span class='fu'><a href='https://rdrr.io/r/base/nrow.html'>nrow</a></span><span class='op'>(</span><span class='va'>ret</span><span class='op'>)</span><span class='op'>)</span>
-<span class='fu'>empirical_stats</span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>ret</span>, p <span class='op'>=</span> <span class='va'>ew</span><span class='op'>)</span>
+<span class='fu'>empirical_stats</span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>ret</span>, p <span class='op'>=</span> <span class='fu'><a href='ffp.html'>as_ffp</a></span><span class='op'>(</span><span class='va'>ew</span><span class='op'>)</span><span class='op'>)</span>
 </div><div class='output co'>#&gt; <span style='color: #949494;'># A tibble: 6 x 5</span>
 #&gt;   .stat       DAX       SMI       CAC     FTSE
 #&gt;   <span style='color: #949494; font-style: italic;'>&lt;fct&gt;</span>     <span style='color: #949494; font-style: italic;'>&lt;dbl&gt;</span>     <span style='color: #949494; font-style: italic;'>&lt;dbl&gt;</span>     <span style='color: #949494; font-style: italic;'>&lt;dbl&gt;</span>    <span style='color: #949494; font-style: italic;'>&lt;dbl&gt;</span>

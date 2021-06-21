@@ -4,7 +4,7 @@
 #' P&L distribution.
 #'
 #' @param x An univariate marginal distribution.
-#' @param p A vector of fully flexible probabilities.
+#' @param p A probability from the `ffp` class.
 #'
 #' @return A \code{ggplot2} object.
 #' @export
@@ -18,11 +18,14 @@
 #' scenario_density(pnl, p2)
 scenario_density <- function(x, p) {
 
+  stopifnot(inherits(p, "ffp"))
+  assert_is_univariate(x)
   assert_is_equal_size(x, p)
   .size <- vctrs::vec_size(x)
+  ew <- as_ffp(rep(1 / .size, .size))
 
   scenarios_conditional <- bootstrap_scenarios(x, p, 10000)[[1]]
-  scenarios_unconditional <- bootstrap_scenarios(x, rep(1 / .size, .size), 10000)[[1]]
+  scenarios_unconditional <- bootstrap_scenarios(x, ew, 10000)[[1]]
 
   tib_cond  <- tibble::tibble(.pnl  = scenarios_conditional, scenario = as.factor("Conditional"))
   tib_uncon <- tibble::tibble(.pnl = scenarios_unconditional, scenario = as.factor("Unconditional"))

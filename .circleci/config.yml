@@ -13,6 +13,7 @@ jobs:
       - checkout
       - run:
           name: Install package dependencies
+          no_output_timeout: 30m
           command: |
             mkdir -p ~/R/Library
             Rscript -e 'install.packages("remotes")'

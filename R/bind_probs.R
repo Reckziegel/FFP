@@ -3,9 +3,15 @@
 #' This function mimics `dplyr` \code{\link[dplyr]{bind}}. It's useful if you
 #' have different `ffp` objects and want to stack them in the `tidy` (long) format.
 #'
-#' @param ... Different \code{tibble} objects with the `ffp` signature to combine.
+#' @param ... Different \code{ffp} objects to combine.
 #'
 #' @return A tidy \code{tibble}.
+#'
+#' The output adds two new columns:
+#' \itemize{
+#'   \item `rowid` (an \code{integer}) with the row number of each realization
+#'   \item `key` (a \code{factor}) that keeps track of the `ffp` inputs as separated objects.
+#' }
 #'
 #' @seealso \code{\link{crisp}} \code{\link{smoothing}} \code{\link{kernel_normal}}
 #' \code{\link{kernel_entropy}} \code{\link{double_decay}}
@@ -13,9 +19,17 @@
 #' @export
 #'
 #' @examples
+#' library(ggplot2)
+#' library(dplyr, warn.conflicts = FALSE)
+#'
 #' x <- smoothing(EuStockMarkets, 0.001)
 #' y <- smoothing(EuStockMarkets, 0.002)
 #' bind_probs(x, y)
+#'
+#' bind_probs(x, y) %>%
+#'   ggplot(aes(x = rowid, y = probs, color = key)) +
+#'   geom_line() +
+#'   scale_color_viridis_d()
 bind_probs <- function(...) {
 
  dots <- rlang::list2(...)
@@ -35,9 +49,11 @@ bind_probs <- function(...) {
  #types <- purrr::map(dots, attributes) %>% purrr::map_chr("type")
  #type_to_add <- rep(types, each = unique_rows)
 
- dplyr::bind_rows(dots) %>%
-   dplyr::mutate(.key = as.factor(seq_to_add))
-                 #.type = as.factor(type_to_add))
+ purrr::map(dots, tibble::as_tibble) %>%
+    purrr::map(tibble::rowid_to_column) %>%
+    dplyr::bind_rows() %>%
+    dplyr::rename(probs = "value") %>%
+    dplyr::mutate(key = as.factor(seq_to_add))
 
 }
 

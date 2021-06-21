@@ -9,7 +9,7 @@ scenario_density(x, p)
 \arguments{
 \item{x}{An univariate marginal distribution.}
 
-\item{p}{A vector of fully flexible probabilities.}
+\item{p}{A probability from the \code{ffp} class.}
 }
 \value{
 A \code{ggplot2} object.

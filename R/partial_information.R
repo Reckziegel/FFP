@@ -10,7 +10,8 @@
 #' @param sigma A number with the uncertainty around mean. When \code{NULL}, only
 #' the mean is constrained.
 #'
-#' @return A \code{tibble} with the new probabilities distribution.
+#' @return A S3 vector of class \code{ffp} with the new probabilities
+#' distribution.
 #'
 #' @export
 #'
@@ -26,8 +27,7 @@
 #' ke <- kernel_entropy(ret, mean, sigma)
 #' ke
 #'
-#' ggplot(ke, aes(x = .rowid, y = .p, color = .p)) +
-#'   geom_line(show.legend = FALSE) +
+#' autoplot(ke) +
 #'   scale_color_viridis_c()
 kernel_entropy <- function(x, mean, sigma = NULL) {
   UseMethod("kernel_entropy", x)
@@ -49,9 +49,7 @@ kernel_entropy.numeric <- function(x, mean, sigma = NULL) {
   x <- as.matrix(x)
   p <- make_kernel_entropy(x, mean, sigma)
 
-  #FIXME
-  new_ffp(tibble::tibble(.rowid = 1:vctrs::vec_size(x), .p = p),
-          type = "Kernel Entropy-Pooling")
+  ffp(p)
 }
 
 #' @rdname kernel_entropy
@@ -70,9 +68,7 @@ kernel_entropy.matrix <- function(x, mean, sigma = NULL) {
 
   p <- make_kernel_entropy(x, mean, sigma)
 
-  #FIXME
-  new_ffp(tibble::tibble(.rowid = 1:vctrs::vec_size(x), .p = p),
-          type = "Kernel Entropy-Pooling")
+  ffp(p)
 
 }
 
@@ -93,9 +89,7 @@ kernel_entropy.ts <- function(x, mean, sigma = NULL) {
   x <- as_ffp_mat(x)
   p <- make_kernel_entropy(x, mean, sigma)
 
-  #FIXME
-  new_ffp(tibble::tibble(.rowid = 1:vctrs::vec_size(x), .p = p),
-          type = "Kernel Entropy-Pooling")
+  ffp(p)
 }
 
 #' @rdname kernel_entropy
@@ -115,9 +109,7 @@ kernel_entropy.xts <- function(x, mean, sigma = NULL) {
   x <- as_ffp_mat(x)
   p <- make_kernel_entropy(x, mean, sigma)
 
-  #FIXME
-  new_ffp(tibble::tibble(.rowid = 1:vctrs::vec_size(x), .p = p),
-          type = "Kernel Entropy-Pooling")
+  ffp(p)
 }
 
 #' @rdname kernel_entropy
@@ -138,9 +130,7 @@ kernel_entropy.tbl_df <- function(x, mean, sigma = NULL) {
 
   p <- make_kernel_entropy(x, mean, sigma)
 
-  #FIXME
-  new_ffp(tibble::tibble(.rowid = 1:vctrs::vec_size(x), .p = p),
-          type = "Kernel Entropy-Pooling")
+  ffp(p)
 }
 
 #' @rdname kernel_entropy
@@ -160,9 +150,7 @@ kernel_entropy.data.frame <- function(x, mean, sigma = NULL) {
   x <- as_ffp_mat(x)
   p <- make_kernel_entropy(x, mean, sigma)
 
-  #FIXME
-  new_ffp(tibble::tibble(.rowid = 1:vctrs::vec_size(x), .p = p),
-          type = "Kernel Entropy-Pooling")
+  ffp(p)
 }
 
 
@@ -180,7 +168,8 @@ kernel_entropy.data.frame <- function(x, mean, sigma = NULL) {
 #' @param decay_high A number with the short-life (high decay) for the volatility
 #' structure.
 #'
-#' @return A \code{tibble} with the new probabilities distribution.
+#' @return A S3 vector of class \code{ffp} with the new probabilities
+#' distribution.
 #'
 #' @export
 #'
@@ -201,8 +190,7 @@ kernel_entropy.data.frame <- function(x, mean, sigma = NULL) {
 #' dd <- double_decay(ret, l_c, l_s)
 #' dd
 #'
-#' ggplot(dd, aes(x = .rowid, y = .p, color = .p)) +
-#'   geom_line(show.legend = FALSE) +
+#' autoplot(dd) +
 #'   scale_color_viridis_c()
 double_decay <- function(x, decay_low, decay_high) {
   UseMethod("double_decay", x)
@@ -223,9 +211,7 @@ double_decay.numeric <- function(x, decay_low, decay_high) {
 
   p <- make_double_decay(x, decay_low, decay_high)
 
-  #FIXME
-  new_ffp(tibble::tibble(.rowid = 1:vctrs::vec_size(x), .p = p),
-          type = "Double-Decay")
+  ffp(p)
 }
 
 #' @rdname double_decay
@@ -236,9 +222,7 @@ double_decay.matrix <- function(x, decay_low, decay_high) {
 
   p <- make_double_decay(x, decay_low, decay_high)
 
-  #FIXME
-  new_ffp(tibble::tibble(.rowid = 1:vctrs::vec_size(x), .p = p),
-          type = "Double-Decay")
+  ffp(p)
 }
 
 #' @rdname double_decay
@@ -253,9 +237,7 @@ double_decay.ts <- function(x, decay_low, decay_high) {
   }
   p <- make_double_decay(x, decay_low, decay_high)
 
-  #FIXME
-  new_ffp(tibble::tibble(.rowid = 1:vctrs::vec_size(x), .p = p),
-          type = "Double-Decay")
+  ffp(p)
 }
 
 #' @rdname double_decay
@@ -266,9 +248,7 @@ double_decay.xts <- function(x, decay_low, decay_high) {
   x <- as_ffp_mat(x)
   p <- make_double_decay(x, decay_low, decay_high)
 
-  #FIXME
-  new_ffp(tibble::tibble(.rowid = 1:vctrs::vec_size(x), .p = p),
-          type = "Double-Decay")
+  ffp(p)
 }
 
 #' @rdname double_decay
@@ -280,9 +260,7 @@ double_decay.tbl <- function(x, decay_low, decay_high) {
   x <- as_ffp_mat(x)
   p <- make_double_decay(x, decay_low, decay_high)
 
-  #FIXME
-  new_ffp(tibble::tibble(.rowid = 1:vctrs::vec_size(x), .p = p),
-          type = "Double-Decay")
+  ffp(p)
 }
 
 #' @rdname double_decay
@@ -294,9 +272,7 @@ double_decay.data.frame <- function(x, decay_low, decay_high) {
   x <- as_ffp_mat(x)
   p <- make_double_decay(x, decay_low, decay_high)
 
-  #FIXME
-  new_ffp(tibble::tibble(.rowid = 1:vctrs::vec_size(x), .p = p),
-          type = "Double-Decay")
+  ffp(p)
 }
 
 

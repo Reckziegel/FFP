@@ -30,7 +30,7 @@ empirical_stats(x, p, level = 0.01)
 \arguments{
 \item{x}{A set of joint-scenarios of risk-drivers.}
 
-\item{p}{A numeric vector with flexible probabilities.}
+\item{p}{A probability from the \code{ffp} class.}
 
 \item{level}{A number with the desired confidence level.}
 }
@@ -39,7 +39,6 @@ A \code{tibble} with 6 rows and the following components:
 \itemize{
 \item Mu,
 \item Std
-\item Skew
 \item Skew
 \item Kurt
 \item Var
@@ -58,7 +57,7 @@ ret <- diff(log(EuStockMarkets))
 
 # with equal weights
 ew  <- rep(1 / nrow(ret), nrow(ret))
-empirical_stats(x = ret, p = ew)
+empirical_stats(x = ret, p = as_ffp(ew))
 
 # with ffp
 exp_smooth <- smoothing(ret, 0.015)

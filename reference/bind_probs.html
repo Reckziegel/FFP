@@ -73,7 +73,7 @@ have different ffp objects and want to stack them in the tidy (long) format." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ffp</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.9000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.0.1</span>
       </span>
     </div>
 
@@ -146,7 +146,7 @@ have different <code>ffp</code> objects and want to stack them in the <code>tidy
 
     <p>A tidy <code>tibble</code>.</p>
 <p>The output adds two new columns:</p><ul>
-<li><p><code>rowid</code> (an <code>integer</code>) with the row number of each realization</p></li>
+<li><p><code>rowid</code> (an <code>integer</code>) with the row number of each realization;</p></li>
 <li><p><code>key</code> (a <code>factor</code>) that keeps track of the <code>ffp</code> inputs as separated objects.</p></li>
 </ul>
 
@@ -161,6 +161,7 @@ have different <code>ffp</code> objects and want to stack them in the <code>tidy
 
 <span class='va'>x</span> <span class='op'>&lt;-</span> <span class='fu'><a href='smoothing.html'>smoothing</a></span><span class='op'>(</span><span class='va'>EuStockMarkets</span>, <span class='fl'>0.001</span><span class='op'>)</span>
 <span class='va'>y</span> <span class='op'>&lt;-</span> <span class='fu'><a href='smoothing.html'>smoothing</a></span><span class='op'>(</span><span class='va'>EuStockMarkets</span>, <span class='fl'>0.002</span><span class='op'>)</span>
+
 <span class='fu'>bind_probs</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>y</span><span class='op'>)</span>
 </div><div class='output co'>#&gt; <span style='color: #949494;'># A tibble: 3,720 x 3</span>
 #&gt;    rowid        probs key  

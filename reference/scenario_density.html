@@ -73,7 +73,7 @@ P&amp;amp;L distribution." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ffp</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.9000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.0.1</span>
       </span>
     </div>
 
@@ -131,7 +131,7 @@ P&amp;amp;L distribution." />
 P&amp;L distribution.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>scenario_density</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>p</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>scenario_density</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>p</span>, n <span class='op'>=</span> <span class='fl'>10000</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -144,20 +144,27 @@ P&amp;L distribution.</p>
       <th>p</th>
       <td><p>A probability from the <code>ffp</code> class.</p></td>
     </tr>
+    <tr>
+      <th>n</th>
+      <td><p>An <code>integer</code> scalar with the number of scenarios to be generated.</p></td>
+    </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>A <code>ggplot2</code> object.</p>
+    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
+
+    <p>To generate a scenario-distribution the marginal is bootstrapped using
+<code><a href='bootstrap_scenarios.html'>bootstrap_scenarios</a></code>. The number of resamples can be controlled
+with the <code>n</code> argument (default is <code>n = 10000</code>).</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='va'>pnl</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/diff.html'>diff</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span><span class='va'>EuStockMarkets</span><span class='op'>)</span><span class='op'>)</span><span class='op'>[</span>, <span class='fl'>1</span><span class='op'>]</span>
 <span class='va'>p</span> <span class='op'>&lt;-</span> <span class='fu'><a href='smoothing.html'>smoothing</a></span><span class='op'>(</span><span class='va'>pnl</span>, <span class='fl'>0.005</span><span class='op'>)</span>
-<span class='fu'>scenario_density</span><span class='op'>(</span><span class='va'>pnl</span>, <span class='va'>p</span><span class='op'>)</span>
-</div><div class='img'><img src='scenario_density-1.png' alt='' width='700' height='433' /></div><div class='input'>
-<span class='va'>p2</span> <span class='op'>&lt;-</span> <span class='fu'><a href='double_decay.html'>double_decay</a></span><span class='op'>(</span><span class='va'>pnl</span>, <span class='fl'>0.01</span>, <span class='fl'>0.001</span><span class='op'>)</span>
-<span class='fu'>scenario_density</span><span class='op'>(</span><span class='va'>pnl</span>, <span class='va'>p2</span><span class='op'>)</span>
-</div><div class='img'><img src='scenario_density-2.png' alt='' width='700' height='433' /></div></pre>
+
+<span class='fu'>scenario_density</span><span class='op'>(</span><span class='va'>pnl</span>, <span class='va'>p</span>, <span class='fl'>500</span><span class='op'>)</span>
+</div><div class='img'><img src='scenario_density-1.png' alt='' width='700' height='433' /></div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

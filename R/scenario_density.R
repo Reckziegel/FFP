@@ -3,8 +3,13 @@
 #' This function is designed make it easy to visualize the impact of a view in the
 #' P&L distribution.
 #'
+#' To generate a scenario-distribution the marginal is bootstrapped using
+#' \code{\link{bootstrap_scenarios}}. The number of resamples can be controlled
+#' with the `n` argument (default is `n = 10000`).
+#'
 #' @param x An univariate marginal distribution.
 #' @param p A probability from the `ffp` class.
+#' @param n An \code{integer} scalar with the number of scenarios to be generated.
 #'
 #' @return A \code{ggplot2} object.
 #' @export
@@ -12,20 +17,17 @@
 #' @examples
 #' pnl <- diff(log(EuStockMarkets))[, 1]
 #' p <- smoothing(pnl, 0.005)
-#' scenario_density(pnl, p)
 #'
-#' p2 <- double_decay(pnl, 0.01, 0.001)
-#' scenario_density(pnl, p2)
-scenario_density <- function(x, p) {
-
+#' scenario_density(pnl, p, 500)
+scenario_density <- function(x, p, n = 10000) {
+  vctrs::vec_assert(n, double(), 1)
   stopifnot(inherits(p, "ffp"))
-  assert_is_univariate(x)
   assert_is_equal_size(x, p)
   .size <- vctrs::vec_size(x)
   ew <- as_ffp(rep(1 / .size, .size))
 
-  scenarios_conditional <- bootstrap_scenarios(x, p, 10000)[[1]]
-  scenarios_unconditional <- bootstrap_scenarios(x, ew, 10000)[[1]]
+  scenarios_conditional <- bootstrap_scenarios(x, p, n)[[1]]
+  scenarios_unconditional <- bootstrap_scenarios(x, ew, n)[[1]]
 
   tib_cond  <- tibble::tibble(.pnl  = scenarios_conditional, scenario = as.factor("Conditional"))
   tib_uncon <- tibble::tibble(.pnl = scenarios_unconditional, scenario = as.factor("Unconditional"))

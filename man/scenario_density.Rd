@@ -4,12 +4,14 @@
 \alias{scenario_density}
 \title{Plot Scenario Densities}
 \usage{
-scenario_density(x, p)
+scenario_density(x, p, n = 10000)
 }
 \arguments{
 \item{x}{An univariate marginal distribution.}
 
 \item{p}{A probability from the \code{ffp} class.}
+
+\item{n}{An \code{integer} scalar with the number of scenarios to be generated.}
 }
 \value{
 A \code{ggplot2} object.
@@ -18,11 +20,14 @@ A \code{ggplot2} object.
 This function is designed make it easy to visualize the impact of a view in the
 P&L distribution.
 }
+\details{
+To generate a scenario-distribution the marginal is bootstrapped using
+\code{\link{bootstrap_scenarios}}. The number of resamples can be controlled
+with the \code{n} argument (default is \code{n = 10000}).
+}
 \examples{
 pnl <- diff(log(EuStockMarkets))[, 1]
 p <- smoothing(pnl, 0.005)
-scenario_density(pnl, p)
 
-p2 <- double_decay(pnl, 0.01, 0.001)
-scenario_density(pnl, p2)
+scenario_density(pnl, p, 500)
 }

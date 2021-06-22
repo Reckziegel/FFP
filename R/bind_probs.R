@@ -9,7 +9,7 @@
 #'
 #' The output adds two new columns:
 #' \itemize{
-#'   \item `rowid` (an \code{integer}) with the row number of each realization
+#'   \item `rowid` (an \code{integer}) with the row number of each realization;
 #'   \item `key` (a \code{factor}) that keeps track of the `ffp` inputs as separated objects.
 #' }
 #'
@@ -24,6 +24,7 @@
 #'
 #' x <- smoothing(EuStockMarkets, 0.001)
 #' y <- smoothing(EuStockMarkets, 0.002)
+#'
 #' bind_probs(x, y)
 #'
 #' bind_probs(x, y) %>%

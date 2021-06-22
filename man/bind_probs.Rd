@@ -14,7 +14,7 @@ A tidy \code{tibble}.
 
 The output adds two new columns:
 \itemize{
-\item \code{rowid} (an \code{integer}) with the row number of each realization
+\item \code{rowid} (an \code{integer}) with the row number of each realization;
 \item \code{key} (a \code{factor}) that keeps track of the \code{ffp} inputs as separated objects.
 }
 }
@@ -28,6 +28,7 @@ library(dplyr, warn.conflicts = FALSE)
 
 x <- smoothing(EuStockMarkets, 0.001)
 y <- smoothing(EuStockMarkets, 0.002)
+
 bind_probs(x, y)
 
 bind_probs(x, y) \%>\%

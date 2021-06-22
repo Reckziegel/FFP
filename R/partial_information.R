@@ -187,11 +187,13 @@ kernel_entropy.data.frame <- function(x, mean, sigma = NULL) {
 #' l_s <- 0.0166
 #' ret <- diff(log(EuStockMarkets))
 #'
-#' dd <- double_decay(ret, l_c, l_s)
-#' dd
+#' \dontrun{
+#'   dd <- double_decay(ret, l_c, l_s)
+#'   dd
 #'
-#' autoplot(dd) +
-#'   scale_color_viridis_c()
+#'   autoplot(dd) +
+#'     scale_color_viridis_c()
+#' }
 double_decay <- function(x, decay_low, decay_high) {
   UseMethod("double_decay", x)
 }

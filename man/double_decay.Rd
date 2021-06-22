@@ -51,11 +51,13 @@ l_c <- 0.0055
 l_s <- 0.0166
 ret <- diff(log(EuStockMarkets))
 
-dd <- double_decay(ret, l_c, l_s)
-dd
+\dontrun{
+  dd <- double_decay(ret, l_c, l_s)
+  dd
 
-autoplot(dd) +
-  scale_color_viridis_c()
+  autoplot(dd) +
+    scale_color_viridis_c()
+}
 }
 \references{
 De Santis, G., R. Litterman, A. Vesval, and K. Winkelmann, 2003,

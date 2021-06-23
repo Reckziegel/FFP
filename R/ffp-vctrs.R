@@ -1,4 +1,4 @@
-#' Fully-Flexible Probability Class
+#' Fully Flexible Probability Class
 #'
 #' Functions to help the user to manipulate the `ffp` class.
 #'
@@ -11,7 +11,7 @@
 #'
 #' @return
 #' \itemize{
-#'   \item `ffp()` and `as_ffp()` return a S3 vector of class `ffp`
+#'   \item `ffp()` and `as_ffp()` return an S3 vector of class `ffp`
 #'   \item `is_ffp()` returns a \code{logical} object.
 #' }
 #'

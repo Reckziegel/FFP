@@ -2,7 +2,7 @@
 % Please edit documentation in R/bind_probs.R
 \name{bind_probs}
 \alias{bind_probs}
-\title{Stack Flexible-Probabilities}
+\title{Stack Flexible Probabilities}
 \usage{
 bind_probs(...)
 }
@@ -26,8 +26,8 @@ have different \code{ffp} objects and want to stack them in the \code{tidy} (lon
 library(ggplot2)
 library(dplyr, warn.conflicts = FALSE)
 
-x <- smoothing(EuStockMarkets, 0.001)
-y <- smoothing(EuStockMarkets, 0.002)
+x <- exp_smoothing(EuStockMarkets, 0.001)
+y <- exp_smoothing(EuStockMarkets, 0.002)
 
 bind_probs(x, y)
 
@@ -37,6 +37,6 @@ bind_probs(x, y) \%>\%
   scale_color_viridis_d()
 }
 \seealso{
-\code{\link{crisp}} \code{\link{smoothing}} \code{\link{kernel_normal}}
+\code{\link{crisp}} \code{\link{exp_smoothing}} \code{\link{kernel_normal}}
 \code{\link{kernel_entropy}} \code{\link{double_decay}}
 }

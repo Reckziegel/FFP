@@ -1,6 +1,6 @@
 #' Inspection of a `ffp` object with ggplot2
 #'
-#' This functions extends the `autoplot` method for the `ffp` class.
+#' This function extends the `autoplot` method for the `ffp` class.
 #'
 #' @param object An objected of the class `ffp`.
 #' @param color A \code{logical} indicating whether or not the `color` argument
@@ -17,8 +17,8 @@
 #' @examples
 #' library(ggplot2)
 #'
-#' x <- smoothing(EuStockMarkets, 0.001)
-#' y <- smoothing(EuStockMarkets, 0.01)
+#' x <- exp_smoothing(EuStockMarkets, 0.001)
+#' y <- exp_smoothing(EuStockMarkets, 0.01)
 #'
 #' autoplot(x) +
 #'   scale_color_viridis_c()

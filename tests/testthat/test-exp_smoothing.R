@@ -24,18 +24,18 @@ xm_tbl <- tibble::tibble(index = index, x = xm)
 # condition must be specified ---------------------------------------------
 
 test_that("lambda must specified", {
-  expect_error(smoothing(xu))
+  expect_error(exp_smoothing(xu))
 })
 
 test_that("error if lambda is not a number of length 1", {
-  expect_error(smoothing(xu, c(lambda, lambda)))
-  expect_error(smoothing(xu, as.matrix(lambda)))
+  expect_error(exp_smoothing(xu, c(lambda, lambda)))
+  expect_error(exp_smoothing(xu, as.matrix(lambda)))
 })
 
 # works on different classes ----------------------------------------------
 
 # doubles
-smooth_numeric <- smoothing(xu, lambda)
+smooth_numeric <- exp_smoothing(xu, lambda)
 test_that("works on doubles", {
   # type
   expect_type(smooth_numeric, "double")
@@ -46,7 +46,7 @@ test_that("works on doubles", {
 
 
 # matrices
-smooth_matu <- smoothing(xu_mat, lambda)
+smooth_matu <- exp_smoothing(xu_mat, lambda)
 test_that("works on univariate matrices", {
   # type
   expect_type(smooth_matu, "double")
@@ -55,7 +55,7 @@ test_that("works on univariate matrices", {
   expect_equal(vctrs::vec_size(smooth_matu), vctrs::vec_size(xu))
 })
 
-smooth_matm <- smoothing(xm_mat, lambda)
+smooth_matm <- exp_smoothing(xm_mat, lambda)
 test_that("works on multivariate matrices", {
   # type
   expect_type(smooth_matm, "double")
@@ -65,7 +65,7 @@ test_that("works on multivariate matrices", {
 })
 
 # ts
-smooth_tsu <- smoothing(xu_ts, lambda)
+smooth_tsu <- exp_smoothing(xu_ts, lambda)
 test_that("works on univariate ts", {
   # type
   expect_type(smooth_tsu, "double")
@@ -74,7 +74,7 @@ test_that("works on univariate ts", {
   expect_equal(vctrs::vec_size(smooth_tsu), vctrs::vec_size(xu))
 })
 
-smooth_tsm <- smoothing(xm_ts, lambda)
+smooth_tsm <- exp_smoothing(xm_ts, lambda)
 test_that("works on multivariate ts", {
   # type
   expect_type(smooth_tsm, "double")
@@ -84,7 +84,7 @@ test_that("works on multivariate ts", {
 })
 
 # xts
-smooth_xtsu <- smoothing(xu_xts, lambda)
+smooth_xtsu <- exp_smoothing(xu_xts, lambda)
 test_that("works on univariate xts", {
   # type
   expect_type(smooth_xtsu, "double")
@@ -93,7 +93,7 @@ test_that("works on univariate xts", {
   expect_equal(vctrs::vec_size(smooth_xtsu), vctrs::vec_size(xu))
 })
 
-smooth_xtsm <- smoothing(xm_xts, lambda)
+smooth_xtsm <- exp_smoothing(xm_xts, lambda)
 test_that("works on multivariate xts", {
   # type
   expect_type(smooth_xtsm, "double")
@@ -104,7 +104,7 @@ test_that("works on multivariate xts", {
 
 
 # data.frame
-smooth_dfu <- smoothing(xu_df, lambda)
+smooth_dfu <- exp_smoothing(xu_df, lambda)
 test_that("works on univariate data.frames", {
   # type
   expect_type(smooth_dfu, "double")
@@ -113,7 +113,7 @@ test_that("works on univariate data.frames", {
   expect_equal(vctrs::vec_size(smooth_dfu), vctrs::vec_size(xu))
 })
 
-smooth_dfm <- smoothing(xm_df, lambda)
+smooth_dfm <- exp_smoothing(xm_df, lambda)
 test_that("works on multivariate data.frames", {
   # type
   expect_type(smooth_dfm, "double")
@@ -123,7 +123,7 @@ test_that("works on multivariate data.frames", {
 })
 
 # tbl
-smooth_tblu <- smoothing(xu_tbl, lambda)
+smooth_tblu <- exp_smoothing(xu_tbl, lambda)
 test_that("works on univariate tibbles", {
   # type
   expect_type(smooth_tblu, "double")
@@ -132,7 +132,7 @@ test_that("works on univariate tibbles", {
   expect_equal(vctrs::vec_size(smooth_tblu), vctrs::vec_size(xu))
 })
 
-smooth_tblm <- smoothing(xm_tbl, lambda)
+smooth_tblm <- exp_smoothing(xm_tbl, lambda)
 test_that("works on multivariate tibbles", {
   # type
   expect_type(smooth_tblm, "double")

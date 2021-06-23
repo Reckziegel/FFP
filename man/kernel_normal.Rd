@@ -35,12 +35,12 @@ kernel_normal(x, mean, sigma)
 \item{sigma}{A number with the uncertainty (volatility) around the mean.}
 }
 \value{
-A S3 vector of class \code{ffp} with the new probabilities
+An S3 vector of class \code{ffp} with the new probabilities
 distribution.
 }
 \description{
 In this framework, historical realizations receive a weight proportional to
-it's distance from the target mean, which is enveloped by
+its distance from the target mean, which is enveloped by
 normal kernel with a bandwidth equal sigma.
 }
 \examples{
@@ -64,5 +64,5 @@ autoplot(kn) +
   scale_color_viridis_c()
 }
 \seealso{
-\code{\link{crisp}} \code{\link{smoothing}}
+\code{\link{crisp}} \code{\link{exp_smoothing}}
 }

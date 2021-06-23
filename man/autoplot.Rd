@@ -21,13 +21,13 @@ should be added to the \code{ggplot2} aesthetics.}
 A \code{ggplot2} object.
 }
 \description{
-This functions extends the \code{autoplot} method for the \code{ffp} class.
+This function extends the \code{autoplot} method for the \code{ffp} class.
 }
 \examples{
 library(ggplot2)
 
-x <- smoothing(EuStockMarkets, 0.001)
-y <- smoothing(EuStockMarkets, 0.01)
+x <- exp_smoothing(EuStockMarkets, 0.001)
+y <- exp_smoothing(EuStockMarkets, 0.01)
 
 autoplot(x) +
   scale_color_viridis_c()

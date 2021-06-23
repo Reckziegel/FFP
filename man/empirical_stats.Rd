@@ -60,6 +60,6 @@ ew  <- rep(1 / nrow(ret), nrow(ret))
 empirical_stats(x = ret, p = as_ffp(ew))
 
 # with ffp
-exp_smooth <- smoothing(ret, 0.015)
+exp_smooth <- exp_smoothing(ret, 0.015)
 empirical_stats(ret, exp_smooth)
 }

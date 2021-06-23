@@ -20,5 +20,5 @@ half_life(0.0166)
 half_life(0.01)
 }
 \seealso{
-\code{\link{smoothing}} \code{\link{double_decay}}
+\code{\link{exp_smoothing}} \code{\link{double_decay}}
 }

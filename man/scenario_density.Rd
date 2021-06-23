@@ -17,7 +17,7 @@ scenario_density(x, p, n = 10000)
 A \code{ggplot2} object.
 }
 \description{
-This function is designed make it easy to visualize the impact of a view in the
+This function is designed to make it easier to visualize the impact of a view in the
 P&L distribution.
 }
 \details{
@@ -27,7 +27,7 @@ with the \code{n} argument (default is \code{n = 10000}).
 }
 \examples{
 pnl <- diff(log(EuStockMarkets))[, 1]
-p <- smoothing(pnl, 0.005)
+p <- exp_smoothing(pnl, 0.005)
 
 scenario_density(pnl, p, 500)
 }

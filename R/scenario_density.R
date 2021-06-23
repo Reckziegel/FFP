@@ -1,6 +1,6 @@
 #' Plot Scenario Densities
 #'
-#' This function is designed make it easy to visualize the impact of a view in the
+#' This function is designed to make it easier to visualize the impact of a view in the
 #' P&L distribution.
 #'
 #' To generate a scenario-distribution the marginal is bootstrapped using
@@ -16,7 +16,7 @@
 #'
 #' @examples
 #' pnl <- diff(log(EuStockMarkets))[, 1]
-#' p <- smoothing(pnl, 0.005)
+#' p <- exp_smoothing(pnl, 0.005)
 #'
 #' scenario_density(pnl, p, 500)
 scenario_density <- function(x, p, n = 10000) {

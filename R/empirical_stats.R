@@ -30,7 +30,7 @@
 #' empirical_stats(x = ret, p = as_ffp(ew))
 #'
 #' # with ffp
-#' exp_smooth <- smoothing(ret, 0.015)
+#' exp_smooth <- exp_smoothing(ret, 0.015)
 #' empirical_stats(ret, exp_smooth)
 empirical_stats <- function(x, p, level = 0.01) {
   UseMethod("empirical_stats", x)

@@ -6,7 +6,7 @@
 \alias{as_ffp}
 \alias{as_ffp.default}
 \alias{as_ffp.integer}
-\title{Fully-Flexible Probability Class}
+\title{Fully Flexible Probability Class}
 \usage{
 ffp(x = double())
 
@@ -27,7 +27,7 @@ as_ffp(x)
 }
 \value{
 \itemize{
-\item \code{ffp()} and \code{as_ffp()} return a S3 vector of class \code{ffp}
+\item \code{ffp()} and \code{as_ffp()} return an S3 vector of class \code{ffp}
 \item \code{is_ffp()} returns a \code{logical} object.
 }
 }

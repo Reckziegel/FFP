@@ -3,7 +3,7 @@
 #' This function resamples scenarios given by the flexible probabilities
 #' approach.
 #'
-#' @param x A time-series defining the scenario-probability distribution.
+#' @param x A time series defining the scenario-probability distribution.
 #' @param p A probability from the `ffp` class.
 #' @param n An \code{integer} scalar with the number of scenarios to be generated.
 #'

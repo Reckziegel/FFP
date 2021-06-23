@@ -20,14 +20,14 @@ navbar:
 
 reference:
     - title: Full Information
-      desc: Functions that completly describe a distribution.
+      desc: Functions that completely describe a distribution.
       contents:
       - crisp
       - smoothing
       - kernel_normal
 
     - title: Partial Information
-      desc: Functions that partilly describe a distribution.
+      desc: Functions that partially describe a distribution.
       contents:
       - kernel_entropy
       - double_decay
@@ -41,7 +41,7 @@ reference:
       - empirical_stats
       - half_life
 
-    - title: Vizualization
+    - title: Visualization
       desc: Functions to explore `ffp` objects with help of `ggplot2`.
       contents:
       - autoplot.ffp

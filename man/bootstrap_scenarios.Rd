@@ -25,7 +25,7 @@ bootstrap_scenarios(x, p, n)
 \method{bootstrap_scenarios}{data.frame}(x, p, n)
 }
 \arguments{
-\item{x}{A time-series defining the scenario-probability distribution.}
+\item{x}{A time series defining the scenario-probability distribution.}
 
 \item{p}{A probability from the \code{ffp} class.}
 

@@ -2,19 +2,19 @@
 
 #' Full Information by Market Conditioning
 #'
-#' In this function probabilities are given full weight when a macroeconomic
-#' condition satisfy a logical statement.
+#' In this function, probabilities are given full weight when a macroeconomic
+#' condition satisfies a logical statement.
 #'
 #' @param x The risk-drivers.
 #' @param lgl A \code{logical} vector with TRUE's and FALSE's indicating
 #' which scenarios should considered.
 #'
-#' @return A S3 vector of class \code{ffp} with the new probabilities
+#' @return An S3 vector of class \code{ffp} with the new probabilities
 #' distribution.
 #'
 #' @export
 #'
-#' @seealso \code{\link{smoothing}} \code{\link{kernel_normal}}
+#' @seealso \code{\link{exp_smoothing}} \code{\link{kernel_normal}}
 #'
 #' @examples
 #' library(ggplot2)
@@ -132,7 +132,7 @@ crisp.tbl_df <- function(x, lgl) {
 #' @param x The risk-drivers.
 #' @param lambda A number for the decay parameter.
 #'
-#' @return A S3 vector of class \code{ffp} with the new probabilities
+#' @return An S3 vector of class \code{ffp} with the new probabilities
 #' distribution.
 #'
 #' @seealso \code{\link{crisp}} \code{\link{kernel_normal}} \code{\link{half_life}}
@@ -143,7 +143,7 @@ crisp.tbl_df <- function(x, lgl) {
 #' library(ggplot2)
 #'
 #' # long half_life
-#' long_hl <- smoothing(EuStockMarkets, 0.001)
+#' long_hl <- exp_smoothing(EuStockMarkets, 0.001)
 #' long_hl
 #'
 #' # long half_file
@@ -151,64 +151,64 @@ crisp.tbl_df <- function(x, lgl) {
 #'   scale_color_viridis_c()
 #'
 #' # short half_life
-#' short_hl <- smoothing(EuStockMarkets, 0.015)
+#' short_hl <- exp_smoothing(EuStockMarkets, 0.015)
 #' short_hl
 #' autoplot(short_hl) +
 #'   scale_color_viridis_c()
-smoothing <- function(x, lambda) {
-  UseMethod("smoothing", x)
+exp_smoothing <- function(x, lambda) {
+  UseMethod("exp_smoothing", x)
 }
 
 
-#' @rdname smoothing
+#' @rdname exp_smoothing
 #' @export
-smoothing.default <- function(x, lambda) {
+exp_smoothing.default <- function(x, lambda) {
   stop("function not implemented in this class yet.", call. = FALSE)
 }
 
-#' @rdname smoothing
+#' @rdname exp_smoothing
 #' @export
-smoothing.numeric <- function(x, lambda) {
+exp_smoothing.numeric <- function(x, lambda) {
   vctrs::vec_assert(lambda, double(), 1)
   p <- make_smoothing(x, lambda)
   ffp(p)
 }
 
-#' @rdname smoothing
+#' @rdname exp_smoothing
 #' @export
-smoothing.matrix <- function(x, lambda) {
+exp_smoothing.matrix <- function(x, lambda) {
   vctrs::vec_assert(lambda, double(), 1)
   p <- make_smoothing(x, lambda)
   ffp(p)
 }
 
-#' @rdname smoothing
+#' @rdname exp_smoothing
 #' @export
-smoothing.ts <- function(x, lambda) {
+exp_smoothing.ts <- function(x, lambda) {
   vctrs::vec_assert(lambda, double(), 1)
   p <- make_smoothing(x, lambda)
   ffp(p)
 }
 
-#' @rdname smoothing
+#' @rdname exp_smoothing
 #' @export
-smoothing.xts <- function(x, lambda) {
+exp_smoothing.xts <- function(x, lambda) {
   vctrs::vec_assert(lambda, double(), 1)
   p <- make_smoothing(x, lambda)
   ffp(p)
 }
 
-#' @rdname smoothing
+#' @rdname exp_smoothing
 #' @export
-smoothing.data.frame <- function(x, lambda) {
+exp_smoothing.data.frame <- function(x, lambda) {
   vctrs::vec_assert(lambda, double(), 1)
   p <- make_smoothing(x, lambda)
   ffp(p)
 }
 
-#' @rdname smoothing
+#' @rdname exp_smoothing
 #' @export
-smoothing.tbl <- function(x, lambda) {
+exp_smoothing.tbl <- function(x, lambda) {
   vctrs::vec_assert(lambda, double(), 1)
   p <- make_smoothing(x, lambda)
   ffp(p)
@@ -220,19 +220,19 @@ smoothing.tbl <- function(x, lambda) {
 #' Full Information by Kernel-Damping
 #'
 #' In this framework, historical realizations receive a weight proportional to
-#' it's distance from the target mean, which is enveloped by
+#' its distance from the target mean, which is enveloped by
 #' normal kernel with a bandwidth equal sigma.
 #'
 #' @param x The risk-drivers.
 #' @param mean The point in which the kernel should be centered.
 #' @param sigma A number with the uncertainty (volatility) around the mean.
 #'
-#' @return A S3 vector of class \code{ffp} with the new probabilities
+#' @return An S3 vector of class \code{ffp} with the new probabilities
 #' distribution.
 #'
 #' @export
 #'
-#' @seealso \code{\link{crisp}} \code{\link{smoothing}}
+#' @seealso \code{\link{crisp}} \code{\link{exp_smoothing}}
 #'
 #' @examples
 #' library(ggplot2)

@@ -16,14 +16,14 @@ status](https://ci.appveyor.com/api/projects/status/github/Reckziegel/FFP?branch
 coverage](https://codecov.io/gh/Reckziegel/FFP/branch/main/graph/badge.svg)](https://codecov.io/gh/Reckziegel/FFP?branch=main)
 <!-- badges: end -->
 
-> Functions for Scenario Analysis and Risk-Management
+> Functions for Scenario Analysis and Risk Management
 
 Oftentimes, the econometrician needs to stress-test the potential
 outcomes for a given set of risk-drivers. This process can be
 computationally costly when the entire set of scenarios needs to be
 repriced (bootstrapped, resampled, etc.).
 
-To overcome this difficulty, the Fully-Flexible Probabilities (FFP)
+To overcome this difficulty, the Fully Flexible Probabilities (FFP)
 approach offers an inexpensive way for scenario generation: it reprices
 the *probabilities* associated to each scenario, instead of the
 scenarios themselves. Once the new probabilities have been defined, the
@@ -44,8 +44,8 @@ devtools::install_github("Reckziegel/ffp")
 The package `ffp` comes with five functions to extract probabilities
 from the historical scenarios:
 
--   `smoothing()`: accounts for the time-changing nature of volatility
-    by giving more weight to recent observations;
+-   `exp_smoothing()`: accounts for the time-changing nature of
+    volatility by giving more weight to recent observations;
 -   `crisp()`: selects scenarios where a certain logical macroeconomic
     statement is satisfied;
 -   `kernel_normal()`: generalizes the `crisp` condition by wrapping

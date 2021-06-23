@@ -134,8 +134,8 @@ Now, Fully-Flexible Probabilities (FFP) kicks in:
 ```{r message=FALSE, warning=FALSE}
 #### Full Information ####
 # exponential-smoothing
-fp_es1 <- smoothing(invariants, 0.0166)
-fp_es2 <- smoothing(invariants, 0.0055)
+fp_es1 <- exp_smoothing(invariants, 0.0166)
+fp_es2 <- exp_smoothing(invariants, 0.0055)
 # crisp-conditioning on inflation
 fp_cc <- crisp(inflation, lgl = as.logical(inflation >= 2.8))
 # normal kernel on inflation

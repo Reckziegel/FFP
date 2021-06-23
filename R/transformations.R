@@ -6,7 +6,7 @@
 #'
 #' @return A single number with the half-life in days.
 #'
-#' @seealso \code{\link{smoothing}} \code{\link{double_decay}}
+#' @seealso \code{\link{exp_smoothing}} \code{\link{double_decay}}
 #'
 #' @export
 #'

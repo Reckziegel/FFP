@@ -34,12 +34,12 @@ crisp(x, lgl)
 which scenarios should considered.}
 }
 \value{
-A S3 vector of class \code{ffp} with the new probabilities
+An S3 vector of class \code{ffp} with the new probabilities
 distribution.
 }
 \description{
-In this function probabilities are given full weight when a macroeconomic
-condition satisfy a logical statement.
+In this function, probabilities are given full weight when a macroeconomic
+condition satisfies a logical statement.
 }
 \examples{
 library(ggplot2)
@@ -54,5 +54,5 @@ autoplot(market_condition) +
   scale_color_viridis_c()
 }
 \seealso{
-\code{\link{smoothing}} \code{\link{kernel_normal}}
+\code{\link{exp_smoothing}} \code{\link{kernel_normal}}
 }

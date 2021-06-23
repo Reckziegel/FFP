@@ -201,7 +201,7 @@
 #&gt; <span style='color: #BCBCBC;'>5</span> VaR    0.027<span style='text-decoration: underline;'>9</span>    0.026<span style='text-decoration: underline;'>4</span>    0.028<span style='text-decoration: underline;'>3</span>   0.021<span style='text-decoration: underline;'>0</span>  
 #&gt; <span style='color: #BCBCBC;'>6</span> CVaR   0.037<span style='text-decoration: underline;'>5</span>    0.034<span style='text-decoration: underline;'>9</span>    0.036<span style='text-decoration: underline;'>5</span>   0.025<span style='text-decoration: underline;'>6</span>  </div><div class='input'>
 <span class='co'># with ffp</span>
-<span class='va'>exp_smooth</span> <span class='op'>&lt;-</span> <span class='fu'><a href='smoothing.html'>smoothing</a></span><span class='op'>(</span><span class='va'>ret</span>, <span class='fl'>0.015</span><span class='op'>)</span>
+<span class='va'>exp_smooth</span> <span class='op'>&lt;-</span> <span class='fu'><a href='exp_smoothing.html'>exp_smoothing</a></span><span class='op'>(</span><span class='va'>ret</span>, <span class='fl'>0.015</span><span class='op'>)</span>
 <span class='fu'>empirical_stats</span><span class='op'>(</span><span class='va'>ret</span>, <span class='va'>exp_smooth</span><span class='op'>)</span>
 </div><div class='output co'>#&gt; <span style='color: #949494;'># A tibble: 6 x 5</span>
 #&gt;   .stat       DAX       SMI      CAC      FTSE

@@ -40,7 +40,7 @@
 
 
 <meta property="og:title" content="Plot Scenario Densities — scenario_density" />
-<meta property="og:description" content="This function is designed make it easy to visualize the impact of a view in the
+<meta property="og:description" content="This function is designed to make it easier to visualize the impact of a view in the
 P&amp;amp;L distribution." />
 
 
@@ -127,7 +127,7 @@ P&amp;amp;L distribution." />
     </div>
 
     <div class="ref-description">
-    <p>This function is designed make it easy to visualize the impact of a view in the
+    <p>This function is designed to make it easier to visualize the impact of a view in the
 P&amp;L distribution.</p>
     </div>
 
@@ -161,7 +161,7 @@ with the <code>n</code> argument (default is <code>n = 10000</code>).</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='va'>pnl</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/diff.html'>diff</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span><span class='va'>EuStockMarkets</span><span class='op'>)</span><span class='op'>)</span><span class='op'>[</span>, <span class='fl'>1</span><span class='op'>]</span>
-<span class='va'>p</span> <span class='op'>&lt;-</span> <span class='fu'><a href='smoothing.html'>smoothing</a></span><span class='op'>(</span><span class='va'>pnl</span>, <span class='fl'>0.005</span><span class='op'>)</span>
+<span class='va'>p</span> <span class='op'>&lt;-</span> <span class='fu'><a href='exp_smoothing.html'>exp_smoothing</a></span><span class='op'>(</span><span class='va'>pnl</span>, <span class='fl'>0.005</span><span class='op'>)</span>
 
 <span class='fu'>scenario_density</span><span class='op'>(</span><span class='va'>pnl</span>, <span class='va'>p</span>, <span class='fl'>500</span><span class='op'>)</span>
 </div><div class='img'><img src='scenario_density-1.png' alt='' width='700' height='433' /></div></pre>

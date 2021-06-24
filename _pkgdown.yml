@@ -23,7 +23,7 @@ reference:
       desc: Functions that completely describe a distribution.
       contents:
       - crisp
-      - smoothing
+      - exp_smoothing
       - kernel_normal
 
     - title: Partial Information

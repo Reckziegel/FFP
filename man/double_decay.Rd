@@ -11,48 +11,48 @@
 \alias{double_decay.data.frame}
 \title{Flexible Probabilities using Partial Information}
 \usage{
-double_decay(x, decay_low, decay_high)
+double_decay(x, slow, fast)
 
-\method{double_decay}{default}(x, decay_low, decay_high)
+\method{double_decay}{default}(x, slow, fast)
 
-\method{double_decay}{numeric}(x, decay_low, decay_high)
+\method{double_decay}{numeric}(x, slow, fast)
 
-\method{double_decay}{matrix}(x, decay_low, decay_high)
+\method{double_decay}{matrix}(x, slow, fast)
 
-\method{double_decay}{ts}(x, decay_low, decay_high)
+\method{double_decay}{ts}(x, slow, fast)
 
-\method{double_decay}{xts}(x, decay_low, decay_high)
+\method{double_decay}{xts}(x, slow, fast)
 
-\method{double_decay}{tbl}(x, decay_low, decay_high)
+\method{double_decay}{tbl}(x, slow, fast)
 
-\method{double_decay}{data.frame}(x, decay_low, decay_high)
+\method{double_decay}{data.frame}(x, slow, fast)
 }
 \arguments{
-\item{x}{The risk-drivers.}
+\item{x}{An univariate or a multivariate distribution.}
 
-\item{decay_low}{A number with the long half-life (slow decay) for the correlation
+\item{slow}{A number with the long half-life (slow decay) for the correlation
 matrix.}
 
-\item{decay_high}{A number with the short-life (high decay) for the volatility
+\item{fast}{A number with the short-life (high decay) for the volatility
 structure.}
 }
 \value{
-A S3 vector of class \code{ffp} with the new probabilities
-distribution.
+A numerical vector of class \code{ffp} with the new
+probabilities distribution.
 }
 \description{
 This function uses entropy-pooling to match different decay-factors on the
 covariance matrix.
 }
 \examples{
-library(ggplot2)
+\donttest{
+  library(ggplot2)
 
-l_c <- 0.0055
-l_s <- 0.0166
-ret <- diff(log(EuStockMarkets))
+  slow <- 0.0055
+  fast <- 0.0166
+  ret <- diff(log(EuStockMarkets))
 
-\dontrun{
-  dd <- double_decay(ret, l_c, l_s)
+  dd <- double_decay(ret, slow, fast)
   dd
 
   autoplot(dd) +

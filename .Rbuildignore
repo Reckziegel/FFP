@@ -13,3 +13,4 @@
 ^\.circleci/config\.yml$
 ^cran-comments\.md$
 ^revdep$
+^CRAN-RELEASE$

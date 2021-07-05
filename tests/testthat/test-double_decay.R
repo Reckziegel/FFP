@@ -4,8 +4,8 @@ xu <- stats::rnorm(500)
 xm <- matrix(stats::rnorm(1000), ncol = 2)
 index <- seq(Sys.Date(), Sys.Date() + 499, "day")
 
-low_decay  <- 0.0055
-high_decay <- 0.0166
+slow  <- 0.0055
+fast <- 0.0166
 
 # Univariate
 xu_vec <- xu
@@ -31,23 +31,23 @@ volm <- cov(xm)
 
 # condition must be specified ---------------------------------------------
 
-test_that("args `decay_low` and `decay_high` must specified", {
-  expect_error(double_decay(x = xu_vec, decay_low = low_decay))   # decay_high must be specified
-  expect_error(double_decay(x = xu_vec, decay_high = high_decay)) # decay_low must be specified
+test_that("args `slow` and `fast` must specified", {
+  expect_error(double_decay(x = xu_vec, slow = slow))   # decay_high must be specified
+  expect_error(double_decay(x = xu_vec, fast = fast)) # decay_low must be specified
 })
 
-test_that("error if `decay_low` or `decay_high` are not a number of length 1", {
-  expect_error(double_decay(xu_vec, decay_low = c(low_decay, low_decay), decay_high = high_decay))
-  expect_error(double_decay(xu_vec, decay_low = as.matrix(low_decay), decay_high = high_decay))
-  expect_error(double_decay(xu_vec, decay_low = low_decay, decay_high = c(low_decay, low_decay)))
-  expect_error(double_decay(xu_vec, decay_low = low_decay, decay_high = as.matrix(low_decay)))
+test_that("error if `slow` or `fast` are not a number of length 1", {
+  expect_error(double_decay(xu_vec, slow = c(slow, slow), fast = fast))
+  expect_error(double_decay(xu_vec, slow = as.matrix(slow), fast = fast))
+  expect_error(double_decay(xu_vec, slow = slow, fast = c(slow, slow)))
+  expect_error(double_decay(xu_vec, slow = slow, fast = as.matrix(slow)))
 })
 
 
 # works on different classes ----------------------------------------------
 
 # doubles
-double_decay_dbl <- double_decay(xu_vec, low_decay, high_decay)
+double_decay_dbl <- double_decay(xu_vec, slow, fast)
 test_that("works on doubles", {
   # type
   expect_type(double_decay_dbl, "double")
@@ -58,7 +58,7 @@ test_that("works on doubles", {
 
 
 # matrices
-double_decay_matu <- double_decay(xu_mat, low_decay, high_decay)
+double_decay_matu <- double_decay(xu_mat, slow, fast)
 test_that("works on univariate matrices", {
   # type
   expect_type(double_decay_matu, "double")
@@ -67,7 +67,7 @@ test_that("works on univariate matrices", {
   expect_equal(vctrs::vec_size(double_decay_matu), vctrs::vec_size(xu))
 })
 
-double_decay_matm <- double_decay(xm_mat, low_decay, high_decay)
+double_decay_matm <- double_decay(xm_mat, slow, fast)
 test_that("works on multivariate matrices", {
   # type
   expect_type(double_decay_matm, "double")
@@ -77,7 +77,7 @@ test_that("works on multivariate matrices", {
 })
 
 # ts
-double_decay_tsu <- double_decay(xu_ts, low_decay, high_decay)
+double_decay_tsu <- double_decay(xu_ts, slow, fast)
 test_that("works on univariate ts", {
   # type
   expect_type(double_decay_tsu, "double")
@@ -86,7 +86,7 @@ test_that("works on univariate ts", {
   expect_equal(vctrs::vec_size(double_decay_tsu), vctrs::vec_size(xu))
 })
 
-double_decay_tsm <- double_decay(xm_ts, low_decay, high_decay)
+double_decay_tsm <- double_decay(xm_ts, slow, fast)
 test_that("works on multivariate ts", {
   # type
   expect_type(double_decay_tsm, "double")
@@ -96,7 +96,7 @@ test_that("works on multivariate ts", {
 })
 
 # xts
-double_decay_xtsu <- double_decay(xu_xts, low_decay, high_decay)
+double_decay_xtsu <- double_decay(xu_xts, slow, fast)
 test_that("works on univariate xts", {
   # type
   expect_type(double_decay_xtsu, "double")
@@ -105,7 +105,7 @@ test_that("works on univariate xts", {
   expect_equal(vctrs::vec_size(double_decay_xtsu), vctrs::vec_size(xu))
 })
 
-double_decay_xtsm <- double_decay(xm_xts, low_decay, high_decay)
+double_decay_xtsm <- double_decay(xm_xts, slow, fast)
 test_that("works on multivariate xts", {
   # type
   expect_type(double_decay_xtsm, "double")
@@ -115,7 +115,7 @@ test_that("works on multivariate xts", {
 })
 
 # data.frame
-double_decay_dfu <- double_decay(xu_df, low_decay, high_decay)
+double_decay_dfu <- double_decay(xu_df, slow, fast)
 test_that("works on univariate data.frames", {
   # type
   expect_type(double_decay_dfu, "double")
@@ -124,7 +124,7 @@ test_that("works on univariate data.frames", {
   expect_equal(vctrs::vec_size(double_decay_dfu), vctrs::vec_size(xu))
 })
 
-double_decay_dfm <- double_decay(xm_df, low_decay, high_decay)
+double_decay_dfm <- double_decay(xm_df, slow, fast)
 test_that("works on multivariate data.frames", {
   # type
   expect_type(double_decay_dfm, "double")
@@ -134,7 +134,7 @@ test_that("works on multivariate data.frames", {
 })
 
 # tbl
-double_decay_tblu <- double_decay(xu_tbl, low_decay, high_decay)
+double_decay_tblu <- double_decay(xu_tbl, slow, fast)
 test_that("works on univariate on tibbles", {
   # type
   expect_type(double_decay_tblu, "double")
@@ -143,7 +143,7 @@ test_that("works on univariate on tibbles", {
   expect_equal(vctrs::vec_size(double_decay_tblu), vctrs::vec_size(xu))
 })
 
-double_decay_tblm <- double_decay(xm_tbl, low_decay, high_decay)
+double_decay_tblm <- double_decay(xm_tbl, slow, fast)
 test_that("works on multivariate tibbles", {
   # type
   expect_type(double_decay_tblm, "double")

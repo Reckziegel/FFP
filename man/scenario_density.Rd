@@ -17,11 +17,11 @@ scenario_density(x, p, n = 10000)
 A \code{ggplot2} object.
 }
 \description{
-This function is designed to make it easier to visualize the impact of a view in the
-P&L distribution.
+This function is designed to make it easier to visualize the impact of a
+\emph{View} in the P&L distribution.
 }
 \details{
-To generate a scenario-distribution the marginal is bootstrapped using
+To generate a scenario-distribution the margins are bootstrapped using
 \code{\link{bootstrap_scenarios}}. The number of resamples can be controlled
 with the \code{n} argument (default is \code{n = 10000}).
 }

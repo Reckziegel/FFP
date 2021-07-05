@@ -1,9 +1,9 @@
 #' Plot Scenario Densities
 #'
-#' This function is designed to make it easier to visualize the impact of a view in the
-#' P&L distribution.
+#' This function is designed to make it easier to visualize the impact of a
+#' _View_ in the P&L distribution.
 #'
-#' To generate a scenario-distribution the marginal is bootstrapped using
+#' To generate a scenario-distribution the margins are bootstrapped using
 #' \code{\link{bootstrap_scenarios}}. The number of resamples can be controlled
 #' with the `n` argument (default is `n = 10000`).
 #'
@@ -37,9 +37,6 @@ scenario_density <- function(x, p, n = 10000) {
     ggdist::stat_slab(alpha = 0.75) +
     ggdist::stat_pointinterval(position = ggplot2::position_dodge(width = .4, preserve = "single")) +
     ggplot2::coord_cartesian(xlim = stats::quantile(scenarios_unconditional, c(0.001, 0.999))) +
-    ggplot2::scale_fill_brewer(palette = "Paired") +
-    ggplot2::scale_color_brewer(palette = "Paired") +
-    ggdist::theme_ggdist() +
     ggplot2::labs(x = NULL, y = NULL, fill = "Scenario", color = "Scenario")
 
 }

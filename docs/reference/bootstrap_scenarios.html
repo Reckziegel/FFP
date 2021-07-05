@@ -40,8 +40,8 @@
 
 
 <meta property="og:title" content="Flexible Probabilities Driven Bootstrap — bootstrap_scenarios" />
-<meta property="og:description" content="This function resamples scenarios given by the flexible probabilities
-approach." />
+<meta property="og:description" content="Resamples historical scenarios with flexible probabilities while keeping the
+empirical structure of the copulas intact." />
 
 
 
@@ -127,8 +127,8 @@ approach." />
     </div>
 
     <div class="ref-description">
-    <p>This function resamples scenarios given by the flexible probabilities
-approach.</p>
+    <p>Resamples historical scenarios with flexible probabilities while keeping the
+empirical structure of the copulas intact.</p>
     </div>
 
     <pre class="usage"><span class='fu'>bootstrap_scenarios</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>p</span>, <span class='va'>n</span><span class='op'>)</span>
@@ -160,7 +160,7 @@ approach.</p>
     </tr>
     <tr>
       <th>p</th>
-      <td><p>A probability from the <code>ffp</code> class.</p></td>
+      <td><p>An object of the <code>ffp</code> class.</p></td>
     </tr>
     <tr>
       <th>n</th>
@@ -169,6 +169,9 @@ approach.</p>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
+
+    <p>A <code>tibble</code> with the number of rows equal to <code>n</code>.</p>
+    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
     <p>The argument <code>x</code> is supposed to have the same size of <code>p</code>.</p>
 

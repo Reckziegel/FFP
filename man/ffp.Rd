@@ -6,9 +6,9 @@
 \alias{as_ffp}
 \alias{as_ffp.default}
 \alias{as_ffp.integer}
-\title{Fully Flexible Probability Class}
+\title{Manipulate the \code{ffp} Class}
 \usage{
-ffp(x = double())
+ffp(x = double(), ...)
 
 is_ffp(x)
 
@@ -20,24 +20,34 @@ as_ffp(x)
 }
 \arguments{
 \item{x}{\itemize{
-\item For \code{ffp()}: A numeric vector (must be a probability)
-\item For \code{is_ffp()}: An object to test if the class is \code{ffp}
-\item For \code{as_ffp()}: An object to convert to \code{ffp}
+\item For \code{ffp()}: A numeric vector.
+\item For \code{is_ffp()}: An object to be tested.
+\item For \code{as_ffp()}: An object to convert to \code{ffp}.
 }}
+
+\item{...}{Additional attributes to be passed to \code{ffp}.}
 }
 \value{
 \itemize{
 \item \code{ffp()} and \code{as_ffp()} return an S3 vector of class \code{ffp}
+(built upon \code{double}'s);
 \item \code{is_ffp()} returns a \code{logical} object.
 }
 }
 \description{
-Functions to help the user to manipulate the \code{ffp} class.
+Helpers and Constructors from \code{ffp}.
+}
+\details{
+The \code{ffp} class is designed to interact with doubles,
+but the output of \code{c(ffp, double)} or \code{c(double, ffp)} will always return
+a \code{double} (not an \code{ffp} object), since there is no way to guarantee the
+interaction of a numeric vector and a probability will also be a probability.
 }
 \examples{
 set.seed(123)
 p <- runif(5)
 p <- p / sum(p)
-ffp(p)
+
 is_ffp(p)
+ffp(p)
 }

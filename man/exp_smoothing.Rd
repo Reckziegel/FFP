@@ -28,13 +28,13 @@ exp_smoothing(x, lambda)
 \method{exp_smoothing}{tbl}(x, lambda)
 }
 \arguments{
-\item{x}{The risk-drivers.}
+\item{x}{An univariate or a multivariate distribution.}
 
 \item{lambda}{A number for the decay parameter.}
 }
 \value{
-An S3 vector of class \code{ffp} with the new probabilities
-distribution.
+A numerical vector of class \code{ffp} with the new
+probabilities distribution.
 }
 \description{
 Exponential smoothing twists probabilities by giving relatively more weight
@@ -54,8 +54,6 @@ library(ggplot2)
 # long half_life
 long_hl <- exp_smoothing(EuStockMarkets, 0.001)
 long_hl
-
-# long half_file
 autoplot(long_hl) +
   scale_color_viridis_c()
 

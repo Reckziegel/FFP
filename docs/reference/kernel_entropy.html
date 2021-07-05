@@ -159,23 +159,22 @@ constrain the first two moments while imposing the minimal structure in the data
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>x</th>
-      <td><p>The risk-drivers.</p></td>
+      <td><p>An univariate or a multivariate distribution.</p></td>
     </tr>
     <tr>
       <th>mean</th>
-      <td><p>A number in which the kernel should be centered.</p></td>
+      <td><p>A numeric vector in which the kernel should be centered.</p></td>
     </tr>
     <tr>
       <th>sigma</th>
-      <td><p>A number with the uncertainty around mean. When <code>NULL</code>, only
-the mean is constrained.</p></td>
+      <td><p>The uncertainty (volatility) around the mean. When <code>NULL</code>, only the mean is constrained.</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>A S3 vector of class <code>ffp</code> with the new probabilities
-distribution.</p>
+    <p>A numerical vector of class <code>ffp</code> with the new
+probabilities distribution.</p>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <div class='dont-index'><p><code><a href='double_decay.html'>double_decay</a></code></p></div>

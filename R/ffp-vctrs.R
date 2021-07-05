@@ -1,17 +1,24 @@
-#' Fully Flexible Probability Class
+#' Manipulate the `ffp` Class
 #'
-#' Functions to help the user to manipulate the `ffp` class.
+#' Helpers and Constructors from `ffp`.
+#'
+#' The `ffp` class is designed to interact with doubles,
+#' but the output of `c(ffp, double)` or `c(double, ffp)` will always return
+#' a `double` (not an `ffp` object), since there is no way to guarantee the
+#' interaction of a numeric vector and a probability will also be a probability.
 #'
 #' @param x
 #' \itemize{
-#'   \item For `ffp()`: A numeric vector (must be a probability)
-#'   \item For `is_ffp()`: An object to test if the class is `ffp`
-#'   \item For `as_ffp()`: An object to convert to `ffp`
+#'   \item For `ffp()`: A numeric vector.
+#'   \item For `is_ffp()`: An object to be tested.
+#'   \item For `as_ffp()`: An object to convert to `ffp`.
 #' }
+#' @param ... Additional attributes to be passed to `ffp`.
 #'
 #' @return
 #' \itemize{
 #'   \item `ffp()` and `as_ffp()` return an S3 vector of class `ffp`
+#'   (built upon \code{double}'s);
 #'   \item `is_ffp()` returns a \code{logical} object.
 #' }
 #'
@@ -21,11 +28,12 @@
 #' set.seed(123)
 #' p <- runif(5)
 #' p <- p / sum(p)
-#' ffp(p)
+#'
 #' is_ffp(p)
-ffp <- function(x = double()) {
+#' ffp(p)
+ffp <- function(x = double(), ...) {
   vctrs::vec_cast(x, double())
-  new_ffp(x)
+  new_ffp(x, ...)
 }
 
 #' @rdname ffp
@@ -55,6 +63,8 @@ as_ffp.integer <- function(x) {
 
 #' Internal vctrs methods
 #'
+#' @param x A numeric vector.
+#' @return No return value, called for side effects.
 #' @import vctrs
 #' @keywords internal
 #' @name ffp-vctrs
@@ -65,9 +75,9 @@ methods::setOldClass(c("ffp", "vctrs_vctr"))
 
 #' @rdname ffp-vctrs
 #' @export
-new_ffp <- function(x = double()) {
+new_ffp <- function(x = double(), ...) {
   vctrs::vec_assert(x, double())
-  vctrs::new_vctr(x, class = "ffp")
+  vctrs::new_vctr(x, class = "ffp", ...)
 }
 
 #' @rdname ffp-vctrs
@@ -115,43 +125,4 @@ vec_math.ffp <- function(.fn, .x, ...) vctrs::vec_math_base(.fn, .x, ...)
 #' @rdname ffp-vctrs
 #' @export
 vec_arith.ffp <- function(op, x, y, ...) vctrs::vec_arith_base(op, x, y, ...)
-
-# flex_mat ----------------------------------------------------------------
-
-# constructor
-#' Internal class ffp_mat
-#'
-#' @rdname ffp_mat
-#' @export
-new_ffp_mat <- function(.x) {
-  validate_ffp_mat(ffp_mat(.x))
-}
-
-# validator
-#' @rdname ffp_mat
-#' @keywords internal
-validate_ffp_mat <- function(.x) {
-  stopifnot(is.double(.x))
-  .x
-}
-
-# helper
-#' @rdname ffp_mat
-#' @keywords internal
-ffp_mat <- function(.x, ...) {
-  x <- tibble::as_tibble(.x)
-  x <- dplyr::select(x, where(is.numeric))
-  out <- as.matrix(x)
-  out <- structure(out, class = c("matrix", "array", "ffp_mat"))
-  out
-}
-
-#' @rdname ffp_mat
-#' @keywords internal
-is_ffp_mat <- function(.x) inherits(.x, "ffp_mat")
-
-#' @rdname ffp_mat
-#' @keywords internal
-as_ffp_mat <- function(.x) ffp_mat(.x)
-
 

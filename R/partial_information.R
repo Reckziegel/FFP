@@ -5,13 +5,12 @@
 #' This function uses entropy-pooling to find the probability distribution that can
 #' constrain the first two moments while imposing the minimal structure in the data.
 #'
-#' @param x The risk-drivers.
-#' @param mean A number in which the kernel should be centered.
-#' @param sigma A number with the uncertainty around mean. When \code{NULL}, only
-#' the mean is constrained.
+#' @param x An univariate or a multivariate distribution.
+#' @param mean A numeric vector in which the kernel should be centered.
+#' @param sigma The uncertainty (volatility) around the mean. When \code{NULL}, only the mean is constrained.
 #'
-#' @return A S3 vector of class \code{ffp} with the new probabilities
-#' distribution.
+#' @return A numerical vector of class \code{ffp} with the new
+#' probabilities distribution.
 #'
 #' @export
 #'
@@ -86,7 +85,7 @@ kernel_entropy.ts <- function(x, mean, sigma = NULL) {
     if (is.vector(mean)) mean <- as.matrix(mean)
   }
 
-  x <- as_ffp_mat(x)
+  x <- as.matrix(x)
   p <- make_kernel_entropy(x, mean, sigma)
 
   ffp(p)
@@ -106,7 +105,7 @@ kernel_entropy.xts <- function(x, mean, sigma = NULL) {
     if (is.vector(mean)) mean <- as.matrix(mean)
   }
 
-  x <- as_ffp_mat(x)
+  x <- as.matrix(x)
   p <- make_kernel_entropy(x, mean, sigma)
 
   ffp(p)
@@ -126,8 +125,7 @@ kernel_entropy.tbl_df <- function(x, mean, sigma = NULL) {
     if (is.vector(mean)) mean <- as.matrix(mean)
   }
 
-  x <- as_ffp_mat(x)
-
+  x <- as.matrix(x[purrr::map_lgl(x, is.numeric)])
   p <- make_kernel_entropy(x, mean, sigma)
 
   ffp(p)
@@ -147,7 +145,7 @@ kernel_entropy.data.frame <- function(x, mean, sigma = NULL) {
     if (is.vector(mean)) mean <- as.matrix(mean)
   }
 
-  x <- as_ffp_mat(x)
+  x <- as.matrix(x[purrr::map_lgl(x, is.numeric)])
   p <- make_kernel_entropy(x, mean, sigma)
 
   ffp(p)
@@ -162,14 +160,14 @@ kernel_entropy.data.frame <- function(x, mean, sigma = NULL) {
 #' This function uses entropy-pooling to match different decay-factors on the
 #' covariance matrix.
 #'
-#' @param x The risk-drivers.
-#' @param decay_low A number with the long half-life (slow decay) for the correlation
+#' @param x An univariate or a multivariate distribution.
+#' @param slow A number with the long half-life (slow decay) for the correlation
 #' matrix.
-#' @param decay_high A number with the short-life (high decay) for the volatility
+#' @param fast A number with the short-life (high decay) for the volatility
 #' structure.
 #'
-#' @return A S3 vector of class \code{ffp} with the new probabilities
-#' distribution.
+#' @return A numerical vector of class \code{ffp} with the new
+#' probabilities distribution.
 #'
 #' @export
 #'
@@ -181,98 +179,100 @@ kernel_entropy.data.frame <- function(x, mean, sigma = NULL) {
 #' approach, Wiley.
 #'
 #' @examples
-#' library(ggplot2)
+#' \donttest{
+#'   library(ggplot2)
 #'
-#' l_c <- 0.0055
-#' l_s <- 0.0166
-#' ret <- diff(log(EuStockMarkets))
+#'   slow <- 0.0055
+#'   fast <- 0.0166
+#'   ret <- diff(log(EuStockMarkets))
 #'
-#' \dontrun{
-#'   dd <- double_decay(ret, l_c, l_s)
+#'   dd <- double_decay(ret, slow, fast)
 #'   dd
 #'
 #'   autoplot(dd) +
 #'     scale_color_viridis_c()
 #' }
-double_decay <- function(x, decay_low, decay_high) {
+double_decay <- function(x, slow, fast) {
   UseMethod("double_decay", x)
 }
 
 #' @rdname double_decay
 #' @export
-double_decay.default <- function(x, decay_low, decay_high) {
+double_decay.default <- function(x, slow, fast) {
   stop("function not implemented in this class yet.", call. = FALSE)
 }
 
 #' @rdname double_decay
 #' @export
-double_decay.numeric <- function(x, decay_low, decay_high) {
-  vctrs::vec_assert(decay_low, double(), 1)
-  vctrs::vec_assert(decay_high, double(), 1)
+double_decay.numeric <- function(x, slow, fast) {
+  vctrs::vec_assert(slow, double(), 1)
+  vctrs::vec_assert(fast, double(), 1)
+
   x  <- as.matrix(x)
-
-  p <- make_double_decay(x, decay_low, decay_high)
-
-  ffp(p)
-}
-
-#' @rdname double_decay
-#' @export
-double_decay.matrix <- function(x, decay_low, decay_high) {
-  vctrs::vec_assert(decay_low, double(), 1)
-  vctrs::vec_assert(decay_high, double(), 1)
-
-  p <- make_double_decay(x, decay_low, decay_high)
+  p <- make_double_decay(x, slow, fast)
 
   ffp(p)
 }
 
 #' @rdname double_decay
 #' @export
-double_decay.ts <- function(x, decay_low, decay_high) {
-  vctrs::vec_assert(decay_low, double(), 1)
-  vctrs::vec_assert(decay_high, double(), 1)
+double_decay.matrix <- function(x, slow, fast) {
+  vctrs::vec_assert(slow, double(), 1)
+  vctrs::vec_assert(fast, double(), 1)
+
+  p <- make_double_decay(x, slow, fast)
+
+  ffp(p)
+}
+
+#' @rdname double_decay
+#' @export
+double_decay.ts <- function(x, slow, fast) {
+  vctrs::vec_assert(slow, double(), 1)
+  vctrs::vec_assert(fast, double(), 1)
   if (is.null(dim(x))) {
     x <- matrix(x, ncol = 1)
   } else {
     x <- as.matrix(x)
   }
-  p <- make_double_decay(x, decay_low, decay_high)
+
+  p <- make_double_decay(x, slow, fast)
 
   ffp(p)
 }
 
 #' @rdname double_decay
 #' @export
-double_decay.xts <- function(x, decay_low, decay_high) {
-  vctrs::vec_assert(decay_low, double(), 1)
-  vctrs::vec_assert(decay_high, double(), 1)
-  x <- as_ffp_mat(x)
-  p <- make_double_decay(x, decay_low, decay_high)
+double_decay.xts <- function(x, slow, fast) {
+  vctrs::vec_assert(slow, double(), 1)
+  vctrs::vec_assert(fast, double(), 1)
+
+  x <- as.matrix(x)
+  p <- make_double_decay(x, slow, fast)
 
   ffp(p)
 }
 
 #' @rdname double_decay
 #' @export
-double_decay.tbl <- function(x, decay_low, decay_high) {
-  vctrs::vec_assert(decay_low, double(), 1)
-  vctrs::vec_assert(decay_high, double(), 1)
+double_decay.tbl <- function(x, slow, fast) {
+  vctrs::vec_assert(slow, double(), 1)
+  vctrs::vec_assert(fast, double(), 1)
 
-  x <- as_ffp_mat(x)
-  p <- make_double_decay(x, decay_low, decay_high)
+  x <- as.matrix(x[purrr::map_lgl(x, is.numeric)])
+  p <- make_double_decay(x, slow, fast)
 
   ffp(p)
 }
 
 #' @rdname double_decay
 #' @export
-double_decay.data.frame <- function(x, decay_low, decay_high) {
-  vctrs::vec_assert(decay_low, double(), 1)
-  vctrs::vec_assert(decay_high, double(), 1)
+double_decay.data.frame <- function(x, slow, fast) {
+  vctrs::vec_assert(slow, double(), 1)
+  vctrs::vec_assert(fast, double(), 1)
 
-  x <- as_ffp_mat(x)
-  p <- make_double_decay(x, decay_low, decay_high)
+  x <- as.matrix(x[purrr::map_lgl(x, is.numeric)])
+  p <- make_double_decay(x, slow, fast)
 
   ffp(p)
 }

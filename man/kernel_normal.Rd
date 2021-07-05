@@ -28,15 +28,15 @@ kernel_normal(x, mean, sigma)
 \method{kernel_normal}{data.frame}(x, mean, sigma)
 }
 \arguments{
-\item{x}{The risk-drivers.}
+\item{x}{An univariate or a multivariate distribution.}
 
-\item{mean}{The point in which the kernel should be centered.}
+\item{mean}{A numeric vector in which the kernel should be centered.}
 
-\item{sigma}{A number with the uncertainty (volatility) around the mean.}
+\item{sigma}{The uncertainty (volatility) around the mean.}
 }
 \value{
-An S3 vector of class \code{ffp} with the new probabilities
-distribution.
+A numerical vector of class \code{ffp} with the new
+probabilities distribution.
 }
 \description{
 In this framework, historical realizations receive a weight proportional to
@@ -56,7 +56,7 @@ kn
 autoplot(kn) +
   scale_color_viridis_c()
 
-# Spread the distribution with a larger sigma
+# A larger sigma spreads the distribution
 sigma <- var(diff(ret)) / 0.05
 kn <- kernel_normal(ret, mean, sigma)
 

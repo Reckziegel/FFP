@@ -1,11 +1,11 @@
 #' Inspection of a `ffp` object with ggplot2
 #'
-#' This function extends the `autoplot` method for the `ffp` class.
+#' Extends the `autoplot` method for the `ffp` class.
 #'
-#' @param object An objected of the class `ffp`.
-#' @param color A \code{logical} indicating whether or not the `color` argument
+#' @param object An objected of the `ffp` class.
+#' @param color A \code{logical} flag indicating whether (or not) the `color` argument
 #' should be added to the `ggplot2` aesthetics.
-#' @param ... Currently not used.
+#' @param ... Additional arguments to be passed to `autoplot`.
 #'
 #' @return A \code{ggplot2} object.
 #'

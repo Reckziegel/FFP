@@ -28,21 +28,19 @@ empirical_stats(x, p, level = 0.01)
 \method{empirical_stats}{tbl_df}(x, p, level = 0.01)
 }
 \arguments{
-\item{x}{A set of joint-scenarios of risk-drivers.}
+\item{x}{A time series defining the scenario-probability distribution.}
 
-\item{p}{A probability from the \code{ffp} class.}
+\item{p}{An object of the \code{ffp} class.}
 
-\item{level}{A number with the desired confidence level.}
+\item{level}{A number with the desired confidence level. The default is
+\code{level = 0.01}.}
 }
 \value{
-A \code{tibble} with 6 rows and the following components:
+A tidy \code{tibble} with 3 columns:
 \itemize{
-\item Mu,
-\item Std
-\item Skew
-\item Kurt
-\item Var
-\item CVaR
+\item stat: a column with \code{Mu}, \code{Std}, \code{Skew}, \code{Kurt}, \code{VaR} and \code{CVaR}.
+\item name: the asset names.
+\item value: the computed value for each statistic.
 }
 }
 \description{
@@ -53,13 +51,24 @@ The data in \code{x} and \code{p} are expected to have the same number of rows
 (size).
 }
 \examples{
+library(dplyr, warn.conflicts = FALSE)
+library(ggplot2)
+
 ret <- diff(log(EuStockMarkets))
 
-# with equal weights
+# with equal weights (standard scenario)
 ew  <- rep(1 / nrow(ret), nrow(ret))
-empirical_stats(x = ret, p = as_ffp(ew))
+empirical_stats(x = ret, p = as_ffp(ew)) \%>\%
+  ggplot(aes(x = name, y = value)) +
+  geom_col() +
+  facet_wrap(~stat, scales = "free") +
+  labs(x = NULL, y = NULL)
 
 # with ffp
 exp_smooth <- exp_smoothing(ret, 0.015)
-empirical_stats(ret, exp_smooth)
+empirical_stats(ret, exp_smooth) \%>\%
+  ggplot(aes(x = name, y = value)) +
+  geom_col() +
+  facet_wrap(~stat, scales = "free") +
+  labs(x = NULL, y = NULL)
 }

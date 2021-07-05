@@ -40,8 +40,8 @@
 
 
 <meta property="og:title" content="Full Information by Market Conditioning — crisp" />
-<meta property="og:description" content="In this function, probabilities are given full weight when a macroeconomic
-condition satisfies a logical statement." />
+<meta property="og:description" content="Filter occurrences where a macroeconomic condition satisfies
+a logical statement." />
 
 
 
@@ -127,8 +127,8 @@ condition satisfies a logical statement." />
     </div>
 
     <div class="ref-description">
-    <p>In this function, probabilities are given full weight when a macroeconomic
-condition satisfies a logical statement.</p>
+    <p>Filter occurrences where a macroeconomic condition satisfies
+a logical statement.</p>
     </div>
 
     <pre class="usage"><span class='fu'>crisp</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>lgl</span><span class='op'>)</span>
@@ -159,19 +159,18 @@ condition satisfies a logical statement.</p>
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>x</th>
-      <td><p>The risk-drivers.</p></td>
+      <td><p>An univariate or a multivariate distribution.</p></td>
     </tr>
     <tr>
       <th>lgl</th>
-      <td><p>A <code>logical</code> vector with TRUE's and FALSE's indicating
-which scenarios should considered.</p></td>
+      <td><p>A <code>logical</code> vector with TRUE's and FALSE's indicating which scenarios should considered.</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>An S3 vector of class <code>ffp</code> with the new probabilities
-distribution.</p>
+    <p>A numerical vector of class <code>ffp</code> with the new
+probabilities distribution.</p>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <div class='dont-index'><p><code><a href='exp_smoothing.html'>exp_smoothing</a></code> <code><a href='kernel_normal.html'>kernel_normal</a></code></p></div>

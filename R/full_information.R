@@ -2,15 +2,14 @@
 
 #' Full Information by Market Conditioning
 #'
-#' In this function, probabilities are given full weight when a macroeconomic
-#' condition satisfies a logical statement.
+#' Filter occurrences where a macroeconomic condition satisfies
+#' a logical statement.
 #'
-#' @param x The risk-drivers.
-#' @param lgl A \code{logical} vector with TRUE's and FALSE's indicating
-#' which scenarios should considered.
+#' @param x An univariate or a multivariate distribution.
+#' @param lgl A \code{logical} vector with TRUE's and FALSE's indicating which scenarios should considered.
 #'
-#' @return An S3 vector of class \code{ffp} with the new probabilities
-#' distribution.
+#' @return A numerical vector of class \code{ffp} with the new
+#' probabilities distribution.
 #'
 #' @export
 #'
@@ -129,11 +128,11 @@ crisp.tbl_df <- function(x, lgl) {
 #'
 #' For example: log(2) / 0.0166 is approximately 42. So, a parameter `lambda` of 0.0166 can be associated with a half-life of two-months.
 #'
-#' @param x The risk-drivers.
+#' @param x An univariate or a multivariate distribution.
 #' @param lambda A number for the decay parameter.
 #'
-#' @return An S3 vector of class \code{ffp} with the new probabilities
-#' distribution.
+#' @return A numerical vector of class \code{ffp} with the new
+#' probabilities distribution.
 #'
 #' @seealso \code{\link{crisp}} \code{\link{kernel_normal}} \code{\link{half_life}}
 #'
@@ -145,8 +144,6 @@ crisp.tbl_df <- function(x, lgl) {
 #' # long half_life
 #' long_hl <- exp_smoothing(EuStockMarkets, 0.001)
 #' long_hl
-#'
-#' # long half_file
 #' autoplot(long_hl) +
 #'   scale_color_viridis_c()
 #'
@@ -223,12 +220,12 @@ exp_smoothing.tbl <- function(x, lambda) {
 #' its distance from the target mean, which is enveloped by
 #' normal kernel with a bandwidth equal sigma.
 #'
-#' @param x The risk-drivers.
-#' @param mean The point in which the kernel should be centered.
-#' @param sigma A number with the uncertainty (volatility) around the mean.
+#' @param x An univariate or a multivariate distribution.
+#' @param mean A numeric vector in which the kernel should be centered.
+#' @param sigma The uncertainty (volatility) around the mean.
 #'
-#' @return An S3 vector of class \code{ffp} with the new probabilities
-#' distribution.
+#' @return A numerical vector of class \code{ffp} with the new
+#' probabilities distribution.
 #'
 #' @export
 #'
@@ -247,7 +244,7 @@ exp_smoothing.tbl <- function(x, lambda) {
 #' autoplot(kn) +
 #'   scale_color_viridis_c()
 #'
-#' # Spread the distribution with a larger sigma
+#' # A larger sigma spreads the distribution
 #' sigma <- var(diff(ret)) / 0.05
 #' kn <- kernel_normal(ret, mean, sigma)
 #'
@@ -334,7 +331,7 @@ kernel_normal.tbl_df <- function(x, mean, sigma) {
     assert_is_equal_size(mean, sigma)
   }
   x <- dplyr::select(x, where(is.numeric) & where(is.double))
-  x <- as_ffp_mat(x)
+  x <- as.matrix(x[purrr::map_lgl(x, is.numeric)])
 
   p <- make_kernel_normal(x = x, mean, sigma)
 
@@ -353,7 +350,7 @@ kernel_normal.data.frame <- function(x, mean, sigma) {
     assert_is_equal_size(mean, sigma)
   }
   x <- dplyr::select(x, where(is.numeric) & where(is.double))
-  x <- as_ffp_mat(x)
+  x <- as.matrix(x[purrr::map_lgl(x, is.numeric)])
 
   p <- make_kernel_normal(x = x, mean, sigma)
 

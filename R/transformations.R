@@ -1,6 +1,6 @@
-#' Compute the Half-Life
+#' Half-Life Calculation
 #'
-#' This function computes the implied half-life of a decay parameter.
+#' Compute the implied half-life of a decay parameter.
 #'
 #' @param lambda A number.
 #'

@@ -28,18 +28,17 @@ crisp(x, lgl)
 \method{crisp}{tbl_df}(x, lgl)
 }
 \arguments{
-\item{x}{The risk-drivers.}
+\item{x}{An univariate or a multivariate distribution.}
 
-\item{lgl}{A \code{logical} vector with TRUE's and FALSE's indicating
-which scenarios should considered.}
+\item{lgl}{A \code{logical} vector with TRUE's and FALSE's indicating which scenarios should considered.}
 }
 \value{
-An S3 vector of class \code{ffp} with the new probabilities
-distribution.
+A numerical vector of class \code{ffp} with the new
+probabilities distribution.
 }
 \description{
-In this function, probabilities are given full weight when a macroeconomic
-condition satisfies a logical statement.
+Filter occurrences where a macroeconomic condition satisfies
+a logical statement.
 }
 \examples{
 library(ggplot2)

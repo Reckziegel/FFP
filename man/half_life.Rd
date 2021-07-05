@@ -2,7 +2,7 @@
 % Please edit documentation in R/transformations.R
 \name{half_life}
 \alias{half_life}
-\title{Compute the Half-Life}
+\title{Half-Life Calculation}
 \usage{
 half_life(lambda)
 }
@@ -13,7 +13,7 @@ half_life(lambda)
 A single number with the half-life in days.
 }
 \description{
-This function computes the implied half-life of a decay parameter.
+Compute the implied half-life of a decay parameter.
 }
 \examples{
 half_life(0.0166)

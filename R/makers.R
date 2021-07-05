@@ -119,15 +119,15 @@ make_empirical_stats <- function(x, p, level = 0.01) {
   out <- rbind(mu, sd, sk, kurt, VaR, CVaR)
   out_name <- colnames(x)
   if (is.null(out_name)) {
-    colnames(out) <- "V1"
+    colnames(out) <- paste0("V", 1:NCOL(x))
   } else {
     colnames(out) <- out_name
   }
 
   tibble::as_tibble(out) %>%
-    dplyr::mutate(.stat = c("Mu", "Std", "Skew", "Kurt", "VaR", "CVaR")) %>%
-    dplyr::mutate(.stat = as.factor(.data$.stat)) %>%
-    dplyr::select(.data$.stat, dplyr::everything())
+    dplyr::mutate(stat = c("Mu", "Std", "Skew", "Kurt", "VaR", "CVaR")) %>%
+    dplyr::mutate(stat = as.factor(.data$stat)) %>%
+    dplyr::select(.data$stat, dplyr::everything())
 
 }
 

@@ -28,16 +28,15 @@ kernel_entropy(x, mean, sigma = NULL)
 \method{kernel_entropy}{data.frame}(x, mean, sigma = NULL)
 }
 \arguments{
-\item{x}{The risk-drivers.}
+\item{x}{An univariate or a multivariate distribution.}
 
-\item{mean}{A number in which the kernel should be centered.}
+\item{mean}{A numeric vector in which the kernel should be centered.}
 
-\item{sigma}{A number with the uncertainty around mean. When \code{NULL}, only
-the mean is constrained.}
+\item{sigma}{The uncertainty (volatility) around the mean. When \code{NULL}, only the mean is constrained.}
 }
 \value{
-A S3 vector of class \code{ffp} with the new probabilities
-distribution.
+A numerical vector of class \code{ffp} with the new
+probabilities distribution.
 }
 \description{
 This function uses entropy-pooling to find the probability distribution that can

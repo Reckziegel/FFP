@@ -10,18 +10,18 @@
 \method{plot}{ffp}(object, ...)
 }
 \arguments{
-\item{object}{An objected of the class \code{ffp}.}
+\item{object}{An objected of the \code{ffp} class.}
 
-\item{color}{A \code{logical} indicating whether or not the \code{color} argument
+\item{color}{A \code{logical} flag indicating whether (or not) the \code{color} argument
 should be added to the \code{ggplot2} aesthetics.}
 
-\item{...}{Currently not used.}
+\item{...}{Additional arguments to be passed to \code{autoplot}.}
 }
 \value{
 A \code{ggplot2} object.
 }
 \description{
-This function extends the \code{autoplot} method for the \code{ffp} class.
+Extends the \code{autoplot} method for the \code{ffp} class.
 }
 \examples{
 library(ggplot2)

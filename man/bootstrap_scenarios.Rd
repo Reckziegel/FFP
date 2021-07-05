@@ -27,16 +27,19 @@ bootstrap_scenarios(x, p, n)
 \arguments{
 \item{x}{A time series defining the scenario-probability distribution.}
 
-\item{p}{A probability from the \code{ffp} class.}
+\item{p}{An object of the \code{ffp} class.}
 
 \item{n}{An \code{integer} scalar with the number of scenarios to be generated.}
 }
 \value{
-The argument \code{x} is supposed to have the same size of \code{p}.
+A \code{tibble} with the number of rows equal to \code{n}.
 }
 \description{
-This function resamples scenarios given by the flexible probabilities
-approach.
+Resamples historical scenarios with flexible probabilities while keeping the
+empirical structure of the copulas intact.
+}
+\details{
+The argument \code{x} is supposed to have the same size of \code{p}.
 }
 \examples{
 set.seed(123)

@@ -4,18 +4,15 @@
 #' constraints. The solution is a vector of posterior probabilities that distorts
 #' the least the prior (equal-weights probabilities), given the constraints.
 #'
-#' @param p A vector of prior probabilities
-#' @param A The linear inequality constraint (left-hand side)
-#' @param b The linear inequality constraint (right-hand side)
-#' @param Aeq The linear equality constraint (left-hand side)
-#' @param beq The linear equality constraint (right-hand side)
+#' @param p A vector of prior probabilities.
+#' @param A The linear inequality constraint (left-hand side).
+#' @param b The linear inequality constraint (right-hand side).
+#' @param Aeq The linear equality constraint (left-hand side).
+#' @param beq The linear equality constraint (right-hand side).
 #'
 #' @return A vector of posterior probabilities.
 #'
-#' @export
-#'
-#' @examples
-#' #
+#' @keywords internal
 entropy_pooling <- function(p, A = NULL, b = NULL, Aeq, beq) {
 
   if (!is.matrix(p)) {
@@ -104,7 +101,7 @@ entropy_pooling <- function(p, A = NULL, b = NULL, Aeq, beq) {
   if (any(p_ < 0)) {
     p_[p_ < 0] <- 1e-32
   }
-  if (sum(p_) < 0.9998 && sum(p_) > 1.0002) {
+  if (sum(p_) < 0.9999 && sum(p_) > 1.0001) {
     p_ <- p_ / sum(p_)
   }
 

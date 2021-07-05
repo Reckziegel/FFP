@@ -5,6 +5,6 @@
 * Added `ffp` method to `ggplot2::autoplot()`;
 * Exponential Smoothing is now computed with `exp_smoothing()`. 
 
-# ffp 0.1.9000
+# ffp 0.0.9000
 
 * First release of the development version of `ffp`.

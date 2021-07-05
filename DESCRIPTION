@@ -1,10 +1,14 @@
 Type: Package
 Package: ffp
-Title: Fully Flexible Probabilities
+Title: Stress Test Historical Scenarios with Fully Flexible Probabilities
 Version: 0.0.1
-Authors@R: person("Bernardo", "Reckziegel", email = "bernardo_cse@hotmail.com",
-                  role = c("aut", "cre", "cph"))
-Description: Fully-Flexible Probabilities through entropy-pooling.
+Authors@R: 
+    person(given = "Bernardo",
+           family = "Reckziegel",
+           role = c("aut", "cre", "cph"),
+           email = "bernardo_cse@hotmail.com")
+Description: Implements numerical entropy-pooling for scenario analysis as
+    described in Meucci, Attilio (2010) <doi:10.2139/ssrn.1696802>.
 License: MIT + file LICENSE
 URL: https://github.com/Reckziegel/FFP
 BugReports: https://github.com/Reckziegel/FFP/issues
@@ -12,8 +16,8 @@ Depends:
     R (>= 2.10)
 Imports: 
     assertthat (>= 0.2.1),
-    crayon (>= 1.4.1),
     dplyr (>= 1.0.6),
+    forcats (>= 0.5.1),
     ggdist (>= 2.4.0),
     ggplot2 (>= 3.3.3),
     lubridate (>= 1.7.10),

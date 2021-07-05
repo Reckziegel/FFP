@@ -118,8 +118,6 @@ The histogram shows the marginal distribution of this strategy when every scenar
 pnl %>% 
   ggplot2::ggplot(ggplot2::aes(x = pnl_u)) + 
   ggdist::stat_histinterval(breaks = 100, outline_bars = TRUE) + 
-  ggdist::theme_ggdist() + 
-  ggplot2::scale_y_continuous(labels = scales::percent_format(scale = 100)) + 
   ggplot2::scale_x_continuous(labels = scales::dollar_format(prefix = "U$ ")) + 
   ggplot2::labs(title = "P&L Simulation",
                 subtitle = "Long-Short Call Options Strategy", 
@@ -144,7 +142,7 @@ fp_kd <- kernel_normal(inflation, mean = 3, sigma = var(diff(inflation[[1]])))
 # entropy-pooling by kernel-dumping on inflation
 fp_ekd <- kernel_entropy(inflation, mean = 3, sigma = var(diff(inflation[[1]])))
 # entropy-pooling by moment-matching
-fp_emc <- double_decay(invariants, decay_low = 0.0055, decay_high = 0.0166)
+fp_emc <- double_decay(invariants, slow = 0.0055, fast = 0.0166)
 ```
 
 Six different objects are estimated with varying degrees of flexibility, as the image shows:  
@@ -160,8 +158,6 @@ bind_probs(fp_es1, fp_es2, fp_cc, fp_kd, fp_ekd, fp_emc) %>%
                                 "5" = "FFP Kernel", "6" = "FFP Double-Decay"))) +
   ggplot2::scale_y_continuous(labels = scales::percent_format()) + 
   ggplot2::scale_x_continuous(labels = NULL, breaks = NULL) + 
-  ggplot2::scale_color_brewer(palette = "Paired") + 
-  ggdist::theme_ggdist() + 
   ggplot2::labs(title = NULL, subtitle = NULL, x = NULL, y = NULL) 
 ```
 
@@ -170,11 +166,10 @@ bind_probs(fp_es1, fp_es2, fp_cc, fp_kd, fp_ekd, fp_emc) %>%
 The new marginal distribution of the P&L that results from "tweaking" probabilities can be visualized, case by case, with `scenario_density()`.
 
 ```{r, fig.align='center', fig.height=5, fig.width=7}
-scenario_density(purrr::chuck(pnl, "pnl_u"), fp_es2) + 
-  ggplot2::scale_y_continuous(labels = scales::percent_format()) + 
-  ggplot2::scale_x_continuous(labels = scales::dollar_format(prefix = "U$ ")) + 
+scenario_density(pnl$pnl_u, fp_es2) + 
+  ggplot2::scale_x_continuous(labels = scales::dollar_format(prefix = "U$ ")) +
   ggplot2::labs(title = "Scenario Analysis with Fully-Flexible Probabilities (FFP)", 
-                subtitle = "Base Case vs. Exponential Smoothing")
+                subtitle = "Historical vs. Exponential Smoothing")
 ```
 
 As the figure shows, a slightly superior average return and a smaller interquartile range arises from exponentiating probabilities with half-life of 6 months. 
@@ -182,6 +177,6 @@ As the figure shows, a slightly superior average return and a smaller interquart
 Finally, the main statistics of the scenarios at hand can be assessed with `empirical_stats()`.
 
 ```{r}
-empirical_stats(pnl, fp_es1)
+empirical_stats(pnl %>% dplyr::select(pnl_u), fp_es1)
 ```
 

@@ -27,7 +27,7 @@ Fit2Moms <- function(X, m, S) {
 
   SecMom <- S + m %*% t(m)   #...constrain the second moments...
 
-  for (k in  1:N) {
+  for (k in 1:N) {
     for (l in k:N) {
       Aeq <- rbind(Aeq , t(X[ , k] * X[ , l]))
       beq <- rbind(beq, SecMom[k, l])

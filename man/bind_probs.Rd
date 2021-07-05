@@ -7,7 +7,7 @@
 bind_probs(...)
 }
 \arguments{
-\item{...}{Different \code{ffp} objects to combine.}
+\item{...}{\code{ffp} objects to combine.}
 }
 \value{
 A tidy \code{tibble}.

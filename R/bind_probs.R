@@ -3,7 +3,7 @@
 #' This function mimics `dplyr` \code{\link[dplyr]{bind}}. It's useful if you
 #' have different `ffp` objects and want to stack them in the `tidy` (long) format.
 #'
-#' @param ... Different \code{ffp} objects to combine.
+#' @param ... \code{ffp} objects to combine.
 #'
 #' @return A tidy \code{tibble}.
 #'

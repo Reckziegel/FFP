@@ -15,7 +15,7 @@
 \alias{vec_arith.ffp}
 \title{Internal vctrs methods}
 \usage{
-new_ffp(x = double())
+new_ffp(x = double(), ...)
 
 \method{vec_ptype_abbr}{ffp}(x, ...)
 
@@ -36,6 +36,12 @@ new_ffp(x = double())
 \method{vec_math}{ffp}(.fn, .x, ...)
 
 \method{vec_arith}{ffp}(op, x, y, ...)
+}
+\arguments{
+\item{x}{A numeric vector.}
+}
+\value{
+No return value, called for side effects.
 }
 \description{
 Internal vctrs methods

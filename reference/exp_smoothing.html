@@ -159,7 +159,7 @@ to recent observations at an exponential rate.</p>
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>x</th>
-      <td><p>The risk-drivers.</p></td>
+      <td><p>An univariate or a multivariate distribution.</p></td>
     </tr>
     <tr>
       <th>lambda</th>
@@ -169,8 +169,8 @@ to recent observations at an exponential rate.</p>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>An S3 vector of class <code>ffp</code> with the new probabilities
-distribution.</p>
+    <p>A numerical vector of class <code>ffp</code> with the new
+probabilities distribution.</p>
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
     <p>The half-life is linked with the lambda parameter as follows:</p><ul>
@@ -189,9 +189,7 @@ distribution.</p>
 <span class='va'>long_hl</span> <span class='op'>&lt;-</span> <span class='fu'>exp_smoothing</span><span class='op'>(</span><span class='va'>EuStockMarkets</span>, <span class='fl'>0.001</span><span class='op'>)</span>
 <span class='va'>long_hl</span>
 </div><div class='output co'>#&gt; &lt;ffp[1860]&gt;
-#&gt; 0.0001844669 0.0001846515 0.0001848363 0.0001850212 0.0001852063 ... 0.001183783</div><div class='input'>
-<span class='co'># long half_file</span>
-<span class='fu'><a href='https://ggplot2.tidyverse.org/reference/autoplot.html'>autoplot</a></span><span class='op'>(</span><span class='va'>long_hl</span><span class='op'>)</span> <span class='op'>+</span>
+#&gt; 0.0001844669 0.0001846515 0.0001848363 0.0001850212 0.0001852063 ... 0.001183783</div><div class='input'><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/autoplot.html'>autoplot</a></span><span class='op'>(</span><span class='va'>long_hl</span><span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_viridis.html'>scale_color_viridis_c</a></span><span class='op'>(</span><span class='op'>)</span>
 </div><div class='img'><img src='exp_smoothing-1.png' alt='' width='700' height='433' /></div><div class='input'>
 <span class='co'># short half_life</span>

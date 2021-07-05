@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Fully Flexible Probability Class — ffp • ffp</title>
+<title>Manipulate the ffp Class — ffp • ffp</title>
 
 
 <!-- jquery -->
@@ -39,8 +39,8 @@
 
 
 
-<meta property="og:title" content="Fully Flexible Probability Class — ffp" />
-<meta property="og:description" content="Functions to help the user to manipulate the ffp class." />
+<meta property="og:title" content="Manipulate the ffp Class — ffp" />
+<meta property="og:description" content="Helpers and Constructors from ffp." />
 
 
 
@@ -120,16 +120,16 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Fully Flexible Probability Class</h1>
+    <h1>Manipulate the <code>ffp</code> Class</h1>
     <small class="dont-index">Source: <a href='https://github.com/Reckziegel/FFP/blob/master/R/ffp-vctrs.R'><code>R/ffp-vctrs.R</code></a></small>
     <div class="hidden name"><code>ffp.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Functions to help the user to manipulate the <code>ffp</code> class.</p>
+    <p>Helpers and Constructors from <code>ffp</code>.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>ffp</span><span class='op'>(</span>x <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/double.html'>double</a></span><span class='op'>(</span><span class='op'>)</span><span class='op'>)</span>
+    <pre class="usage"><span class='fu'>ffp</span><span class='op'>(</span>x <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/double.html'>double</a></span><span class='op'>(</span><span class='op'>)</span>, <span class='va'>...</span><span class='op'>)</span>
 
 <span class='fu'>is_ffp</span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span>
 
@@ -147,10 +147,14 @@
     <tr>
       <th>x</th>
       <td><ul>
-<li><p>For <code>ffp()</code>: A numeric vector (must be a probability)</p></li>
-<li><p>For <code>is_ffp()</code>: An object to test if the class is <code>ffp</code></p></li>
-<li><p>For <code>as_ffp()</code>: An object to convert to <code>ffp</code></p></li>
+<li><p>For <code>ffp()</code>: A numeric vector.</p></li>
+<li><p>For <code>is_ffp()</code>: An object to be tested.</p></li>
+<li><p>For <code>as_ffp()</code>: An object to convert to <code>ffp</code>.</p></li>
 </ul></td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td><p>Additional attributes to be passed to <code>ffp</code>.</p></td>
     </tr>
     </table>
 
@@ -158,19 +162,27 @@
 
     
 <ul>
-<li><p><code>ffp()</code> and <code>as_ffp()</code> return an S3 vector of class <code>ffp</code></p></li>
+<li><p><code>ffp()</code> and <code>as_ffp()</code> return an S3 vector of class <code>ffp</code>
+(built upon <code>double</code>'s);</p></li>
 <li><p><code>is_ffp()</code> returns a <code>logical</code> object.</p></li>
 </ul>
 
+    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
+
+    <p>The <code>ffp</code> class is designed to interact with doubles,
+but the output of <code><a href='https://rdrr.io/r/base/c.html'>c(ffp, double)</a></code> or <code><a href='https://rdrr.io/r/base/c.html'>c(double, ffp)</a></code> will always return
+a <code>double</code> (not an <code>ffp</code> object), since there is no way to guarantee the
+interaction of a numeric vector and a probability will also be a probability.</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='fu'><a href='https://rdrr.io/r/base/Random.html'>set.seed</a></span><span class='op'>(</span><span class='fl'>123</span><span class='op'>)</span>
 <span class='va'>p</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/Uniform.html'>runif</a></span><span class='op'>(</span><span class='fl'>5</span><span class='op'>)</span>
 <span class='va'>p</span> <span class='op'>&lt;-</span> <span class='va'>p</span> <span class='op'>/</span> <span class='fu'><a href='https://rdrr.io/r/base/sum.html'>sum</a></span><span class='op'>(</span><span class='va'>p</span><span class='op'>)</span>
-<span class='fu'>ffp</span><span class='op'>(</span><span class='va'>p</span><span class='op'>)</span>
+
+<span class='fu'>is_ffp</span><span class='op'>(</span><span class='va'>p</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; [1] FALSE</div><div class='input'><span class='fu'>ffp</span><span class='op'>(</span><span class='va'>p</span><span class='op'>)</span>
 </div><div class='output co'>#&gt; &lt;ffp[5]&gt;
-#&gt; 0.08692491 0.2382778 0.1236198 0.2669061 0.2842713</div><div class='input'><span class='fu'>is_ffp</span><span class='op'>(</span><span class='va'>p</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; [1] FALSE</div></pre>
+#&gt; 0.08692491 0.2382778 0.1236198 0.2669061 0.2842713</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

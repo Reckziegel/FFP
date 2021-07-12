@@ -74,7 +74,7 @@ fp_kd <- kernel_normal(inflation, mean = 3, sigma = var(diff(inflation[[1]])))
 # entropy-pooling by kernel-dumping on inflation
 fp_ekd <- kernel_entropy(inflation, mean = 3, sigma = var(diff(inflation[[1]])))
 # entropy-pooling by moment-matching
-fp_emc <- double_decay(invariants, decay_low = 0.0055, decay_high = 0.0166)
+fp_emc <- double_decay(invariants, slow = 0.0055, fast = 0.0166)
 
 bind_probs(fp_es1, fp_es2, fp_cc, fp_kd, fp_ekd, fp_emc) %>% 
   ggplot2::ggplot(ggplot2::aes(x = rowid, y = probs, color = key)) + 

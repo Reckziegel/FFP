@@ -1,6 +1,6 @@
-#' Plot Scenario Densities
+#' Plot Scenarios
 #'
-#' This function is designed to make it easier to visualize the impact of a
+#' This functions are designed to make it easier to visualize the impact of a
 #' _View_ in the P&L distribution.
 #'
 #' To generate a scenario-distribution the margins are bootstrapped using
@@ -19,6 +19,7 @@
 #' p <- exp_smoothing(pnl, 0.005)
 #'
 #' scenario_density(pnl, p, 500)
+#' scenario_histogram(pnl, p, 500)
 scenario_density <- function(x, p, n = 10000) {
   vctrs::vec_assert(n, double(), 1)
   stopifnot(inherits(p, "ffp"))

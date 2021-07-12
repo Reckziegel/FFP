@@ -1,6 +1,6 @@
 template:
   params:
-    bootswatch: cosmo
+    bootswatch: yeti
 
 navbar:
   title: "ffp"

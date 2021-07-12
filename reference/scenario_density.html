@@ -6,13 +6,13 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Plot Scenario Densities — scenario_density • ffp</title>
+<title>Plot Scenarios — scenario_density • ffp</title>
 
 
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
 <!-- Bootstrap -->
-<link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.4.0/cosmo/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.4.0/yeti/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous" />
 
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script>
@@ -39,8 +39,8 @@
 
 
 
-<meta property="og:title" content="Plot Scenario Densities — scenario_density" />
-<meta property="og:description" content="This function is designed to make it easier to visualize the impact of a
+<meta property="og:title" content="Plot Scenarios — scenario_density" />
+<meta property="og:description" content="This functions are designed to make it easier to visualize the impact of a
 View in the P&amp;amp;L distribution." />
 
 
@@ -121,17 +121,19 @@ View in the P&amp;amp;L distribution." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Plot Scenario Densities</h1>
-    <small class="dont-index">Source: <a href='https://github.com/Reckziegel/FFP/blob/master/R/scenario_density.R'><code>R/scenario_density.R</code></a></small>
+    <h1>Plot Scenarios</h1>
+    <small class="dont-index">Source: <a href='https://github.com/Reckziegel/FFP/blob/master/R/scenario_density.R'><code>R/scenario_density.R</code></a>, <a href='https://github.com/Reckziegel/FFP/blob/master/R/scenario_histogram.R'><code>R/scenario_histogram.R</code></a></small>
     <div class="hidden name"><code>scenario_density.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>This function is designed to make it easier to visualize the impact of a
+    <p>This functions are designed to make it easier to visualize the impact of a
 <em>View</em> in the P&amp;L distribution.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>scenario_density</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>p</span>, n <span class='op'>=</span> <span class='fl'>10000</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>scenario_density</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>p</span>, n <span class='op'>=</span> <span class='fl'>10000</span><span class='op'>)</span>
+
+<span class='fu'>scenario_histogram</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>p</span>, n <span class='op'>=</span> <span class='fl'>10000</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -164,7 +166,8 @@ with the <code>n</code> argument (default is <code>n = 10000</code>).</p>
 <span class='va'>p</span> <span class='op'>&lt;-</span> <span class='fu'><a href='exp_smoothing.html'>exp_smoothing</a></span><span class='op'>(</span><span class='va'>pnl</span>, <span class='fl'>0.005</span><span class='op'>)</span>
 
 <span class='fu'>scenario_density</span><span class='op'>(</span><span class='va'>pnl</span>, <span class='va'>p</span>, <span class='fl'>500</span><span class='op'>)</span>
-</div><div class='img'><img src='scenario_density-1.png' alt='' width='700' height='433' /></div></pre>
+</div><div class='img'><img src='scenario_density-1.png' alt='' width='700' height='433' /></div><div class='input'><span class='fu'>scenario_histogram</span><span class='op'>(</span><span class='va'>pnl</span>, <span class='va'>p</span>, <span class='fl'>500</span><span class='op'>)</span>
+</div><div class='img'><img src='scenario_density-2.png' alt='' width='700' height='433' /></div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

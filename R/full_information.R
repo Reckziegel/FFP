@@ -33,7 +33,7 @@ crisp <- function(x, lgl) {
 #' @rdname crisp
 #' @export
 crisp.default <- function(x, lgl) {
-  stop("function not implemented in this class yet.", call. = FALSE)
+  stop("Method not implemented for class `", class(x), "` yet.", call. = FALSE)
 }
 
 #' @rdname crisp
@@ -160,7 +160,7 @@ exp_decay <- function(x, lambda) {
 #' @rdname exp_decay
 #' @export
 exp_decay.default <- function(x, lambda) {
-  stop("function not implemented in this class yet.", call. = FALSE)
+  stop("Method not implemented for class `", class(x), "` yet.", call. = FALSE)
 }
 
 #' @rdname exp_decay
@@ -256,7 +256,7 @@ kernel_normal <- function(x, mean, sigma) {
 #' @rdname kernel_normal
 #' @export
 kernel_normal.default <- function(x, mean, sigma) {
-  stop("function not implemented in this class yet.", call. = FALSE)
+  stop("Method not implemented for class `", class(x), "` yet.", call. = FALSE)
 }
 
 #' @rdname kernel_normal

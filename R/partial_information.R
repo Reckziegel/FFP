@@ -35,7 +35,7 @@ kernel_entropy <- function(x, mean, sigma = NULL) {
 #' @rdname kernel_entropy
 #' @export
 kernel_entropy.default <- function(x, mean, sigma = NULL) {
-  stop("function not implemented in this class yet.", call. = FALSE)
+  stop("Method not implemented for class `", class(x), "` yet.", call. = FALSE)
 }
 
 #' @rdname kernel_entropy
@@ -198,7 +198,7 @@ double_decay <- function(x, slow, fast) {
 #' @rdname double_decay
 #' @export
 double_decay.default <- function(x, slow, fast) {
-  stop("function not implemented in this class yet.", call. = FALSE)
+  stop("Method not implemented for class `", class(x), "` yet.", call. = FALSE)
 }
 
 #' @rdname double_decay

@@ -26,8 +26,8 @@ Extends the \code{autoplot} method for the \code{ffp} class.
 \examples{
 library(ggplot2)
 
-x <- exp_smoothing(EuStockMarkets, 0.001)
-y <- exp_smoothing(EuStockMarkets, 0.01)
+x <- exp_decay(EuStockMarkets, 0.001)
+y <- exp_decay(EuStockMarkets, 0.01)
 
 autoplot(x) +
   scale_color_viridis_c()

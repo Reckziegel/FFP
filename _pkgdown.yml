@@ -23,7 +23,7 @@ reference:
       desc: Functions that completely describe a distribution.
       contents:
       - crisp
-      - exp_smoothing
+      - exp_decay
       - kernel_normal
 
     - title: Partial Information
@@ -38,6 +38,7 @@ reference:
       - bind_probs
       - bootstrap_scenarios
       - entropy_pooling
+      - ens
       - empirical_stats
       - half_life
 

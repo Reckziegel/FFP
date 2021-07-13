@@ -163,8 +163,7 @@ kernel_entropy.data.frame <- function(x, mean, sigma = NULL) {
 #' @param x An univariate or a multivariate distribution.
 #' @param slow A number with the long half-life (slow decay) for the correlation
 #' matrix.
-#' @param fast A number with the short-life (high decay) for the volatility
-#' structure.
+#' @param fast A number with the short-life (high decay) for the volatility.
 #'
 #' @return A numerical vector of class \code{ffp} with the new
 #' probabilities distribution.

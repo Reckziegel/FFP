@@ -10,7 +10,7 @@ make_crisp <- function(x, condition) {
 }
 
 #' @keywords internal
-make_smoothing <- function(x, lambda) {
+make_decay <- function(x, lambda) {
   T_ <- vctrs::vec_size(x)
   p <- exp(-lambda * (T_ - (1:T_)))
   p  <- p / sum(p)
@@ -48,7 +48,7 @@ make_double_decay <- function(x, decay_low, decay_high) {
 # Empirical Stats ---------------------------------------------------------
 
 #' @keywords internal
-make_empirical_stats <- function(x, p, level = 0.01) {
+make_empirical_stats <- function(x, p, level) {
 
   T_ <- nrow(x)
   N  <- ncol(x)

@@ -2,8 +2,8 @@
 
 #' Full Information by Market Conditioning
 #'
-#' Filter occurrences where a macroeconomic condition satisfies
-#' a logical statement.
+#' Give full weight to occurrences when a macroeconomic statement satisfies
+#' a logical condition.
 #'
 #' @param x An univariate or a multivariate distribution.
 #' @param lgl A \code{logical} vector with TRUE's and FALSE's indicating which scenarios should considered.
@@ -13,7 +13,7 @@
 #'
 #' @export
 #'
-#' @seealso \code{\link{exp_smoothing}} \code{\link{kernel_normal}}
+#' @seealso \code{\link{exp_decay}} \code{\link{kernel_normal}}
 #'
 #' @examples
 #' library(ggplot2)
@@ -115,9 +115,9 @@ crisp.tbl_df <- function(x, lgl) {
 }
 
 
-# Exponential Smoothing ---------------------------------------------------
+# Exponential Decay ---------------------------------------------------
 
-#' Full Information by Exponential Smoothing
+#' Full Information by Exponential Decay
 #'
 #' Exponential smoothing twists probabilities by giving relatively more weight
 #' to recent observations at an exponential rate.
@@ -142,72 +142,72 @@ crisp.tbl_df <- function(x, lgl) {
 #' library(ggplot2)
 #'
 #' # long half_life
-#' long_hl <- exp_smoothing(EuStockMarkets, 0.001)
+#' long_hl <- exp_decay(EuStockMarkets, 0.001)
 #' long_hl
 #' autoplot(long_hl) +
 #'   scale_color_viridis_c()
 #'
 #' # short half_life
-#' short_hl <- exp_smoothing(EuStockMarkets, 0.015)
+#' short_hl <- exp_decay(EuStockMarkets, 0.015)
 #' short_hl
 #' autoplot(short_hl) +
 #'   scale_color_viridis_c()
-exp_smoothing <- function(x, lambda) {
-  UseMethod("exp_smoothing", x)
+exp_decay <- function(x, lambda) {
+  UseMethod("exp_decay", x)
 }
 
 
-#' @rdname exp_smoothing
+#' @rdname exp_decay
 #' @export
-exp_smoothing.default <- function(x, lambda) {
+exp_decay.default <- function(x, lambda) {
   stop("function not implemented in this class yet.", call. = FALSE)
 }
 
-#' @rdname exp_smoothing
+#' @rdname exp_decay
 #' @export
-exp_smoothing.numeric <- function(x, lambda) {
+exp_decay.numeric <- function(x, lambda) {
   vctrs::vec_assert(lambda, double(), 1)
-  p <- make_smoothing(x, lambda)
+  p <- make_decay(x, lambda)
   ffp(p)
 }
 
-#' @rdname exp_smoothing
+#' @rdname exp_decay
 #' @export
-exp_smoothing.matrix <- function(x, lambda) {
+exp_decay.matrix <- function(x, lambda) {
   vctrs::vec_assert(lambda, double(), 1)
-  p <- make_smoothing(x, lambda)
+  p <- make_decay(x, lambda)
   ffp(p)
 }
 
-#' @rdname exp_smoothing
+#' @rdname exp_decay
 #' @export
-exp_smoothing.ts <- function(x, lambda) {
+exp_decay.ts <- function(x, lambda) {
   vctrs::vec_assert(lambda, double(), 1)
-  p <- make_smoothing(x, lambda)
+  p <- make_decay(x, lambda)
   ffp(p)
 }
 
-#' @rdname exp_smoothing
+#' @rdname exp_decay
 #' @export
-exp_smoothing.xts <- function(x, lambda) {
+exp_decay.xts <- function(x, lambda) {
   vctrs::vec_assert(lambda, double(), 1)
-  p <- make_smoothing(x, lambda)
+  p <- make_decay(x, lambda)
   ffp(p)
 }
 
-#' @rdname exp_smoothing
+#' @rdname exp_decay
 #' @export
-exp_smoothing.data.frame <- function(x, lambda) {
+exp_decay.data.frame <- function(x, lambda) {
   vctrs::vec_assert(lambda, double(), 1)
-  p <- make_smoothing(x, lambda)
+  p <- make_decay(x, lambda)
   ffp(p)
 }
 
-#' @rdname exp_smoothing
+#' @rdname exp_decay
 #' @export
-exp_smoothing.tbl <- function(x, lambda) {
+exp_decay.tbl <- function(x, lambda) {
   vctrs::vec_assert(lambda, double(), 1)
-  p <- make_smoothing(x, lambda)
+  p <- make_decay(x, lambda)
   ffp(p)
 }
 
@@ -217,8 +217,7 @@ exp_smoothing.tbl <- function(x, lambda) {
 #' Full Information by Kernel-Damping
 #'
 #' In this framework, historical realizations receive a weight proportional to
-#' its distance from the target mean, which is enveloped by
-#' normal kernel with a bandwidth equal sigma.
+#' its distance from a target mean that is surrounded by normal kernel.
 #'
 #' @param x An univariate or a multivariate distribution.
 #' @param mean A numeric vector in which the kernel should be centered.
@@ -229,7 +228,7 @@ exp_smoothing.tbl <- function(x, lambda) {
 #'
 #' @export
 #'
-#' @seealso \code{\link{crisp}} \code{\link{exp_smoothing}}
+#' @seealso \code{\link{crisp}} \code{\link{exp_decay}}
 #'
 #' @examples
 #' library(ggplot2)
@@ -244,7 +243,7 @@ exp_smoothing.tbl <- function(x, lambda) {
 #' autoplot(kn) +
 #'   scale_color_viridis_c()
 #'
-#' # A larger sigma spreads the distribution
+#' # A larger sigma spreads out the distribution
 #' sigma <- var(diff(ret)) / 0.05
 #' kn <- kernel_normal(ret, mean, sigma)
 #'

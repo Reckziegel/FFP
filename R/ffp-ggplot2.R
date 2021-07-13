@@ -17,15 +17,14 @@
 #' @examples
 #' library(ggplot2)
 #'
-#' x <- exp_smoothing(EuStockMarkets, 0.001)
-#' y <- exp_smoothing(EuStockMarkets, 0.01)
+#' x <- exp_decay(EuStockMarkets, 0.001)
+#' y <- exp_decay(EuStockMarkets, 0.01)
 #'
 #' autoplot(x) +
 #'   scale_color_viridis_c()
 #' autoplot(y) +
 #'   scale_color_viridis_c()
 autoplot.ffp <- function(object, color = TRUE, ...) {
-  # stopifnot(inherits(object, "ffp"))
   plot_data <- tibble::tibble(id = 1:vctrs::vec_size(object), y = as.double(object))
   ggplot2::ggplot(
     data    = plot_data,

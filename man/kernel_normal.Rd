@@ -40,8 +40,7 @@ probabilities distribution.
 }
 \description{
 In this framework, historical realizations receive a weight proportional to
-its distance from the target mean, which is enveloped by
-normal kernel with a bandwidth equal sigma.
+its distance from a target mean that is surrounded by normal kernel.
 }
 \examples{
 library(ggplot2)
@@ -56,7 +55,7 @@ kn
 autoplot(kn) +
   scale_color_viridis_c()
 
-# A larger sigma spreads the distribution
+# A larger sigma spreads out the distribution
 sigma <- var(diff(ret)) / 0.05
 kn <- kernel_normal(ret, mean, sigma)
 
@@ -64,5 +63,5 @@ autoplot(kn) +
   scale_color_viridis_c()
 }
 \seealso{
-\code{\link{crisp}} \code{\link{exp_smoothing}}
+\code{\link{crisp}} \code{\link{exp_decay}}
 }

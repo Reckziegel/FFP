@@ -1,7 +1,7 @@
 library(dplyr, warn.conflicts = FALSE)
 
 ret <- diff(log(EuStockMarkets))
-p <- exp_smoothing(ret, 0.001)
+p <- exp_decay(ret, 0.001)
 esu <- empirical_stats(ret[ , 1], p)
 esm <- empirical_stats(ret, p, 0.05)
 

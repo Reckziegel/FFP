@@ -16,7 +16,7 @@
 #'
 #' @examples
 #' pnl <- diff(log(EuStockMarkets))[, 1]
-#' p <- exp_smoothing(pnl, 0.005)
+#' p <- exp_decay(pnl, 0.005)
 #'
 #' scenario_density(pnl, p, 500)
 #' scenario_histogram(pnl, p, 500)

@@ -1,5 +1,5 @@
-x <- exp_smoothing(EuStockMarkets, 0.001)
-y <- exp_smoothing(EuStockMarkets, 0.002)
+x <- exp_decay(EuStockMarkets, 0.001)
+y <- exp_decay(EuStockMarkets, 0.002)
 z <- list(a = 1)
 p_tidy <- bind_probs(x, y, z)
 

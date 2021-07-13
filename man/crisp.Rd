@@ -37,8 +37,8 @@ A numerical vector of class \code{ffp} with the new
 probabilities distribution.
 }
 \description{
-Filter occurrences where a macroeconomic condition satisfies
-a logical statement.
+Give full weight to occurrences when a macroeconomic statement satisfies
+a logical condition.
 }
 \examples{
 library(ggplot2)
@@ -53,5 +53,5 @@ autoplot(market_condition) +
   scale_color_viridis_c()
 }
 \seealso{
-\code{\link{exp_smoothing}} \code{\link{kernel_normal}}
+\code{\link{exp_decay}} \code{\link{kernel_normal}}
 }

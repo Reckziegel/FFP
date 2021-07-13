@@ -41,7 +41,7 @@ Helpers and Constructors from \code{ffp}.
 The \code{ffp} class is designed to interact with doubles,
 but the output of \code{c(ffp, double)} or \code{c(double, ffp)} will always return
 a \code{double} (not an \code{ffp} object), since there is no way to guarantee the
-interaction of a numeric vector and a probability will also be a probability.
+interaction between a numeric vector and a probability will also be a probability.
 }
 \examples{
 set.seed(123)

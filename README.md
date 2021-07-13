@@ -44,8 +44,8 @@ devtools::install_github("Reckziegel/ffp")
 The package `ffp` comes with five functions to extract probabilities
 from the historical scenarios:
 
--   `exp_smoothing()`: accounts for the time-changing nature of
-    volatility by giving more weight to recent observations;
+-   `exp_decay()`: accounts for the time-changing nature of volatility
+    by giving more weight to recent observations;
 -   `crisp()`: selects scenarios where a certain logical macroeconomic
     statement is satisfied;
 -   `kernel_normal()`: generalizes the `crisp` condition by wrapping

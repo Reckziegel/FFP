@@ -33,8 +33,7 @@ double_decay(x, slow, fast)
 \item{slow}{A number with the long half-life (slow decay) for the correlation
 matrix.}
 
-\item{fast}{A number with the short-life (high decay) for the volatility
-structure.}
+\item{fast}{A number with the short-life (high decay) for the volatility.}
 }
 \value{
 A numerical vector of class \code{ffp} with the new

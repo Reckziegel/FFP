@@ -3,7 +3,7 @@ set.seed(123)
 xu <- stats::rnorm(500)
 xm <- matrix(stats::rnorm(1000), ncol = 2)
 index <- seq(Sys.Date(), Sys.Date() + 499, "day")
-prob <- exp_smoothing(xu, 0.001)
+prob <- exp_decay(xu, 0.001)
 
 # Univariate
 xu_vec <- xu

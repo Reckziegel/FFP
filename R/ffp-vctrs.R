@@ -5,7 +5,7 @@
 #' The `ffp` class is designed to interact with doubles,
 #' but the output of `c(ffp, double)` or `c(double, ffp)` will always return
 #' a `double` (not an `ffp` object), since there is no way to guarantee the
-#' interaction of a numeric vector and a probability will also be a probability.
+#' interaction between a numeric vector and a probability will also be a probability.
 #'
 #' @param x
 #' \itemize{
@@ -22,8 +22,8 @@
 #'   \item `is_ffp()` returns a \code{logical} object.
 #' }
 #'
-#'
 #' @export
+#'
 #' @examples
 #' set.seed(123)
 #' p <- runif(5)

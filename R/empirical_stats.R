@@ -1,13 +1,14 @@
 #' Summary Statistics for Empirical Distributions
 #'
-#' Computes some of the most commonly used statistics by portfolio managers.
+#' Computes the mean, standard deviation, skewness, kurtosis, Value-at-Risk (VaR) and
+#' Conditional Value-at-Risk CVaR) under flexible probabilities.
 #'
 #' The data in \code{x} and \code{p} are expected to have the same number of rows
 #' (size).
 #'
 #' @param x A time series defining the scenario-probability distribution.
 #' @param p An object of the `ffp` class.
-#' @param level A number with the desired confidence level. The default is
+#' @param level A number with the desired probability level. The default is
 #' `level = 0.01`.
 #'
 #' @return A tidy \code{tibble} with 3 columns:
@@ -35,7 +36,7 @@
 #'   labs(x = NULL, y = NULL)
 #'
 #' # with ffp
-#' exp_smooth <- exp_smoothing(ret, 0.015)
+#' exp_smooth <- exp_decay(ret, 0.015)
 #' empirical_stats(ret, exp_smooth) %>%
 #'   ggplot(aes(x = name, y = value)) +
 #'   geom_col() +

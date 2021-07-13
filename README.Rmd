@@ -42,7 +42,7 @@ devtools::install_github("Reckziegel/ffp")
 
 The package `ffp` comes with five functions to extract probabilities from the historical scenarios: 
 
-- `exp_smoothing()`: accounts for the time-changing nature of volatility by giving more weight to recent observations;
+- `exp_decay()`: accounts for the time-changing nature of volatility by giving more weight to recent observations;
 - `crisp()`: selects scenarios where a certain logical macroeconomic statement is satisfied;
 - `kernel_normal()`: generalizes the `crisp` condition by wrapping scenarios over 
 a normal kernel;
@@ -64,8 +64,8 @@ invariants <- db_tbl %>%
 
 #### Full Information #### 
 # exponential-smoothing 
-fp_es1 <- exp_smoothing(invariants, 0.0166)
-fp_es2 <- exp_smoothing(invariants, 0.0055)
+fp_es1 <- exp_decay(invariants, 0.0166)
+fp_es2 <- exp_decay(invariants, 0.0055)
 # crisp-conditioning on inflation 
 fp_cc <- crisp(inflation, lgl = as.logical(inflation >= 2.8))
 # normal kernel on inflation 

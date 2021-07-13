@@ -13,7 +13,7 @@
 #'   \item `key` (a \code{factor}) that keeps track of the `ffp` inputs as separated objects.
 #' }
 #'
-#' @seealso \code{\link{crisp}} \code{\link{exp_smoothing}} \code{\link{kernel_normal}}
+#' @seealso \code{\link{crisp}} \code{\link{exp_decay}} \code{\link{kernel_normal}}
 #' \code{\link{kernel_entropy}} \code{\link{double_decay}}
 #'
 #' @export
@@ -22,8 +22,8 @@
 #' library(ggplot2)
 #' library(dplyr, warn.conflicts = FALSE)
 #'
-#' x <- exp_smoothing(EuStockMarkets, 0.001)
-#' y <- exp_smoothing(EuStockMarkets, 0.002)
+#' x <- exp_decay(EuStockMarkets, 0.001)
+#' y <- exp_decay(EuStockMarkets, 0.002)
 #'
 #' bind_probs(x, y)
 #'

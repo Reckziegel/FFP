@@ -1,7 +1,7 @@
 Type: Package
 Package: ffp
 Title: Stress Test Historical Scenarios with Fully Flexible Probabilities
-Version: 0.0.1
+Version: 0.1.0
 Authors@R: 
     person(given = "Bernardo",
            family = "Reckziegel",

@@ -229,8 +229,8 @@
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co">#### Full Information ####</span>
 <span class="co"># exponential-smoothing</span>
-<span class="va">fp_es1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/exp_smoothing.html">exp_smoothing</a></span><span class="op">(</span><span class="va">invariants</span>, <span class="fl">0.0166</span><span class="op">)</span>
-<span class="va">fp_es2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/exp_smoothing.html">exp_smoothing</a></span><span class="op">(</span><span class="va">invariants</span>, <span class="fl">0.0055</span><span class="op">)</span>
+<span class="va">fp_es1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/exp_decay.html">exp_decay</a></span><span class="op">(</span><span class="va">invariants</span>, <span class="fl">0.0166</span><span class="op">)</span>
+<span class="va">fp_es2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/exp_decay.html">exp_decay</a></span><span class="op">(</span><span class="va">invariants</span>, <span class="fl">0.0055</span><span class="op">)</span>
 <span class="co"># crisp-conditioning on inflation</span>
 <span class="va">fp_cc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/crisp.html">crisp</a></span><span class="op">(</span><span class="va">inflation</span>, lgl <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/logical.html">as.logical</a></span><span class="op">(</span><span class="va">inflation</span> <span class="op">&gt;=</span> <span class="fl">2.8</span><span class="op">)</span><span class="op">)</span>
 <span class="co"># normal kernel on inflation</span>

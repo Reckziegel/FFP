@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Stack Flexible Probabilities — bind_probs • ffp</title>
+<title>Full Information by Exponential Decay — exp_decay • ffp</title>
 
 
 <!-- jquery -->
@@ -39,9 +39,9 @@
 
 
 
-<meta property="og:title" content="Stack Flexible Probabilities — bind_probs" />
-<meta property="og:description" content="This function mimics dplyr bind. It's useful if you
-have different ffp objects and want to stack them in the tidy (long) format." />
+<meta property="og:title" content="Full Information by Exponential Decay — exp_decay" />
+<meta property="og:description" content="Exponential smoothing twists probabilities by giving relatively more weight
+to recent observations at an exponential rate." />
 
 
 
@@ -121,67 +121,84 @@ have different ffp objects and want to stack them in the tidy (long) format." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Stack Flexible Probabilities</h1>
-    <small class="dont-index">Source: <a href='https://github.com/Reckziegel/FFP/blob/master/R/bind_probs.R'><code>R/bind_probs.R</code></a></small>
-    <div class="hidden name"><code>bind_probs.Rd</code></div>
+    <h1>Full Information by Exponential Decay</h1>
+    <small class="dont-index">Source: <a href='https://github.com/Reckziegel/FFP/blob/master/R/full_information.R'><code>R/full_information.R</code></a></small>
+    <div class="hidden name"><code>exp_decay.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>This function mimics <code>dplyr</code> <code><a href='https://dplyr.tidyverse.org/reference/bind.html'>bind</a></code>. It's useful if you
-have different <code>ffp</code> objects and want to stack them in the <code>tidy</code> (long) format.</p>
+    <p>Exponential smoothing twists probabilities by giving relatively more weight
+to recent observations at an exponential rate.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>bind_probs</span><span class='op'>(</span><span class='va'>...</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>exp_decay</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>lambda</span><span class='op'>)</span>
+
+<span class='co'># S3 method for default</span>
+<span class='fu'>exp_decay</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>lambda</span><span class='op'>)</span>
+
+<span class='co'># S3 method for numeric</span>
+<span class='fu'>exp_decay</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>lambda</span><span class='op'>)</span>
+
+<span class='co'># S3 method for matrix</span>
+<span class='fu'>exp_decay</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>lambda</span><span class='op'>)</span>
+
+<span class='co'># S3 method for ts</span>
+<span class='fu'>exp_decay</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>lambda</span><span class='op'>)</span>
+
+<span class='co'># S3 method for xts</span>
+<span class='fu'>exp_decay</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>lambda</span><span class='op'>)</span>
+
+<span class='co'># S3 method for data.frame</span>
+<span class='fu'>exp_decay</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>lambda</span><span class='op'>)</span>
+
+<span class='co'># S3 method for tbl</span>
+<span class='fu'>exp_decay</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>lambda</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>...</th>
-      <td><p><code>ffp</code> objects to combine.</p></td>
+      <th>x</th>
+      <td><p>An univariate or a multivariate distribution.</p></td>
+    </tr>
+    <tr>
+      <th>lambda</th>
+      <td><p>A number for the decay parameter.</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>A tidy <code>tibble</code>.</p>
-<p>The output adds two new columns:</p><ul>
-<li><p><code>rowid</code> (an <code>integer</code>) with the row number of each realization;</p></li>
-<li><p><code>key</code> (a <code>factor</code>) that keeps track of the <code>ffp</code> inputs as separated objects.</p></li>
+    <p>A numerical vector of class <code>ffp</code> with the new
+probabilities distribution.</p>
+    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
+
+    <p>The half-life is linked with the lambda parameter as follows:</p><ul>
+<li><p><code>HL = log(2) / lambda</code>.</p></li>
 </ul>
 
+<p>For example: log(2) / 0.0166 is approximately 42. So, a parameter <code>lambda</code> of 0.0166 can be associated with a half-life of two-months.</p>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <div class='dont-index'><p><code><a href='crisp.html'>crisp</a></code> <code><a href='exp_decay.html'>exp_decay</a></code> <code><a href='kernel_normal.html'>kernel_normal</a></code>
-<code><a href='kernel_entropy.html'>kernel_entropy</a></code> <code><a href='double_decay.html'>double_decay</a></code></p></div>
+    <div class='dont-index'><p><code><a href='crisp.html'>crisp</a></code> <code><a href='kernel_normal.html'>kernel_normal</a></code> <code><a href='half_life.html'>half_life</a></code></p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://ggplot2.tidyverse.org'>ggplot2</a></span><span class='op'>)</span>
-<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://dplyr.tidyverse.org'>dplyr</a></span>, warn.conflicts <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span>
 
-<span class='va'>x</span> <span class='op'>&lt;-</span> <span class='fu'><a href='exp_decay.html'>exp_decay</a></span><span class='op'>(</span><span class='va'>EuStockMarkets</span>, <span class='fl'>0.001</span><span class='op'>)</span>
-<span class='va'>y</span> <span class='op'>&lt;-</span> <span class='fu'><a href='exp_decay.html'>exp_decay</a></span><span class='op'>(</span><span class='va'>EuStockMarkets</span>, <span class='fl'>0.002</span><span class='op'>)</span>
-
-<span class='fu'>bind_probs</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>y</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span style='color: #949494;'># A tibble: 3,720 x 3</span>
-#&gt;    rowid        probs key  
-#&gt;    <span style='color: #949494; font-style: italic;'>&lt;int&gt;</span>        <span style='color: #949494; font-style: italic;'>&lt;ffp&gt;</span> <span style='color: #949494; font-style: italic;'>&lt;fct&gt;</span>
-#&gt; <span style='color: #BCBCBC;'> 1</span>     1 0.0001844669 1    
-#&gt; <span style='color: #BCBCBC;'> 2</span>     2 0.0001846515 1    
-#&gt; <span style='color: #BCBCBC;'> 3</span>     3 0.0001848363 1    
-#&gt; <span style='color: #BCBCBC;'> 4</span>     4 0.0001850212 1    
-#&gt; <span style='color: #BCBCBC;'> 5</span>     5 0.0001852063 1    
-#&gt; <span style='color: #BCBCBC;'> 6</span>     6 0.0001853916 1    
-#&gt; <span style='color: #BCBCBC;'> 7</span>     7 0.0001855771 1    
-#&gt; <span style='color: #BCBCBC;'> 8</span>     8 0.0001857627 1    
-#&gt; <span style='color: #BCBCBC;'> 9</span>     9 0.0001859486 1    
-#&gt; <span style='color: #BCBCBC;'>10</span>    10 0.0001861346 1    
-#&gt; <span style='color: #949494;'># … with 3,710 more rows</span></div><div class='input'>
-<span class='fu'>bind_probs</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>y</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>rowid</span>, y <span class='op'>=</span> <span class='va'>probs</span>, color <span class='op'>=</span> <span class='va'>key</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_path.html'>geom_line</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_viridis.html'>scale_color_viridis_d</a></span><span class='op'>(</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='message'>Don't know how to automatically pick scale for object of type ffp/vctrs_vctr. Defaulting to continuous.</span></div><div class='img'><img src='bind_probs-1.png' alt='' width='700' height='433' /></div></pre>
+<span class='co'># long half_life</span>
+<span class='va'>long_hl</span> <span class='op'>&lt;-</span> <span class='fu'>exp_decay</span><span class='op'>(</span><span class='va'>EuStockMarkets</span>, <span class='fl'>0.001</span><span class='op'>)</span>
+<span class='va'>long_hl</span>
+</div><div class='output co'>#&gt; &lt;ffp[1860]&gt;
+#&gt; 0.0001844669 0.0001846515 0.0001848363 0.0001850212 0.0001852063 ... 0.001183783</div><div class='input'><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/autoplot.html'>autoplot</a></span><span class='op'>(</span><span class='va'>long_hl</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_viridis.html'>scale_color_viridis_c</a></span><span class='op'>(</span><span class='op'>)</span>
+</div><div class='img'><img src='exp_decay-1.png' alt='' width='700' height='433' /></div><div class='input'>
+<span class='co'># short half_life</span>
+<span class='va'>short_hl</span> <span class='op'>&lt;-</span> <span class='fu'>exp_decay</span><span class='op'>(</span><span class='va'>EuStockMarkets</span>, <span class='fl'>0.015</span><span class='op'>)</span>
+<span class='va'>short_hl</span>
+</div><div class='output co'>#&gt; &lt;ffp[1860]&gt;
+#&gt; 1.154879e-14 1.172333e-14 1.19005e-14 1.208036e-14 1.226293e-14 ... 0.01488806</div><div class='input'><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/autoplot.html'>autoplot</a></span><span class='op'>(</span><span class='va'>short_hl</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_viridis.html'>scale_color_viridis_c</a></span><span class='op'>(</span><span class='op'>)</span>
+</div><div class='img'><img src='exp_decay-2.png' alt='' width='700' height='433' /></div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

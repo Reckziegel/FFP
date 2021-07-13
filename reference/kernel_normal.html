@@ -41,8 +41,7 @@
 
 <meta property="og:title" content="Full Information by Kernel-Damping — kernel_normal" />
 <meta property="og:description" content="In this framework, historical realizations receive a weight proportional to
-its distance from the target mean, which is enveloped by
-normal kernel with a bandwidth equal sigma." />
+its distance from a target mean that is surrounded by normal kernel." />
 
 
 
@@ -129,8 +128,7 @@ normal kernel with a bandwidth equal sigma." />
 
     <div class="ref-description">
     <p>In this framework, historical realizations receive a weight proportional to
-its distance from the target mean, which is enveloped by
-normal kernel with a bandwidth equal sigma.</p>
+its distance from a target mean that is surrounded by normal kernel.</p>
     </div>
 
     <pre class="usage"><span class='fu'>kernel_normal</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>mean</span>, <span class='va'>sigma</span><span class='op'>)</span>
@@ -179,7 +177,7 @@ normal kernel with a bandwidth equal sigma.</p>
 probabilities distribution.</p>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <div class='dont-index'><p><code><a href='crisp.html'>crisp</a></code> <code><a href='exp_smoothing.html'>exp_smoothing</a></code></p></div>
+    <div class='dont-index'><p><code><a href='crisp.html'>crisp</a></code> <code><a href='exp_decay.html'>exp_decay</a></code></p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://ggplot2.tidyverse.org'>ggplot2</a></span><span class='op'>)</span>
@@ -195,7 +193,7 @@ probabilities distribution.</p>
 <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/autoplot.html'>autoplot</a></span><span class='op'>(</span><span class='va'>kn</span><span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_viridis.html'>scale_color_viridis_c</a></span><span class='op'>(</span><span class='op'>)</span>
 </div><div class='img'><img src='kernel_normal-1.png' alt='' width='700' height='433' /></div><div class='input'>
-<span class='co'># A larger sigma spreads the distribution</span>
+<span class='co'># A larger sigma spreads out the distribution</span>
 <span class='va'>sigma</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/cor.html'>var</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/diff.html'>diff</a></span><span class='op'>(</span><span class='va'>ret</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>/</span> <span class='fl'>0.05</span>
 <span class='va'>kn</span> <span class='op'>&lt;-</span> <span class='fu'>kernel_normal</span><span class='op'>(</span><span class='va'>ret</span>, <span class='va'>mean</span>, <span class='va'>sigma</span><span class='op'>)</span>
 

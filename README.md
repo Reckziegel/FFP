@@ -34,7 +34,13 @@ scenario generation and valuation is left aside.
 
 ## Installation
 
-You can install the development version of `ffp` from github with:
+Install the official version from CRAN with:
+
+``` r
+install.packages("ffp")
+```
+
+Install the development version from github with:
 
 ``` r
 # install.packages("devtools")
@@ -57,7 +63,7 @@ from the historical scenarios:
 -   `double_decay()`: uses entropy-polling and double-decay factor to
     constrain the first two moments of a distribution.
 
-<img src="man/figures/README-unnamed-chunk-3-1.png" width="70%" height="70%" style="display: block; margin: auto;" />
+<img src="man/figures/README-unnamed-chunk-4-1.png" width="70%" height="70%" style="display: block; margin: auto;" />
 
 ## Scenario Analysis
 

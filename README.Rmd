@@ -32,7 +32,13 @@ To overcome this difficulty, the Fully Flexible Probabilities (FFP) approach off
 
 ## Installation
 
-You can install the development version of `ffp` from github with:
+Install the official version from CRAN with: 
+
+```{r eval = FALSE}
+install.packages("ffp")
+```
+
+Install the development version from github with:
 
 ```{r eval = FALSE}
 # install.packages("devtools")

@@ -7,6 +7,8 @@
 
 [![Lifecycle:
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+[![CRAN
+status](https://www.r-pkg.org/badges/version/ffp)](https://CRAN.R-project.org/package=ffp)
 [![R-CMD-check](https://github.com/Reckziegel/FFP/workflows/R-CMD-check/badge.svg)](https://github.com/Reckziegel/FFP/actions)
 [![Travis build
 status](https://travis-ci.com/Reckziegel/FFP.svg?branch=main)](https://travis-ci.com/Reckziegel/FFP)

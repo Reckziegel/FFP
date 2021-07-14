@@ -1,5 +1,7 @@
 # ffp 0.1.0
 
+* CRAN release.
+
 # ffp 0.0.1
 
 * The package now is built upon S3 `vctrs`, instead of `tibbles`;

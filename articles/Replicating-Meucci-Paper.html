@@ -100,7 +100,7 @@
 <span class="co"># Load Data</span>
 <span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="st">"db_tbl"</span><span class="op">)</span>
 <span class="va">db_tbl</span>
-<span class="co">#&gt; # A tibble: 1,083 x 9</span>
+<span class="co">#&gt; # A tibble: 1,083 × 9</span>
 <span class="co">#&gt;    SWAP2YR SWAP10YR `CDXIG OTR` `S&amp;P 500` `Dollar Index` Crude  Gold   VIX</span>
 <span class="co">#&gt;      &lt;dbl&gt;    &lt;dbl&gt;       &lt;dbl&gt;     &lt;dbl&gt;          &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;</span>
 <span class="co">#&gt;  1    4.13     4.48        52.4     1218.           86.3  67.6  445.  13.6</span>
@@ -138,7 +138,7 @@
   <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/rename.html">rename</a></span><span class="op">(</span>S_T <span class="op">=</span> <span class="va">`S&amp;P 500`</span>, vol_T <span class="op">=</span> <span class="va">`VIX`</span>, rf_T <span class="op">=</span> <span class="va">`SWAP10YR`</span><span class="op">)</span> <span class="op">%&gt;%</span> 
   <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html">rowid_to_column</a></span><span class="op">(</span>var <span class="op">=</span> <span class="st">"id"</span><span class="op">)</span> 
 <span class="va">paths</span>
-<span class="co">#&gt; # A tibble: 1,082 x 4</span>
+<span class="co">#&gt; # A tibble: 1,082 × 4</span>
 <span class="co">#&gt;       id vol_T  rf_T   S_T</span>
 <span class="co">#&gt;    &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;</span>
 <span class="co">#&gt;  1     1  16.3  3.85 1188.</span>
@@ -196,7 +196,7 @@
   <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">id</span><span class="op">)</span> <span class="op">%&gt;%</span>
   <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html">summarise</a></span><span class="op">(</span>pnl_u <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/double.html">as.double</a></span><span class="op">(</span><span class="va">pnl</span> <span class="op">%*%</span> <span class="va">u</span><span class="op">)</span><span class="op">)</span>
 <span class="va">pnl</span>
-<span class="co">#&gt; # A tibble: 1,082 x 2</span>
+<span class="co">#&gt; # A tibble: 1,082 × 2</span>
 <span class="co">#&gt;       id pnl_u</span>
 <span class="co">#&gt;    &lt;int&gt; &lt;dbl&gt;</span>
 <span class="co">#&gt;  1     1 533. </span>
@@ -257,7 +257,7 @@
 <p>Finally, the main statistics of the scenarios at hand can be assessed with <code><a href="../reference/empirical_stats.html">empirical_stats()</a></code>.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/empirical_stats.html">empirical_stats</a></span><span class="op">(</span><span class="va">pnl</span> <span class="op">%&gt;%</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="va">pnl_u</span><span class="op">)</span>, <span class="va">fp_es1</span><span class="op">)</span>
-<span class="co">#&gt; # A tibble: 6 x 3</span>
+<span class="co">#&gt; # A tibble: 6 × 3</span>
 <span class="co">#&gt;   stat  name   value</span>
 <span class="co">#&gt;   &lt;fct&gt; &lt;chr&gt;  &lt;dbl&gt;</span>
 <span class="co">#&gt; 1 Mu    pnl_u 394.  </span>

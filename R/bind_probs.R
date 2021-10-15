@@ -47,8 +47,6 @@ bind_probs <- function(...) {
  }
 
  seq_to_add  <- rep(1:length(dots), each = unique_rows)
- #types <- purrr::map(dots, attributes) %>% purrr::map_chr("type")
- #type_to_add <- rep(types, each = unique_rows)
 
  purrr::map(dots, tibble::as_tibble) %>%
     purrr::map(tibble::rowid_to_column) %>%

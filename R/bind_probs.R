@@ -22,13 +22,13 @@
 #' library(ggplot2)
 #' library(dplyr, warn.conflicts = FALSE)
 #'
-#' x <- exp_decay(EuStockMarkets, 0.001)
-#' y <- exp_decay(EuStockMarkets, 0.002)
+#' x <- exp_decay(EuStockMarkets, lambda = 0.001)
+#' y <- exp_decay(EuStockMarkets, lambda = 0.002)
 #'
 #' bind_probs(x, y)
 #'
 #' bind_probs(x, y) %>%
-#'   ggplot(aes(x = rowid, y = probs, color = key)) +
+#'   ggplot(aes(x = rowid, y = probs, color = fn)) +
 #'   geom_line() +
 #'   scale_color_viridis_d()
 bind_probs <- function(...) {
@@ -41,10 +41,18 @@ bind_probs <- function(...) {
  if (is_empty(dots)) {
    stop("objects to bind must be of the `ffp` class.", call. = FALSE)
  }
+
  unique_rows <- unique(purrr::map_dbl(dots, vctrs::vec_size))
  if (length(unique_rows) > 1) {
    stop("Arguments to bind must have the same size (rows).", call. = FALSE)
  }
+
+ attr_fn   <- purrr::map(purrr::map(dots, attributes), 1)
+ attr_list <- purrr::map(purrr::map(dots, attributes), 2) %>% purrr::map(as.list)
+ attr_nms  <- purrr::map(attr_list, names) %>% purrr::map(3)
+ attr_vl   <- purrr::map(attr_list, 3)
+ fn <- paste0(as.character(attr_fn), ": ", as.character(attr_nms), " = ", as.vector(attr_vl))
+ fn <- rep(fn, each = unique_rows)
 
  seq_to_add  <- rep(1:length(dots), each = unique_rows)
 
@@ -52,7 +60,7 @@ bind_probs <- function(...) {
     purrr::map(tibble::rowid_to_column) %>%
     dplyr::bind_rows() %>%
     dplyr::rename(probs = "value") %>%
-    dplyr::mutate(key = as.factor(seq_to_add))
+    dplyr::mutate(fn = as.factor(fn))
 
 }
 

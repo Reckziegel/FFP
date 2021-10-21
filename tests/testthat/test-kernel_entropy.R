@@ -155,9 +155,9 @@ test_that("works on univariate tibbles", {
 
 test_that("results are identical and don't depend on the class", {
   # univariate
-  expect_equal(kernel_entropy_tblu, kernel_entropy_matu)
-  expect_equal(kernel_entropy_dfu, kernel_entropy_tblu)
+  expect_equal(as.double(kernel_entropy_tblu), as.double(kernel_entropy_matu))
+  expect_equal(as.double(kernel_entropy_dfu), as.double(kernel_entropy_tblu))
   # multivariate
-  expect_equal(kernel_entropy_tblm, kernel_entropy_matm)
-  expect_equal(kernel_entropy_dfm, kernel_entropy_tsm)
+  expect_equal(as.double(kernel_entropy_tblm), as.double(kernel_entropy_matm))
+  expect_equal(as.double(kernel_entropy_dfm), as.double(kernel_entropy_tsm))
 })

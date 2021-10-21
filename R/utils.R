@@ -34,3 +34,6 @@ get_double_col <- function(x) {
 #' @keywords internal
 has_dim <- function(x) !is.null(dim(x))
 
+#' @keywords internal
+ffp_match_call <- function(x, ...) rlang::expr(!!match.call())
+

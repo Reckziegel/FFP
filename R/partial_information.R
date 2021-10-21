@@ -48,7 +48,8 @@ kernel_entropy.numeric <- function(x, mean, sigma = NULL) {
   x <- as.matrix(x)
   p <- make_kernel_entropy(x, mean, sigma)
 
-  ffp(p)
+  ffp(p, fn = "kernel_entropy", user_call = match.call())
+
 }
 
 #' @rdname kernel_entropy
@@ -67,7 +68,7 @@ kernel_entropy.matrix <- function(x, mean, sigma = NULL) {
 
   p <- make_kernel_entropy(x, mean, sigma)
 
-  ffp(p)
+  ffp(p, fn = "kernel_entropy", user_call = match.call())
 
 }
 
@@ -88,7 +89,8 @@ kernel_entropy.ts <- function(x, mean, sigma = NULL) {
   x <- as.matrix(x)
   p <- make_kernel_entropy(x, mean, sigma)
 
-  ffp(p)
+  ffp(p, fn = "kernel_entropy", user_call = match.call())
+
 }
 
 #' @rdname kernel_entropy
@@ -108,7 +110,8 @@ kernel_entropy.xts <- function(x, mean, sigma = NULL) {
   x <- as.matrix(x)
   p <- make_kernel_entropy(x, mean, sigma)
 
-  ffp(p)
+  ffp(p, fn = "kernel_entropy", user_call = match.call())
+
 }
 
 #' @rdname kernel_entropy
@@ -128,7 +131,8 @@ kernel_entropy.tbl_df <- function(x, mean, sigma = NULL) {
   x <- as.matrix(x[purrr::map_lgl(x, is.numeric)])
   p <- make_kernel_entropy(x, mean, sigma)
 
-  ffp(p)
+  ffp(p, fn = "kernel_entropy", user_call = match.call())
+
 }
 
 #' @rdname kernel_entropy
@@ -148,7 +152,8 @@ kernel_entropy.data.frame <- function(x, mean, sigma = NULL) {
   x <- as.matrix(x[purrr::map_lgl(x, is.numeric)])
   p <- make_kernel_entropy(x, mean, sigma)
 
-  ffp(p)
+  ffp(p, fn = "kernel_entropy", user_call = match.call())
+
 }
 
 
@@ -210,7 +215,8 @@ double_decay.numeric <- function(x, slow, fast) {
   x  <- as.matrix(x)
   p <- make_double_decay(x, slow, fast)
 
-  ffp(p)
+  ffp(p, fn = "double_decay", user_call = match.call())
+
 }
 
 #' @rdname double_decay
@@ -221,7 +227,8 @@ double_decay.matrix <- function(x, slow, fast) {
 
   p <- make_double_decay(x, slow, fast)
 
-  ffp(p)
+  ffp(p, fn = "double_decay", user_call = match.call())
+
 }
 
 #' @rdname double_decay
@@ -237,7 +244,8 @@ double_decay.ts <- function(x, slow, fast) {
 
   p <- make_double_decay(x, slow, fast)
 
-  ffp(p)
+  ffp(p, fn = "double_decay", user_call = match.call())
+
 }
 
 #' @rdname double_decay
@@ -249,7 +257,8 @@ double_decay.xts <- function(x, slow, fast) {
   x <- as.matrix(x)
   p <- make_double_decay(x, slow, fast)
 
-  ffp(p)
+  ffp(p, fn = "double_decay", user_call = match.call())
+
 }
 
 #' @rdname double_decay
@@ -261,7 +270,8 @@ double_decay.tbl <- function(x, slow, fast) {
   x <- as.matrix(x[purrr::map_lgl(x, is.numeric)])
   p <- make_double_decay(x, slow, fast)
 
-  ffp(p)
+  ffp(p, fn = "double_decay", user_call = match.call())
+
 }
 
 #' @rdname double_decay
@@ -273,7 +283,8 @@ double_decay.data.frame <- function(x, slow, fast) {
   x <- as.matrix(x[purrr::map_lgl(x, is.numeric)])
   p <- make_double_decay(x, slow, fast)
 
-  ffp(p)
+  ffp(p, fn = "double_decay", user_call = match.call())
+
 }
 
 

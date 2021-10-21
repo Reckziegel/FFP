@@ -46,7 +46,8 @@ crisp.numeric <- function(x, lgl) {
 
   p <- make_crisp(x, lgl)
 
-  ffp(p)
+  ffp(p, fn = "crisp", user_call = match.call())
+
 }
 
 #' @rdname crisp
@@ -59,7 +60,7 @@ crisp.matrix <- function(x, lgl) {
 
   p <- make_crisp(x, lgl)
 
-  ffp(p)
+  ffp(p, fn = "crisp", user_call = match.call())
 
 }
 
@@ -72,7 +73,9 @@ crisp.ts <- function(x, lgl) {
   vctrs::vec_assert(lgl, logical())
 
   p <- make_crisp(x, lgl)
-  ffp(p)
+
+  ffp(p, fn = "crisp", user_call = match.call())
+
 }
 
 #' @rdname crisp
@@ -85,7 +88,8 @@ crisp.xts <- function(x, lgl) {
 
   p <- make_crisp(x, lgl)
 
-  ffp(p)
+  ffp(p, fn = "crisp", user_call = match.call())
+
 }
 
 #' @rdname crisp
@@ -98,7 +102,8 @@ crisp.data.frame <- function(x, lgl) {
 
   p <- make_crisp(x, lgl)
 
-  ffp(p)
+  ffp(p, fn = "crisp", user_call = match.call())
+
 }
 
 #' @rdname crisp
@@ -111,7 +116,8 @@ crisp.tbl_df <- function(x, lgl) {
 
   p <- make_crisp(x, lgl)
 
-  ffp(p)
+  ffp(p, fn = "crisp", user_call = match.call())
+
 }
 
 
@@ -168,7 +174,9 @@ exp_decay.default <- function(x, lambda) {
 exp_decay.numeric <- function(x, lambda) {
   vctrs::vec_assert(lambda, double(), 1)
   p <- make_decay(x, lambda)
-  ffp(p)
+
+  ffp(p, fn = "exp_decay", user_call = match.call())
+
 }
 
 #' @rdname exp_decay
@@ -176,7 +184,9 @@ exp_decay.numeric <- function(x, lambda) {
 exp_decay.matrix <- function(x, lambda) {
   vctrs::vec_assert(lambda, double(), 1)
   p <- make_decay(x, lambda)
-  ffp(p)
+
+  ffp(p, fn = "exp_decay", user_call = match.call())
+
 }
 
 #' @rdname exp_decay
@@ -184,7 +194,9 @@ exp_decay.matrix <- function(x, lambda) {
 exp_decay.ts <- function(x, lambda) {
   vctrs::vec_assert(lambda, double(), 1)
   p <- make_decay(x, lambda)
-  ffp(p)
+
+  ffp(p, fn = "exp_decay", user_call = match.call())
+
 }
 
 #' @rdname exp_decay
@@ -192,7 +204,9 @@ exp_decay.ts <- function(x, lambda) {
 exp_decay.xts <- function(x, lambda) {
   vctrs::vec_assert(lambda, double(), 1)
   p <- make_decay(x, lambda)
-  ffp(p)
+
+  ffp(p, fn = "exp_decay", user_call = match.call())
+
 }
 
 #' @rdname exp_decay
@@ -200,7 +214,9 @@ exp_decay.xts <- function(x, lambda) {
 exp_decay.data.frame <- function(x, lambda) {
   vctrs::vec_assert(lambda, double(), 1)
   p <- make_decay(x, lambda)
-  ffp(p)
+
+  ffp(p, fn = "exp_decay", user_call = match.call())
+
 }
 
 #' @rdname exp_decay
@@ -208,7 +224,9 @@ exp_decay.data.frame <- function(x, lambda) {
 exp_decay.tbl <- function(x, lambda) {
   vctrs::vec_assert(lambda, double(), 1)
   p <- make_decay(x, lambda)
-  ffp(p)
+
+  ffp(p, fn = "exp_decay", user_call = match.call())
+
 }
 
 
@@ -266,7 +284,9 @@ kernel_normal.numeric <- function(x, mean, sigma) {
   vctrs::vec_assert(sigma, double(), 1)
 
   p <- make_kernel_normal(x = x, mean, sigma)
-  ffp(p)
+
+  ffp(p, fn = "kernel_normal", user_call = match.call())
+
 }
 
 #' @rdname kernel_normal
@@ -282,7 +302,7 @@ kernel_normal.matrix <- function(x, mean, sigma) {
 
   p <- make_kernel_normal(x = x, mean, sigma)
 
-  ffp(p)
+  ffp(p, fn = "kernel_normal", user_call = match.call())
 
 }
 
@@ -299,7 +319,7 @@ kernel_normal.ts <- function(x, mean, sigma) {
 
   p <- make_kernel_normal(x = x, mean, sigma)
 
-  ffp(p)
+  ffp(p, fn = "kernel_normal", user_call = match.call())
 
 }
 
@@ -316,7 +336,8 @@ kernel_normal.xts <- function(x, mean, sigma) {
 
   p <- make_kernel_normal(x = x, mean, sigma)
 
-  ffp(p)
+  ffp(p, fn = "kernel_normal", user_call = match.call())
+
 }
 
 #' @rdname kernel_normal
@@ -334,7 +355,7 @@ kernel_normal.tbl_df <- function(x, mean, sigma) {
 
   p <- make_kernel_normal(x = x, mean, sigma)
 
-  ffp(p)
+  ffp(p, fn = "kernel_normal", user_call = match.call())
 
 }
 
@@ -353,7 +374,8 @@ kernel_normal.data.frame <- function(x, mean, sigma) {
 
   p <- make_kernel_normal(x = x, mean, sigma)
 
-  ffp(p)
+  ffp(p, fn = "kernel_normal", user_call = match.call())
+
 }
 
 

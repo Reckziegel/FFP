@@ -25,7 +25,6 @@ Imports:
     methods,
     mvtnorm (>= 1.1-1),
     NlcOptim (>= 0.6),
-    pracma (>= 2.3.3),
     purrr (>= 0.3.4),
     rlang (>= 0.1.2),
     scales (>= 1.1.1),

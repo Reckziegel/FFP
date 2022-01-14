@@ -19,16 +19,16 @@ entropy_pooling <- function(p, A = NULL, b = NULL, Aeq, beq) {
     p <- matrix(p, ncol = 1)
   }
   if (is.vector(b)) {
-    b <- matrix(b, nrow = length(b))
+    b <- matrix(b, nrow = vctrs::vec_size(b))
+  }
+  if (!vctrs::vec_size(b)) {
+    b <- matrix(NA_real_, nrow = 0, ncol = 0)
   }
   if (is.vector(beq)) {
-    beq <- matrix(beq, nrow = length(beq))
+    beq <- matrix(beq, nrow = vctrs::vec_size(beq))
   }
-  if (!length(b)) {
+  if (!vctrs::vec_size(b)) {
     A <- matrix(NA_real_, nrow = 0, ncol = 0)
-  }
-  if (!length(b)) {
-    b <- matrix(NA_real_, nrow = 0, ncol = 0)
   }
 
   K_ <- nrow(A)
@@ -52,15 +52,11 @@ entropy_pooling <- function(p, A = NULL, b = NULL, Aeq, beq) {
       -L
     }
 
-    opts <- suppressWarnings(
-      pracma::fmincon(
-        x0 = x0,
-        fn = nestedfunU,
-        p = p, Aeq_ = Aeq_, beq_ = beq_,
-        tol = 1e-16,
-        maxiter = 10000,
-        maxfeval = 10000
-      )
+    opts <- ep_optimization(
+      x0  = x0,
+      fn  = nestedfunU,
+      p   = p, Aeq_ = Aeq_, beq_ = beq_,
+      tol = 1e-16
     )
 
     v  <- opts$par
@@ -78,17 +74,13 @@ entropy_pooling <- function(p, A = NULL, b = NULL, Aeq, beq) {
       - L
     }
 
-    opts <- suppressWarnings(
-      pracma::fmincon(
-        x0 = x0,
-        fn = nestedfunC,
-        K_ = K_, A_ = A_, Aeq_ = Aeq_, p = p, .A = A, .b = b, .Aeq = Aeq, .beq = beq,
-        A = InqMat,
-        b = InqVec,
-        tol = 1e-16,
-        maxiter = 10000,
-        maxfeval = 10000
-      )
+    opts <- ep_optimization(
+      x0 = x0,
+      fn = nestedfunC,
+      K_ = K_, A_ = A_, Aeq_ = Aeq_, p = p, .A = A, .b = b, .Aeq = Aeq, .beq = beq,
+      A = if (vctrs::vec_size(b) > 1) InqMat else t(InqMat),
+      b = InqVec,
+      tol = 1e-16
     )
 
     lv <- matrix(opts$par , ncol = 1)
@@ -106,5 +98,26 @@ entropy_pooling <- function(p, A = NULL, b = NULL, Aeq, beq) {
   }
 
   p_
+
+}
+
+#' @keywords internal
+ep_optimization <- function(x0, fn, gr = NULL, ...,
+                            A = NULL, b = NULL,
+                            Aeq = NULL, beq = NULL,
+                            lb = NULL, ub = NULL,
+                            tol = 1e-06, maxfeval = 10000, maxiter = 5000) {
+
+  fun <- match.fun(fn)
+  fn  <- function(x) fun(x, ...)
+
+  sol <- NlcOptim::solnl(X = x0, objfun = fn, A = A, B = b, Aeq = Aeq, Beq = beq,
+                         lb = lb, ub = ub, tolX = tol, tolFun = 0.1*tol, tolCon = 0.1*tol)
+  list(
+    par = c(sol$par),
+    value = sol$fn,
+    convergence = 0,
+    info = list(lambda = sol$lambda, grad = sol$grad, hessian = sol$hessian)
+  )
 
 }

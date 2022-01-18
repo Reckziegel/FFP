@@ -38,6 +38,9 @@ has_dim <- function(x) !is.null(dim(x))
 ffp_match_call <- function(x, ...) rlang::expr(!!match.call())
 
 #' @keywords internal
+tbl_to_mtx <- function(x) as.matrix(dplyr::select(x, where(is.numeric)))
+
+#' @keywords internal
 histc <- function(x, cuts) {
 
   assertthat::assert_that(is.numeric(x))

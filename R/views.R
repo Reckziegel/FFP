@@ -443,7 +443,74 @@ construct_view_on_tail_dependence <- function(u, tail) {
 
 # FULL INFORMATION --------------------------------------------------------
 
-# Views on copula ---------------------------------------------------------
+# Views on copula
+
+#' Views on Copulas
+#'
+#' Helper to construct constraints on copulas for entropy programming.
+#'
+#' @param x The empirical copula.
+#' @param simul A simulated target copula.
+#' @param p An object of the `ffp` class.
+#'
+#' @return A \code{list} of the `view` class.
+#' @export
+#'
+#' @examples
+#' #
+view_on_copula <- function(x, simul, p) {
+  UseMethod("view_on_copula", x)
+}
+
+#' @rdname view_on_copula
+#' @export
+view_on_copula.default <- function(x, simul, p) {
+  stop("Method not implemented for class `", class(x), "` yet.", call. = FALSE)
+}
+
+#' @rdname view_on_copula
+#' @export
+view_on_copula.matrix <- function(x, simul, p) {
+  construct_view_on_copula(x = x, simul = simul, p = p)
+}
+
+#' @rdname view_on_copula
+#' @export
+view_on_copula.xts <- function(x, simul, p) {
+  construct_view_on_copula(u = as.matrix(x), simul = simul, p = p)
+}
+
+#' @rdname view_on_copula
+#' @export
+view_on_copula.tbl_df <- function(x, simul, p) {
+  construct_view_on_copula(u = tbl_to_mtx(x), simul = simul, p = p)
+}
+
+#' @keywords internal
+construct_view_on_copula <- function(x, simul, p) {
+
+  assertthat::assert_that(assertthat::are_equal(NROW(simul), NROW(p)))
+  assertthat::assert_that(assertthat::are_equal(NROW(simul), NROW(p)))
+
+  N <- NCOL(simul)
+
+  Aeq <- NULL
+  beq <- NULL
+
+  # TODO: Add constraint on moments (1/2, 1/3)
+
+  SecMom <- ffp_moments(x = simul, p = p)$sigma
+  for (k in 1:N) {
+    for (l in k:N) {
+      Aeq <- rbind(Aeq , t(x[ , k] * x[ , l]))
+      beq <- rbind(beq, SecMom[k, l])
+      # FIXME SecMom should be multiplied by p
+    }
+  }
+
+  vctrs::new_list_of(list(Aeq = Aeq, beq = beq), .ptype = double())
+
+}
 
 # TODO
 
@@ -527,7 +594,7 @@ construct_view_on_marginal_distribution <- function(x, simul, p, on_mean = TRUE,
     beq <- rbind(beq, t(simul) %*% p)
   }
   if (on_sigma) {
-    Aeq <- rbind(Aeq, t(simul) ^ 2)
+    Aeq <- rbind(Aeq, t(x) ^ 2)
     beq <- rbind(beq, (t(simul) ^ 2) %*% p)
   }
   # if (on_skew) {
@@ -543,21 +610,75 @@ construct_view_on_marginal_distribution <- function(x, simul, p, on_mean = TRUE,
 
 # Views on Joint Distribution ---------------------------------------------
 
-construct_view_on_joint_distribution <- function() {
+#' Views on the Marginal Distribution
+#'
+#' Helper to construct constraints on the entire marginal distribution for
+#' entropy programming.
+#'
+#' \itemize{
+#'   \item `simul` must have the same number of columns than `x`
+#'   \item `p` should have the same number of rows that `simul`.
+#' }
+#'
+#' @param x An univariate ou multivariate dataset.
+#' @param simul An univariate ou multivariate dataset.
+#' @param p An object of the `ffp` class.
+#'
+#' @return A \code{list} of the `view` class.
+#' @export
+#'
+#' @examples
+#' #
+view_on_joint_distribution <- function(x, simul, p) {
+  UseMethod("view_on_joint_distribution", x)
+}
+
+#' @rdname view_on_joint_distribution
+#' @export
+view_on_joint_distribution.default <- function(x, simul, p) {
+  stop("Method not implemented for class `", class(x), "` yet.", call. = FALSE)
+}
+
+#' @rdname view_on_joint_distribution
+#' @export
+view_on_joint_distribution.matrix <- function(x, simul, p) {
+  construct_view_on_joint_distribution(x = x, simul = simul, p = p)
+}
+
+#' @rdname view_on_joint_distribution
+#' @export
+view_on_joint_distribution.xts <- function(x, simul, p) {
+  construct_view_on_joint_distribution(x = as.matrix(x), simul = simul, p = p)
+}
+
+#' @rdname view_on_joint_distribution
+#' @export
+view_on_joint_distribution.tbl_df <- function(x, simul, p) {
+  construct_view_on_joint_distribution(x = tbl_to_mtx(x), simul = simul, p = p)
+}
+
+#' @keywords internal
+construct_view_on_joint_distribution <- function(x, simul, p) {
+
+  assertthat::assert_that(assertthat::are_equal(NCOL(x), NCOL(simul)))
+
+  N <- NCOL(x)
 
   Aeq <- NULL
   beq <- NULL
 
-  Aeq <- rbind(Aeq , t(X))
-  beq <- rbind(beq, m)
+  Aeq <- rbind(Aeq , t(x))
+  beq <- rbind(beq, t(simul) %*% p)
 
-  SecMom <- S + m %*% t(m)
-
+  SecMom <- ffp_moments(x = simul, p = p)$sigma
   for (k in 1:N) {
     for (l in k:N) {
-      Aeq <- rbind(Aeq , t(X[ , k] * X[ , l]))
+      Aeq <- rbind(Aeq , t(x[ , k] * x[ , l]))
       beq <- rbind(beq, SecMom[k, l])
     }
   }
+
+  vctrs::new_list_of(list(Aeq = Aeq, beq = beq), .ptype = double())
+
 }
 

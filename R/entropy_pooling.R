@@ -93,7 +93,7 @@ entropy_pooling <- function(p, A = NULL, b = NULL, Aeq, beq) {
   if (any(p_ < 0)) {
     p_[p_ < 0] <- 1e-32
   }
-  if (sum(p_) < 0.9999 && sum(p_) > 1.0001) {
+  if (sum(p_) < 0.999 && sum(p_) > 1.001) {
     p_ <- p_ / sum(p_)
   }
 
@@ -106,13 +106,13 @@ ep_optimization <- function(x0, fn, gr = NULL, ...,
                             A = NULL, b = NULL,
                             Aeq = NULL, beq = NULL,
                             lb = NULL, ub = NULL,
-                            tol = 1e-06, maxfeval = 10000, maxiter = 5000) {
+                            tol = 1e-06) {
 
   fun <- match.fun(fn)
   fn  <- function(x) fun(x, ...)
 
   sol <- NlcOptim::solnl(X = x0, objfun = fn, A = A, B = b, Aeq = Aeq, Beq = beq,
-                         lb = lb, ub = ub, tolX = tol, tolFun = 0.1*tol, tolCon = 0.1*tol)
+                         lb = lb, ub = ub, tolX = tol)
   list(
     par = c(sol$par),
     value = sol$fn,

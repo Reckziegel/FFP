@@ -8,7 +8,7 @@
 \alias{view_on_mean.ts}
 \alias{view_on_mean.xts}
 \alias{view_on_mean.tbl_df}
-\title{Views on the Location Parameter}
+\title{Views on the Location}
 \usage{
 view_on_mean(x, mean)
 
@@ -27,13 +27,13 @@ view_on_mean(x, mean)
 \arguments{
 \item{x}{An univariate or a multivariate dataset.}
 
-\item{mean}{A \code{double} for the location paratemer of the series in \code{x}.}
+\item{mean}{A \code{double} for the target location parameter of the series in \code{x}.}
 }
 \value{
 A \code{list} of the \code{view} class.
 }
 \description{
-Create views on the market the with the \verb{view_on_*} functions.
+Helper to construct constraints on the means for entropy programming.
 }
 \examples{
 #

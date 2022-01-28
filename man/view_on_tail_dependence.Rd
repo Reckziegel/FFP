@@ -8,18 +8,18 @@
 \alias{view_on_tail_dependence.tbl_df}
 \title{Views on Tail Dependence}
 \usage{
-view_on_tail_dependence(u, tail)
+view_on_tail_dependence(x, tail)
 
-\method{view_on_tail_dependence}{default}(u, tail)
+\method{view_on_tail_dependence}{default}(x, tail)
 
-\method{view_on_tail_dependence}{matrix}(u, tail)
+\method{view_on_tail_dependence}{matrix}(x, tail)
 
-\method{view_on_tail_dependence}{xts}(u, tail)
+\method{view_on_tail_dependence}{xts}(x, tail)
 
-\method{view_on_tail_dependence}{tbl_df}(u, tail)
+\method{view_on_tail_dependence}{tbl_df}(x, tail)
 }
 \arguments{
-\item{u}{A multivariate copula.}
+\item{x}{A multivariate copula.}
 
 \item{tail}{A \code{double} with tail index of each asset.}
 }
@@ -30,5 +30,8 @@ A \code{list} of the \code{view} class.
 Helper to construct constraints on tail dependence for entropy programming.
 }
 \examples{
-#
+u <- matrix(stats::runif(100 * 2), ncol = 2)
+tail <- c(0.4, 0.3)
+
+view_on_tail_dependence(x = u, tail = tail)
 }

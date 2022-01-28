@@ -39,5 +39,6 @@ x <- matrix(diff(log(EuStockMarkets)), ncol = 4)
 colnames(x) <- colnames(EuStockMarkets)
 prior <- as.matrix(rep(1/nrow(x), nrow(x)))
 # asset in the first col will outperform the asset in the second col.
-view_on_rank(x = x, p = prior, rank = c(2, 1))
+views <- view_on_rank(x = x, p = prior, rank = c(2, 1, 4))
+views
 }

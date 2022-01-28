@@ -37,5 +37,17 @@ A \code{list} of the \code{view} class.
 Helper to construct constraints on volatility for entropy programming.
 }
 \examples{
-#
+# invariants
+ret <- diff(log(EuStockMarkets))
+# expected volalility (20\% a year)
+vol <- apply(ret, 2, stats::sd) * 1.3
+
+prior <- rep(1 / nrow(ret), nrow(ret))
+
+views <- view_on_volatility(x = ret, vol = vol)
+views
+
+ep <- entropy_pooling(p = prior, Aeq = rbind(1, views$Aeq), beq = c(1, views$beq))
+
+ffp_moments(x = ret, p = ep / sum(ep))
 }

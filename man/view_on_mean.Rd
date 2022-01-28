@@ -36,5 +36,16 @@ A \code{list} of the \code{view} class.
 Helper to construct constraints on the means for entropy programming.
 }
 \examples{
-#
+# invariants
+ret <- diff(log(EuStockMarkets))
+# expected returns
+mean <- rep(0.025, 4)
+prior <- rep(1 / nrow(ret), nrow(ret))
+
+views <- view_on_mean(x = ret, mean = mean)
+views
+
+ep <- entropy_pooling(p = prior, Aeq = rbind(1, views$Aeq), beq = c(1, views$beq))
+
+ffp_moments(x = ret, p = ep / sum(ep))
 }

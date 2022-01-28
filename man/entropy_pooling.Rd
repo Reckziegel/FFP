@@ -15,7 +15,8 @@ entropy_pooling(p, A = NULL, b = NULL, Aeq, beq)
 
 \item{Aeq}{The linear equality constraint (left-hand side).}
 
-\item{beq}{The linear equality constraint (right-hand side).}
+\item{beq}{The linear equality constraint (right-hand side).
+One of: "optim", "nlminb" or "solnl".}
 }
 \value{
 A vector of posterior probabilities.
@@ -25,4 +26,6 @@ This function solves the entropy minimization problem with equality and inequali
 constraints. The solution is a vector of posterior probabilities that distorts
 the least the prior (equal-weights probabilities), given the constraints.
 }
-\keyword{internal}
+\examples{
+#
+}

@@ -14,7 +14,18 @@
 #' @export
 #'
 #' @examples
-#' #
+#' # invariants
+#' ret <- diff(log(EuStockMarkets))
+#' # expected returns
+#' mean <- rep(0.025, 4)
+#' prior <- rep(1 / nrow(ret), nrow(ret))
+#'
+#' views <- view_on_mean(x = ret, mean = mean)
+#' views
+#'
+#' ep <- entropy_pooling(p = prior, Aeq = rbind(1, views$Aeq), beq = c(1, views$beq))
+#'
+#' ffp_moments(x = ret, p = ep / sum(ep))
 view_on_mean <- function(x, mean) {
   UseMethod("view_on_mean", x)
 }
@@ -65,7 +76,11 @@ construct_view_on_mean <- function(x, mean) {
   Aeq <- t(x)
   beq <- mean
 
-  vctrs::new_list_of(list(Aeq = Aeq, beq = beq), .ptype = double())
+  vctrs::new_list_of(
+    x      = list(Aeq = Aeq, beq = beq),
+    .ptype = double(),
+    class  = "ffp_views",
+    type   = "view_on_mean")
 
 }
 
@@ -86,7 +101,20 @@ construct_view_on_mean <- function(x, mean) {
 #' @export
 #'
 #' @examples
-#' #
+#' # invariants
+#' ret <- diff(log(EuStockMarkets))
+#' # expected returns
+#' mean <- rep(0, 4)
+#' covs <- stats::cov(ret)
+#'
+#' prior <- rep(1 / nrow(ret), nrow(ret))
+#'
+#' views <- view_on_covariance(x = ret, mean = mean, sigma = covs)
+#' views
+#'
+#' ep <- entropy_pooling(p = prior, Aeq = rbind(1, views$Aeq), beq = c(1, views$beq))
+#'
+#' ffp_moments(x = ret, p = ep / sum(ep))
 view_on_covariance <- function(x, mean, sigma) {
   UseMethod("view_on_covariance", x)
 }
@@ -148,7 +176,11 @@ construct_view_on_covariance <- function(x, mean, sigma) {
     }
   }
 
-  vctrs::new_list_of(list(Aeq = Aeq, beq = beq), .ptype = double())
+  vctrs::new_list_of(
+    x      = list(Aeq = Aeq, beq = beq),
+    .ptype = double(),
+    class  = "ffp_views",
+    type   = "view_on_covariance")
 
 }
 
@@ -168,7 +200,22 @@ construct_view_on_covariance <- function(x, mean, sigma) {
 #' @export
 #'
 #' @examples
-#' #
+#' # invariants
+#' ret <- diff(log(EuStockMarkets))
+#'
+#' # panic that throws correlations to the roof!
+#' co <- stats::cor(ret)
+#' co[3, 4] <- 0.99
+#' co[4, 3] <- 0.99
+#'
+#' prior <- rep(1 / nrow(ret), nrow(ret))
+#'
+#' views <- view_on_correlation(x = ret, cor = co)
+#' views
+#'
+#' #ep <- entropy_pooling(p = prior, Aeq = rbind(1, views$Aeq), beq = c(1, views$beq))
+#'
+#' #ffp_moments(x = ret, p = ep / sum(ep))$sigma |> stats::cov2cor()
 view_on_correlation <- function(x, cor) {
   UseMethod("view_on_correlation", x)
 }
@@ -229,7 +276,11 @@ construct_view_on_correlation <- function(x, cor) {
     }
   }
 
-  vctrs::new_list_of(list(Aeq = Aeq, beq = beq), .ptype = double())
+  vctrs::new_list_of(
+    x      = list(Aeq = Aeq, beq = beq),
+    .ptype = double(),
+    class  = "ffp_views",
+    type   = "view_on_correlation")
 
 }
 
@@ -248,7 +299,19 @@ construct_view_on_correlation <- function(x, cor) {
 #' @export
 #'
 #' @examples
-#' #
+#' # invariants
+#' ret <- diff(log(EuStockMarkets))
+#' # expected volalility (20% a year)
+#' vol <- apply(ret, 2, stats::sd) * 1.3
+#'
+#' prior <- rep(1 / nrow(ret), nrow(ret))
+#'
+#' views <- view_on_volatility(x = ret, vol = vol)
+#' views
+#'
+#' ep <- entropy_pooling(p = prior, Aeq = rbind(1, views$Aeq), beq = c(1, views$beq))
+#'
+#' ffp_moments(x = ret, p = ep / sum(ep))
 view_on_volatility <- function(x, vol) {
   UseMethod("view_on_volatility", x)
 }
@@ -296,12 +359,16 @@ construct_view_on_volatility <- function(x, vol) {
   vctrs::vec_assert(vol, double())
 
   Aeq <- NULL
-  beq <- NULL
+  #beq <- NULL
 
-  Aeq <- rbind(Aeq, t(x ^ 2))
-  beq <- rbind(beq, colMeans(x) ^ 2 + vol ^ 2)
+  Aeq <- t(x) ^ 2
+  beq <- colMeans(x) ^ 2 + vol ^ 2
 
-  vctrs::new_list_of(list(Aeq = Aeq, beq = beq), .ptype = double())
+  vctrs::new_list_of(
+    x      = list(Aeq = Aeq, beq = beq),
+    .ptype = double(),
+    class  = "ffp_views",
+    type   = "view_on_volatility")
 
 }
 
@@ -324,7 +391,8 @@ construct_view_on_volatility <- function(x, vol) {
 #' colnames(x) <- colnames(EuStockMarkets)
 #' prior <- as.matrix(rep(1/nrow(x), nrow(x)))
 #' # asset in the first col will outperform the asset in the second col.
-#' view_on_rank(x = x, p = prior, rank = c(2, 1))
+#' views <- view_on_rank(x = x, p = prior, rank = c(2, 1, 4))
+#' views
 view_on_rank <- function(x, p, rank) {
   UseMethod("view_on_rank", x)
 }
@@ -338,25 +406,25 @@ view_on_rank.default <- function(x, p, rank) {
 #' @rdname view_on_rank
 #' @export
 view_on_rank.matrix <- function(x, p, rank) {
-  construct_view_on_rank(x = x, p = p, rank = rank)
+  construct_view_on_rank(x = x, p = check_p(p), rank = rank)
 }
 
 #' @rdname view_on_rank
 #' @export
 view_on_rank.ts <- function(x, p, rank) {
-  construct_view_on_rank(x = as.matrix(x), p = p, rank = rank)
+  construct_view_on_rank(x = as.matrix(x), p = check_p(p), rank = rank)
 }
 
 #' @rdname view_on_rank
 #' @export
 view_on_rank.xts <- function(x, p, rank) {
-  construct_view_on_rank(x = as.matrix(x), p = p, rank = rank)
+  construct_view_on_rank(x = as.matrix(x), p = check_p(p), rank = rank)
 }
 
 #' @rdname view_on_rank
 #' @export
 view_on_rank.tbl_df <- function(x, p, rank) {
-  construct_view_on_rank(x = tbl_to_mtx(x), p = p, rank = rank)
+  construct_view_on_rank(x = tbl_to_mtx(x), p = check_p(p), rank = rank)
 }
 
 #' @keywords internal
@@ -367,9 +435,6 @@ construct_view_on_rank <- function(x, p, rank) {
 
   rank_size <- vctrs::vec_size(rank)
 
-  Aeq <- NULL
-  beq <- NULL
-
   # ...constrain the expectations... A*x <= 0
   view <- x[ , rank[1:(rank_size - 1)]] - x[ , rank[2:rank_size]]
   # Jx1 vector. Expectation is assigned to each scenario
@@ -379,7 +444,11 @@ construct_view_on_rank <- function(x, p, rank) {
   A <- t(view)
   b <- matrix(rep(0, nrow(A)), ncol = 1)
 
-  vctrs::new_list_of(list(A = A, b = b), .ptype = double())
+  vctrs::new_list_of(
+    x      = list(A = A, b = b),
+    .ptype = double(),
+    class  = "ffp_views",
+    type   = "view_on_rank")
 
 }
 
@@ -389,55 +458,60 @@ construct_view_on_rank <- function(x, p, rank) {
 #'
 #' Helper to construct constraints on tail dependence for entropy programming.
 #'
-#' @param u A multivariate copula.
+#' @param x A multivariate copula.
 #' @param tail A \code{double} with tail index of each asset.
 #'
 #' @return A \code{list} of the `view` class.
 #' @export
 #'
 #' @examples
-#' #
-view_on_tail_dependence <- function(u, tail) {
-  UseMethod("view_on_tail_dependence", u)
+#' u <- matrix(stats::runif(100 * 2), ncol = 2)
+#' tail <- c(0.4, 0.3)
+#'
+#' view_on_tail_dependence(x = u, tail = tail)
+view_on_tail_dependence <- function(x, tail) {
+  UseMethod("view_on_tail_dependence", x)
 }
 
 #' @rdname view_on_tail_dependence
 #' @export
-view_on_tail_dependence.default <- function(u, tail) {
+view_on_tail_dependence.default <- function(x, tail) {
   stop("Method not implemented for class `", class(x), "` yet.", call. = FALSE)
 }
 
 #' @rdname view_on_tail_dependence
 #' @export
-view_on_tail_dependence.matrix <- function(u, tail) {
-  construct_view_on_tail_dependence(u = u, tail = tail)
+view_on_tail_dependence.matrix <- function(x, tail) {
+  construct_view_on_tail_dependence(x = x, tail = tail)
 }
 
 #' @rdname view_on_tail_dependence
 #' @export
-view_on_tail_dependence.xts <- function(u, tail) {
-  construct_view_on_tail_dependence(u = as.matrix(u), tail = tail)
+view_on_tail_dependence.xts <- function(x, tail) {
+  construct_view_on_tail_dependence(x = as.matrix(x), tail = tail)
 }
 
 #' @rdname view_on_tail_dependence
 #' @export
-view_on_tail_dependence.tbl_df <- function(u, tail) {
-  construct_view_on_tail_dependence(u = tbl_to_mtx(u), tail = tail)
+view_on_tail_dependence.tbl_df <- function(x, tail) {
+  construct_view_on_tail_dependence(x = tbl_to_mtx(x), tail = tail)
 }
 
 #' @keywords internal
-construct_view_on_tail_dependence <- function(u, tail) {
+construct_view_on_tail_dependence <- function(x, tail) {
 
-  assertthat::assert_that(assertthat::are_equal(NROW(u), NROW(tail)))
   vctrs::vec_assert(tail, double())
+  assertthat::assert_that(assertthat::are_equal(NCOL(x), vctrs::vec_size(tail)))
 
-  Aeq <- NULL
-  beq <- NULL
-
-  Aeq <- t(u)
+  Aeq <- t(x)
   beq <- tail
 
-  vctrs::new_list_of(list(Aeq = Aeq, beq = beq), .ptype = double())
+  vctrs::new_list_of(
+    x      = list(Aeq = Aeq, beq = beq),
+    .ptype = double(),
+    class  = "ffp_views",
+    type   = "view_on_tail_depedence"
+  )
 
 }
 
@@ -471,19 +545,19 @@ view_on_copula.default <- function(x, simul, p) {
 #' @rdname view_on_copula
 #' @export
 view_on_copula.matrix <- function(x, simul, p) {
-  construct_view_on_copula(x = x, simul = simul, p = p)
+  construct_view_on_copula(x = x, simul = check_input(simul), p = check_p(p))
 }
 
 #' @rdname view_on_copula
 #' @export
 view_on_copula.xts <- function(x, simul, p) {
-  construct_view_on_copula(u = as.matrix(x), simul = simul, p = p)
+  construct_view_on_copula(x = as.matrix(x), simul = check_input(simul), p = check_p(p))
 }
 
 #' @rdname view_on_copula
 #' @export
 view_on_copula.tbl_df <- function(x, simul, p) {
-  construct_view_on_copula(u = tbl_to_mtx(x), simul = simul, p = p)
+  construct_view_on_copula(x = tbl_to_mtx(x), simul = check_input(simul), p = check_p(p))
 }
 
 #' @keywords internal
@@ -527,7 +601,7 @@ construct_view_on_copula <- function(x, simul, p) {
 #' }
 #'
 #' @param x An univariate ou multivariate dataset.
-#' @param simul An univariate ou multivariate dataset.
+#' @param simul An univariate or multivariate dataset.
 #' @param p An object of the `ffp` class.
 #' @param on_mean A \code{flag}. Should the constraints be added on the mean?
 #' @param on_sigma A \code{flag}. Should the constraints be added on the covariance
@@ -551,31 +625,31 @@ view_on_marginal_distribution.default <- function(x, simul, p, on_mean = TRUE, o
 #' @rdname view_on_marginal_distribution
 #' @export
 view_on_marginal_distribution.numeric <- function(x, simul, p, on_mean = TRUE, on_sigma = TRUE) {
-  construct_view_on_marginal_distribution(x = x, simul = simul, p = p, on_mean = on_mean, on_sigma = on_sigma)
+  construct_view_on_marginal_distribution(x = x, simul = check_input(simul), p = check_p(p), on_mean = on_mean, on_sigma = on_sigma)
 }
 
 #' @rdname view_on_marginal_distribution
 #' @export
 view_on_marginal_distribution.matrix <- function(x, simul, p, on_mean = TRUE, on_sigma = TRUE) {
-  construct_view_on_marginal_distribution(x = x, simul = simul, p = p, on_mean = on_mean, on_sigma = on_sigma)
+  construct_view_on_marginal_distribution(x = x, simul = check_input(simul), p = check_p(p), on_mean = on_mean, on_sigma = on_sigma)
 }
 
 #' @rdname view_on_marginal_distribution
 #' @export
 view_on_marginal_distribution.ts <- function(x, simul, p, on_mean = TRUE, on_sigma = TRUE) {
-  construct_view_on_marginal_distribution(x = x, simul = simul, p = p, on_mean = on_mean, on_sigma = on_sigma)
+  construct_view_on_marginal_distribution(x = x, simul = check_input(simul), p = check_p(p), on_mean = on_mean, on_sigma = on_sigma)
 }
 
 #' @rdname view_on_marginal_distribution
 #' @export
 view_on_marginal_distribution.xts <- function(x, simul, p, on_mean = TRUE, on_sigma = TRUE) {
-  construct_view_on_marginal_distribution(x = as.matrix(x), simul = simul, p = p, on_mean = on_mean, on_sigma = on_sigma)
+  construct_view_on_marginal_distribution(x = as.matrix(x), simul = check_input(simul), p = check_p(p), on_mean = on_mean, on_sigma = on_sigma)
 }
 
 #' @rdname view_on_marginal_distribution
 #' @export
 view_on_marginal_distribution.tbl_df <- function(x, simul, p, on_mean = TRUE, on_sigma = TRUE) {
-  construct_view_on_marginal_distribution(x = tbl_to_mtx(x), simul = simul, p = p, on_mean = on_mean, on_sigma = on_sigma)
+  construct_view_on_marginal_distribution(x = tbl_to_mtx(x), simul = check_input(simul), p = check_p(p), on_mean = on_mean, on_sigma = on_sigma)
 }
 
 #' @keywords internal
@@ -583,7 +657,7 @@ construct_view_on_marginal_distribution <- function(x, simul, p, on_mean = TRUE,
 
   assertthat::assert_that(assertthat::are_equal(NCOL(x), NCOL(simul)))
 
-  N <- NCOL(x)
+  #N <- NCOL(x)
 
   Aeq <- NULL
   beq <- NULL
@@ -602,7 +676,12 @@ construct_view_on_marginal_distribution <- function(x, simul, p, on_mean = TRUE,
   #   beq <- rbind(beq, (t(simul) ^ 3) %*% p)
   # }
 
-  vctrs::new_list_of(list(Aeq = Aeq, beq = beq), .ptype = double())
+  vctrs::new_list_of(
+    x      = list(Aeq = Aeq, beq = beq),
+    .ptype = double(),
+    class  = "ffp_views",
+    type   = "view_on_marginal_distribution"
+  )
 
 }
 
@@ -621,7 +700,7 @@ construct_view_on_marginal_distribution <- function(x, simul, p, on_mean = TRUE,
 #' }
 #'
 #' @param x An univariate ou multivariate dataset.
-#' @param simul An univariate ou multivariate dataset.
+#' @param simul An univariate or multivariate dataset.
 #' @param p An object of the `ffp` class.
 #'
 #' @return A \code{list} of the `view` class.
@@ -642,19 +721,19 @@ view_on_joint_distribution.default <- function(x, simul, p) {
 #' @rdname view_on_joint_distribution
 #' @export
 view_on_joint_distribution.matrix <- function(x, simul, p) {
-  construct_view_on_joint_distribution(x = x, simul = simul, p = p)
+  construct_view_on_joint_distribution(x = x, simul = check_input(simul), p = check_p(p))
 }
 
 #' @rdname view_on_joint_distribution
 #' @export
 view_on_joint_distribution.xts <- function(x, simul, p) {
-  construct_view_on_joint_distribution(x = as.matrix(x), simul = simul, p = p)
+  construct_view_on_joint_distribution(x = as.matrix(x), simul = check_input(simul), p = check_p(p))
 }
 
 #' @rdname view_on_joint_distribution
 #' @export
 view_on_joint_distribution.tbl_df <- function(x, simul, p) {
-  construct_view_on_joint_distribution(x = tbl_to_mtx(x), simul = simul, p = p)
+  construct_view_on_joint_distribution(x = tbl_to_mtx(x), simul = check_input(simul), p = check_p(p))
 }
 
 #' @keywords internal
@@ -678,7 +757,32 @@ construct_view_on_joint_distribution <- function(x, simul, p) {
     }
   }
 
-  vctrs::new_list_of(list(Aeq = Aeq, beq = beq), .ptype = double())
+  vctrs::new_list_of(
+    x      = list(Aeq = Aeq, beq = beq),
+    .ptype = double(),
+    class  = "ffp_views",
+    type   = "view_on_joint_distribution"
+  )
 
 }
 
+
+# Printing methods --------------------------------------------------------
+
+#' @importFrom vctrs obj_print_header
+#' @export
+obj_print_header.ffp_views <- function(x, ...) {
+  cat(crayon::cyan("# ffp view"))
+  #cat("\n")
+}
+
+#' @importFrom vctrs obj_print_data
+#' @export
+obj_print_data.ffp_views <- function(x, ...) {
+  cat("\n")
+  cat("Type: ", crayon::blurred(stringr::str_to_title(stringr::str_replace_all(attributes(x)$type, "_", " "))))
+  cat("\n")
+  nms <- names(x)
+  purrr::walk2(.x = x, .y = nms, .f = ~ cat(.y, ": ", "Dim", NROW(.x), "x", NCOL(.x), "\n"))
+  #cat("\n")
+}

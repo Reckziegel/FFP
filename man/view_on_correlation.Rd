@@ -38,5 +38,20 @@ Helper to construct constraints on the correlation matrix for
 entropy programming.
 }
 \examples{
-#
+# invariants
+ret <- diff(log(EuStockMarkets))
+
+# panic that throws correlations to the roof!
+co <- stats::cor(ret)
+co[3, 4] <- 0.99
+co[4, 3] <- 0.99
+
+prior <- rep(1 / nrow(ret), nrow(ret))
+
+views <- view_on_correlation(x = ret, cor = co)
+views
+
+#ep <- entropy_pooling(p = prior, Aeq = rbind(1, views$Aeq), beq = c(1, views$beq))
+
+#ffp_moments(x = ret, p = ep / sum(ep))$sigma |> stats::cov2cor()
 }

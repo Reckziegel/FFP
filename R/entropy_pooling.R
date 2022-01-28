@@ -9,10 +9,13 @@
 #' @param b The linear inequality constraint (right-hand side).
 #' @param Aeq The linear equality constraint (left-hand side).
 #' @param beq The linear equality constraint (right-hand side).
+#' One of: "optim", "nlminb" or "solnl".
 #'
 #' @return A vector of posterior probabilities.
+#' @export
 #'
-#' @keywords internal
+#' @examples
+#' #
 entropy_pooling <- function(p, A = NULL, b = NULL, Aeq, beq) {
 
   if (!is.matrix(p)) {
@@ -56,7 +59,7 @@ entropy_pooling <- function(p, A = NULL, b = NULL, Aeq, beq) {
       x0  = x0,
       fn  = nestedfunU,
       p   = p, Aeq_ = Aeq_, beq_ = beq_,
-      tol = 1e-16
+      tol = 1e-10
     )
 
     v  <- opts$par
@@ -93,7 +96,7 @@ entropy_pooling <- function(p, A = NULL, b = NULL, Aeq, beq) {
   if (any(p_ < 0)) {
     p_[p_ < 0] <- 1e-32
   }
-  if (sum(p_) < 0.999 && sum(p_) > 1.001) {
+  if (sum(p_) < 0.99999999 && sum(p_) > 1.00000001) {
     p_ <- p_ / sum(p_)
   }
 
@@ -106,13 +109,13 @@ ep_optimization <- function(x0, fn, gr = NULL, ...,
                             A = NULL, b = NULL,
                             Aeq = NULL, beq = NULL,
                             lb = NULL, ub = NULL,
-                            tol = 1e-06) {
+                            tol) {
 
   fun <- match.fun(fn)
   fn  <- function(x) fun(x, ...)
 
   sol <- NlcOptim::solnl(X = x0, objfun = fn, A = A, B = b, Aeq = Aeq, Beq = beq,
-                         lb = lb, ub = ub, tolX = tol)
+                         lb = lb, ub = ub, tolX = tol, maxIter = 10000)
   list(
     par = c(sol$par),
     value = sol$fn,

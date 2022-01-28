@@ -40,6 +40,19 @@ Helper to construct constraints on variance-covariance matrix for
 entropy programming.
 }
 \examples{
-#
+# invariants
+ret <- diff(log(EuStockMarkets))
+# expected returns
+mean <- rep(0, 4)
+covs <- stats::cov(ret)
+
+prior <- rep(1 / nrow(ret), nrow(ret))
+
+views <- view_on_covariance(x = ret, mean = mean, sigma = covs)
+views
+
+ep <- entropy_pooling(p = prior, Aeq = rbind(1, views$Aeq), beq = c(1, views$beq))
+
+ffp_moments(x = ret, p = ep / sum(ep))
 }
 \keyword{internal}

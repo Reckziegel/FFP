@@ -611,7 +611,27 @@ construct_view_on_copula <- function(x, simul, p) {
 #' @export
 #'
 #' @examples
-#' #
+#' # invariants
+#' ret <- diff(log(EuStockMarkets))
+#' # simulated marginals
+#' n <- nrow(ret)
+#' simul <- cbind(
+#'   stats::rnorm(n) ,
+#'   stats::rgamma(n, 3) ,
+#'   stats::rt(n, 2, 0.00005) ,
+#'   stats::rexp(n)
+#' )
+#' colnames(simul) <- colnames(EuStockMarkets)
+#'
+#' # prior probability distribution
+#' prior <- rep(1 / nrow(ret), nrow(ret))
+#'
+#' views <- view_on_marginal_distribution(x = ret, simul = simul, p = prior)
+#' views
+#'
+#' #ep <- entropy_pooling(p = prior, Aeq = rbind(1, views$Aeq), beq = c(1, views$beq))
+#'
+#' #ffp_moments(x = ret, p = ep / sum(ep))
 view_on_marginal_distribution <- function(x, simul, p, on_mean = TRUE, on_sigma = TRUE) {
   UseMethod("view_on_marginal_distribution", x)
 }
@@ -655,6 +675,7 @@ view_on_marginal_distribution.tbl_df <- function(x, simul, p, on_mean = TRUE, on
 #' @keywords internal
 construct_view_on_marginal_distribution <- function(x, simul, p, on_mean = TRUE, on_sigma = TRUE) {
 
+  assertthat::assert_that(assertthat::are_equal(NCOL(x), NCOL(simul)))
   assertthat::assert_that(assertthat::are_equal(NCOL(x), NCOL(simul)))
 
   #N <- NCOL(x)

@@ -50,5 +50,25 @@ entropy programming.
 }
 }
 \examples{
-#
+# invariants
+ret <- diff(log(EuStockMarkets))
+# simulated marginals
+n <- nrow(ret)
+simul <- cbind(
+  stats::rnorm(n) ,
+  stats::rgamma(n, 3) ,
+  stats::rt(n, 2, 0.00005) ,
+  stats::rexp(n)
+)
+colnames(simul) <- colnames(EuStockMarkets)
+
+# prior probability distribution
+prior <- rep(1 / nrow(ret), nrow(ret))
+
+views <- view_on_marginal_distribution(x = ret, simul = simul, p = prior)
+views
+
+#ep <- entropy_pooling(p = prior, Aeq = rbind(1, views$Aeq), beq = c(1, views$beq))
+
+#ffp_moments(x = ret, p = ep / sum(ep))
 }

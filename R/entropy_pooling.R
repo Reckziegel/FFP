@@ -83,7 +83,7 @@ entropy_pooling <- function(p, A = NULL, b = NULL, Aeq, beq) {
       K_ = K_, A_ = A_, Aeq_ = Aeq_, p = p, .A = A, .b = b, .Aeq = Aeq, .beq = beq,
       A = if (vctrs::vec_size(b) > 1) InqMat else t(InqMat),
       b = InqVec,
-      tol = 1e-16
+      tol = 1e-10
     )
 
     lv <- matrix(opts$par , ncol = 1)

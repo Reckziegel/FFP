@@ -56,19 +56,19 @@ ret <- diff(log(EuStockMarkets))
 n <- nrow(ret)
 simul <- cbind(
   stats::rnorm(n) ,
-  stats::rgamma(n, 3) ,
+  stats::rnorm(n, 0.01) ,
   stats::rt(n, 2, 0.00005) ,
-  stats::rexp(n)
+  stats::rnorm(n, 0.03)
 )
 colnames(simul) <- colnames(EuStockMarkets)
 
 # prior probability distribution
-prior <- rep(1 / nrow(ret), nrow(ret))
+prior <- rep(1 / n, n)
 
-views <- view_on_marginal_distribution(x = ret, simul = simul, p = prior)
+views <- view_on_marginal_distribution(x = ret, simul = simul / 100, p = prior)
 views
 
-#ep <- entropy_pooling(p = prior, Aeq = rbind(1, views$Aeq), beq = c(1, views$beq))
+ep <- entropy_pooling(p = prior, Aeq = views$Aeq, beq = views$beq, solver = "nlminb")
 
-#ffp_moments(x = ret, p = ep / sum(ep))
+ffp_moments(x = ret, p = ep)
 }

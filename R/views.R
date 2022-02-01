@@ -5,7 +5,7 @@
 
 #' Views on the Location
 #'
-#' Helper to construct constraints on the means for entropy programming.
+#' Helper to construct constraints on means for entropy programming.
 #'
 #' @param x An univariate or a multivariate dataset.
 #' @param mean A \code{double} for the target location parameter of the series in `x`.
@@ -14,18 +14,25 @@
 #' @export
 #'
 #' @examples
-#' # invariants
+#' # invariants (stationarity)
 #' ret <- diff(log(EuStockMarkets))
-#' # expected returns
-#' mean <- rep(0.025, 4)
+#'
+#' # prior belief for expected returns (it could be anything)
+#' # here is 2% for each asset
+#' mean <- rep(0.02, 4)
+#'
+#' # prior probabilities (usually equal weight scheme)
 #' prior <- rep(1 / nrow(ret), nrow(ret))
 #'
+#' # construct the views
 #' views <- view_on_mean(x = ret, mean = mean)
 #' views
 #'
-#' ep <- entropy_pooling(p = prior, Aeq = rbind(1, views$Aeq), beq = c(1, views$beq))
+#' ep <- entropy_pooling(p = prior, Aeq = views$Aeq, beq = views$beq, solver = "nlminb")
 #'
-#' ffp_moments(x = ret, p = ep / sum(ep))
+#' # probabilities are twisted in such a way that the posterior `mu`
+#' # match's exactly with the stated believes (2%)
+#' ffp_moments(x = ret, p = ep)$mu
 view_on_mean <- function(x, mean) {
   UseMethod("view_on_mean", x)
 }
@@ -101,20 +108,27 @@ construct_view_on_mean <- function(x, mean) {
 #' @export
 #'
 #' @examples
-#' # invariants
+#' # invariants (stationarity)
 #' ret <- diff(log(EuStockMarkets))
-#' # expected returns
-#' mean <- rep(0, 4)
-#' covs <- stats::cov(ret)
 #'
+#' # Expectations for location and dispersion
+#' mean <- colMeans(ret)
+#' covs <- matrix(0, ncol = 4, nrow = 4) # all assets are uncorrelated
+#'
+#' # prior probabilities (usually equal weight scheme)
 #' prior <- rep(1 / nrow(ret), nrow(ret))
 #'
+#' # construct the views
 #' views <- view_on_covariance(x = ret, mean = mean, sigma = covs)
 #' views
 #'
-#' ep <- entropy_pooling(p = prior, Aeq = rbind(1, views$Aeq), beq = c(1, views$beq))
+#' ep <- entropy_pooling(p = prior, Aeq = views$Aeq, beq = views$beq, solver = "solnl")
 #'
-#' ffp_moments(x = ret, p = ep / sum(ep))
+#' # original covariance matrix
+#' stats::cov(ret)
+#' # Posterior covariance matrix
+#' # Parameters are much closer than zero than the original ones
+#' ffp_moments(x = ret, p = ep)$sigma
 view_on_covariance <- function(x, mean, sigma) {
   UseMethod("view_on_covariance", x)
 }
@@ -203,19 +217,22 @@ construct_view_on_covariance <- function(x, mean, sigma) {
 #' # invariants
 #' ret <- diff(log(EuStockMarkets))
 #'
-#' # panic that throws correlations to the roof!
-#' co <- stats::cor(ret)
-#' co[3, 4] <- 0.99
-#' co[4, 3] <- 0.99
+#' # Assume that a panic event throws correlations to the roof!
+#' co <- matrix(0.95, 4, 4)
+#' diag(co) <- 1
+#' co
 #'
 #' prior <- rep(1 / nrow(ret), nrow(ret))
 #'
 #' views <- view_on_correlation(x = ret, cor = co)
 #' views
 #'
-#' #ep <- entropy_pooling(p = prior, Aeq = rbind(1, views$Aeq), beq = c(1, views$beq))
+#' ep <- entropy_pooling(p = prior, Aeq = views$Aeq, beq = views$beq, solver = "nlminb")
 #'
-#' #ffp_moments(x = ret, p = ep / sum(ep))$sigma |> stats::cov2cor()
+#' # prior correlation
+#' stats::cor(ret)
+#' # posterior correlation
+#' stats::cov2cor(ffp_moments(x = ret, p = ep)$sigma)
 view_on_correlation <- function(x, cor) {
   UseMethod("view_on_correlation", x)
 }
@@ -262,6 +279,7 @@ construct_view_on_correlation <- function(x, cor) {
   assertthat::assert_that(assertthat::are_equal(NCOL(x), NROW(cor)))
   assertthat::assert_that(assertthat::are_equal(NCOL(cor), NROW(cor)))
 
+  N <- NCOL(cor)
   mu <- colMeans(x)
   sd <- apply(x, 2, stats::sd)
 
@@ -269,10 +287,10 @@ construct_view_on_correlation <- function(x, cor) {
   beq <- NULL
 
   # Attach the view on cor
-  for (k in 1:ncol(cor)) {
-    for (l in k:ncol(cor)) {
+  for (k in 1:N) {
+    for (l in k:N) {
       Aeq <- rbind(Aeq ,t(x[ , k] * x[ , l]))
-      beq <- rbind(beq, mu[[k]] * mu[[l]] * sd[[k]] * sd[[l]] * cor[k, l])
+      beq <- rbind(beq, mu[[k]] * mu[[l]] + sd[[k]] * sd[[l]] * cor[k, l])
     }
   }
 
@@ -301,17 +319,25 @@ construct_view_on_correlation <- function(x, cor) {
 #' @examples
 #' # invariants
 #' ret <- diff(log(EuStockMarkets))
-#' # expected volalility (20% a year)
+#'
+#' # expected volalility 30% higher than average
 #' vol <- apply(ret, 2, stats::sd) * 1.3
 #'
+#' # Prior Probabilities
 #' prior <- rep(1 / nrow(ret), nrow(ret))
 #'
 #' views <- view_on_volatility(x = ret, vol = vol)
 #' views
 #'
-#' ep <- entropy_pooling(p = prior, Aeq = rbind(1, views$Aeq), beq = c(1, views$beq))
+#' ep <- entropy_pooling(p = prior, Aeq = views$Aeq, beq = views$beq, solver = "nlminb")
 #'
-#' ffp_moments(x = ret, p = ep / sum(ep))
+#' # desired vol
+#' vol
+#' # posterior vol
+#' pvol <- sqrt(diag(ffp_moments(x = ret, p = ep / sum(ep))$sigma))
+#' pvol
+#' # ratio among prior and posterior vol
+#' pvol / vol
 view_on_volatility <- function(x, vol) {
   UseMethod("view_on_volatility", x)
 }
@@ -389,7 +415,9 @@ construct_view_on_volatility <- function(x, vol) {
 #' @examples
 #' x <- matrix(diff(log(EuStockMarkets)), ncol = 4)
 #' colnames(x) <- colnames(EuStockMarkets)
+
 #' prior <- as.matrix(rep(1/nrow(x), nrow(x)))
+
 #' # asset in the first col will outperform the asset in the second col.
 #' views <- view_on_rank(x = x, p = prior, rank = c(2, 1, 4))
 #' views
@@ -466,7 +494,7 @@ construct_view_on_rank <- function(x, p, rank) {
 #'
 #' @examples
 #' u <- matrix(stats::runif(100 * 2), ncol = 2)
-#' tail <- c(0.4, 0.3)
+#' tail <- c(0.25, 0.3)
 #'
 #' view_on_tail_dependence(x = u, tail = tail)
 view_on_tail_dependence <- function(x, tail) {
@@ -531,7 +559,28 @@ construct_view_on_tail_dependence <- function(x, tail) {
 #' @export
 #'
 #' @examples
-#' #
+#' # invariants
+#' ret <- diff(log(EuStockMarkets))
+#' cop <- apply(ret, 2, stats::pnorm)
+#' # simulated marginals
+#' n <- nrow(cop)
+#' simul_cop <- cbind(
+#'   runif(n),
+#'   runif(n),
+#'   runif(n),
+#'   runif(n)
+#' )
+#' colnames(simul_cop) <- colnames(EuStockMarkets)
+#'
+#' # prior probability distribution
+#' prior <- rep(1 / n, n)
+#'
+#' views <- view_on_copula(x = cop, simul = simul_cop, p = prior)
+#' views
+#'
+#' #ep <- entropy_pooling(p = prior, Aeq = views$Aeq, beq = views$beq, solver = "nlminb")
+#'
+#' #ffp_moments(x = ret, p = ep)
 view_on_copula <- function(x, simul, p) {
   UseMethod("view_on_copula", x)
 }
@@ -571,22 +620,35 @@ construct_view_on_copula <- function(x, simul, p) {
   Aeq <- NULL
   beq <- NULL
 
-  # TODO: Add constraint on moments (1/2, 1/3)
+  Aeq <- rbind(Aeq, t(x), t(x) ^ 2)
+  beq <- as.matrix(c(beq, rep(1 / 2, NCOL(x)), rep(1 / 3, NCOL(x))))
 
-  SecMom <- ffp_moments(x = simul, p = p)$sigma
-  for (k in 1:N) {
-    for (l in k:N) {
-      Aeq <- rbind(Aeq , t(x[ , k] * x[ , l]))
-      beq <- rbind(beq, SecMom[k, l])
-      # FIXME SecMom should be multiplied by p
-    }
-  }
+  # order 2
+  # for (k in 1:N) {
+  #   for (l in k:N) {
+  #     Aeq <- rbind(Aeq, t(x[ , k] * x[ , l]))
+  #     beq <- rbind(beq, t(x[ , k] * x[ , l]) %*% p)
+  #   }
+  # }
 
-  vctrs::new_list_of(list(Aeq = Aeq, beq = beq), .ptype = double())
+  # order 3
+  # for (k in 1:N) {
+  #   for (l in k:N) {
+  #     for (i in l:k) {
+  #       Aeq <- rbind(Aeq, t(x[ , k] * x[ , l] * x[ , i]))
+  #       beq <- rbind(beq, t(x[ , k] * x[ , l] * x[ , i]) %*% p)
+  #     }
+  #   }
+  # }
+
+  vctrs::new_list_of(
+    x = list(Aeq = Aeq, beq = beq),
+    .ptype = double(),
+    class  = "ffp_views",
+    type   = "view_on_copula"
+  )
 
 }
-
-# TODO
 
 # Views on Marginal Distributions -----------------------------------------
 
@@ -617,21 +679,21 @@ construct_view_on_copula <- function(x, simul, p) {
 #' n <- nrow(ret)
 #' simul <- cbind(
 #'   stats::rnorm(n) ,
-#'   stats::rgamma(n, 3) ,
+#'   stats::rnorm(n, 0.01) ,
 #'   stats::rt(n, 2, 0.00005) ,
-#'   stats::rexp(n)
+#'   stats::rnorm(n, 0.03)
 #' )
 #' colnames(simul) <- colnames(EuStockMarkets)
 #'
 #' # prior probability distribution
-#' prior <- rep(1 / nrow(ret), nrow(ret))
+#' prior <- rep(1 / n, n)
 #'
-#' views <- view_on_marginal_distribution(x = ret, simul = simul, p = prior)
+#' views <- view_on_marginal_distribution(x = ret, simul = simul / 100, p = prior)
 #' views
 #'
-#' #ep <- entropy_pooling(p = prior, Aeq = rbind(1, views$Aeq), beq = c(1, views$beq))
+#' ep <- entropy_pooling(p = prior, Aeq = views$Aeq, beq = views$beq, solver = "nlminb")
 #'
-#' #ffp_moments(x = ret, p = ep / sum(ep))
+#' ffp_moments(x = ret, p = ep)
 view_on_marginal_distribution <- function(x, simul, p, on_mean = TRUE, on_sigma = TRUE) {
   UseMethod("view_on_marginal_distribution", x)
 }
@@ -690,12 +752,13 @@ construct_view_on_marginal_distribution <- function(x, simul, p, on_mean = TRUE,
   }
   if (on_sigma) {
     Aeq <- rbind(Aeq, t(x) ^ 2)
-    beq <- rbind(beq, (t(simul) ^ 2) %*% p)
+    beq <- rbind(beq, t(simul ^ 2) %*% p)
   }
-  # if (on_skew) {
-  #   Aeq <- rbind(Aeq, t(simul) ^ 3)
-  #   beq <- rbind(beq, (t(simul) ^ 3) %*% p)
-  # }
+  Aeq <- rbind(Aeq, t(simul) ^ 3)
+  beq <- rbind(beq, (t(simul) ^ 3) %*% p)
+  Aeq <- rbind(Aeq, t(simul) ^ 4)
+  beq <- rbind(beq, (t(simul) ^ 4) %*% p)
+
 
   vctrs::new_list_of(
     x      = list(Aeq = Aeq, beq = beq),
@@ -710,9 +773,9 @@ construct_view_on_marginal_distribution <- function(x, simul, p, on_mean = TRUE,
 
 # Views on Joint Distribution ---------------------------------------------
 
-#' Views on the Marginal Distribution
+#' Views on the Joint Distribution
 #'
-#' Helper to construct constraints on the entire marginal distribution for
+#' Helper to construct constraints on the entire distribution for
 #' entropy programming.
 #'
 #' \itemize{
@@ -728,7 +791,27 @@ construct_view_on_marginal_distribution <- function(x, simul, p, on_mean = TRUE,
 #' @export
 #'
 #' @examples
-#' #
+#' # invariants
+#' ret <- diff(log(EuStockMarkets))
+#' # simulated marginals
+#' n <- nrow(ret)
+#' simul <- cbind(
+#'   stats::rnorm(n) ,
+#'   stats::rnorm(n, 0.01) ,
+#'   stats::rt(n, 2, 0.00005) ,
+#'   stats::rnorm(n, 0.03)
+#' )
+#' colnames(simul) <- colnames(EuStockMarkets)
+#'
+#' # prior probability distribution
+#' prior <- rep(1 / n, n)
+#'
+#' views <- view_on_joint_distribution(x = ret, simul = simul / 100, p = prior)
+#' views
+#'
+#' #ep <- entropy_pooling(p = prior, Aeq = views$Aeq, beq = views$beq, solver = "nlminb")
+#'
+#' #ffp_moments(x = ret, p = ep)
 view_on_joint_distribution <- function(x, simul, p) {
   UseMethod("view_on_joint_distribution", x)
 }
@@ -767,16 +850,27 @@ construct_view_on_joint_distribution <- function(x, simul, p) {
   Aeq <- NULL
   beq <- NULL
 
+  # order 1
   Aeq <- rbind(Aeq , t(x))
   beq <- rbind(beq, t(simul) %*% p)
 
-  SecMom <- ffp_moments(x = simul, p = p)$sigma
+  # order 2
   for (k in 1:N) {
     for (l in k:N) {
-      Aeq <- rbind(Aeq , t(x[ , k] * x[ , l]))
-      beq <- rbind(beq, SecMom[k, l])
+      Aeq <- rbind(Aeq, t(x[ , k] * x[ , l]))
+      beq <- rbind(beq, t(simul[ , k] * simul[ , l]) %*% p)
     }
   }
+
+  # order 3
+  # for (k in 1:N) {
+  #   for (l in k:N) {
+  #     for (i in l:k) {
+  #       Aeq <- rbind(Aeq, t(x[ , k] * x[ , l] * x[ , i]))
+  #       beq <- rbind(beq, t(x[ , k] * x[ , l] * x[ , i]) %*% p)
+  #     }
+  #   }
+  # }
 
   vctrs::new_list_of(
     x      = list(Aeq = Aeq, beq = beq),

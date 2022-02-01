@@ -32,5 +32,26 @@ A \code{list} of the \code{view} class.
 Helper to construct constraints on copulas for entropy programming.
 }
 \examples{
-#
+# invariants
+ret <- diff(log(EuStockMarkets))
+cop <- apply(ret, 2, stats::pnorm)
+# simulated marginals
+n <- nrow(cop)
+simul_cop <- cbind(
+  runif(n),
+  runif(n),
+  runif(n),
+  runif(n)
+)
+colnames(simul_cop) <- colnames(EuStockMarkets)
+
+# prior probability distribution
+prior <- rep(1 / n, n)
+
+views <- view_on_copula(x = cop, simul = simul_cop, p = prior)
+views
+
+#ep <- entropy_pooling(p = prior, Aeq = views$Aeq, beq = views$beq, solver = "nlminb")
+
+#ffp_moments(x = ret, p = ep)
 }

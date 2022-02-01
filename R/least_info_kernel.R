@@ -11,7 +11,7 @@
 #' @return A vector with the new probability distribution.
 #'
 #' @keywords internal
-LeastInfoKernel <- function(Y, y, h2) {
+least_info_kernel <- function(Y, y, h2) {
 
   T_ <- nrow(Y)
   N  <- ncol(Y)
@@ -42,6 +42,6 @@ LeastInfoKernel <- function(Y, y, h2) {
   p_0 <- matrix(1, nrow = T_, ncol = 1) / T_
 
  # compute posterior probabilities
- entropy_pooling(p = p_0, A = NULL, b = NULL, Aeq = Aeq, beq = beq)
+ entropy_pooling(p = p_0, A = NULL, b = NULL, Aeq = Aeq, beq = beq, solver = "nloptr")
 
 }

@@ -1,7 +1,7 @@
 pandoc: 2.11.4
-pkgdown: 1.6.1
+pkgdown: 2.0.2
 pkgdown_sha: ~
 articles:
   Replicating-Meucci-Paper: Replicating-Meucci-Paper.html
-last_built: 2021-11-19T21:05Z
+last_built: 2022-02-01T22:03Z
 

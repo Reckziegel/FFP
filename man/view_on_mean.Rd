@@ -33,19 +33,26 @@ view_on_mean(x, mean)
 A \code{list} of the \code{view} class.
 }
 \description{
-Helper to construct constraints on the means for entropy programming.
+Helper to construct constraints on means for entropy programming.
 }
 \examples{
-# invariants
+# invariants (stationarity)
 ret <- diff(log(EuStockMarkets))
-# expected returns
-mean <- rep(0.025, 4)
+
+# prior belief for expected returns (it could be anything)
+# here is 2\% for each asset
+mean <- rep(0.02, 4)
+
+# prior probabilities (usually equal weight scheme)
 prior <- rep(1 / nrow(ret), nrow(ret))
 
+# construct the views
 views <- view_on_mean(x = ret, mean = mean)
 views
 
-ep <- entropy_pooling(p = prior, Aeq = rbind(1, views$Aeq), beq = c(1, views$beq))
+ep <- entropy_pooling(p = prior, Aeq = views$Aeq, beq = views$beq, solver = "nlminb")
 
-ffp_moments(x = ret, p = ep / sum(ep))
+# probabilities are twisted in such a way that the posterior `mu`
+# match's exactly with the stated believes (2\%)
+ffp_moments(x = ret, p = ep)$mu
 }

@@ -4,7 +4,15 @@
 \alias{entropy_pooling}
 \title{Numerical Entropy Minimization}
 \usage{
-entropy_pooling(p, A = NULL, b = NULL, Aeq, beq)
+entropy_pooling(
+  p,
+  A = NULL,
+  b = NULL,
+  Aeq,
+  beq,
+  solver = c("optim", "nlminb", "solnl", "nloptr"),
+  ...
+)
 }
 \arguments{
 \item{p}{A vector of prior probabilities.}
@@ -15,8 +23,11 @@ entropy_pooling(p, A = NULL, b = NULL, Aeq, beq)
 
 \item{Aeq}{The linear equality constraint (left-hand side).}
 
-\item{beq}{The linear equality constraint (right-hand side).
-One of: "optim", "nlminb" or "solnl".}
+\item{beq}{The linear equality constraint (right-hand side).}
+
+\item{solver}{A \code{character}. One of: "optim", "nlminb", "solnl" and "nloptr".}
+
+\item{...}{Further arguments passed to one of the solvers above.}
 }
 \value{
 A vector of posterior probabilities.

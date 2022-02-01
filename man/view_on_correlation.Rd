@@ -41,17 +41,20 @@ entropy programming.
 # invariants
 ret <- diff(log(EuStockMarkets))
 
-# panic that throws correlations to the roof!
-co <- stats::cor(ret)
-co[3, 4] <- 0.99
-co[4, 3] <- 0.99
+# Assume that a panic event throws correlations to the roof!
+co <- matrix(0.95, 4, 4)
+diag(co) <- 1
+co
 
 prior <- rep(1 / nrow(ret), nrow(ret))
 
 views <- view_on_correlation(x = ret, cor = co)
 views
 
-#ep <- entropy_pooling(p = prior, Aeq = rbind(1, views$Aeq), beq = c(1, views$beq))
+ep <- entropy_pooling(p = prior, Aeq = views$Aeq, beq = views$beq, solver = "nlminb")
 
-#ffp_moments(x = ret, p = ep / sum(ep))$sigma |> stats::cov2cor()
+# prior correlation
+stats::cor(ret)
+# posterior correlation
+stats::cov2cor(ffp_moments(x = ret, p = ep)$sigma)
 }

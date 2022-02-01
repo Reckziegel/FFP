@@ -1,8 +1,26 @@
+#' Numerical Entropy Minimization
+#'
+#' This function solves the entropy minimization problem with equality and inequality
+#' constraints. The solution is a vector of posterior probabilities that distorts
+#' the least the prior (equal-weights probabilities), given the constraints.
+#'
+#' @param p A vector of prior probabilities.
+#' @param A The linear inequality constraint (left-hand side).
+#' @param b The linear inequality constraint (right-hand side).
+#' @param Aeq The linear equality constraint (left-hand side).
+#' @param beq The linear equality constraint (right-hand side).
+#' One of: "optim", "nlminb" or "solnl".
+#'
+#' @return A vector of posterior probabilities.
+#' @export
+#'
+#' @examples
+#' #
 #' entropy_pooling_test <- function(p, A = NULL, b = NULL, Aeq, beq, solver = c("optim", "nlminb", "solnl", "nloptr"), ...) {
 #'
 #'   assertthat::assert_that(assertthat::is.string(solver))
 #'   if (solver %in% c("optim", "nlminb") & (!is.null(A) | !is.null(b))) {
-#'     stop("Inequalities can only be solved with `solnl` algorithm.", call. = FALSE)
+#'     stop("Inequalities can only be solved with `solnl` or `nloptr`.", call. = FALSE)
 #'   }
 #'   solver <- rlang::arg_match(solver, c("optim", "nlminb", "solnl", "nloptr"))
 #'
@@ -21,6 +39,13 @@
 #'   if (!vctrs::vec_size(b)) {
 #'     A <- matrix(NA_real_, nrow = 0, ncol = 0)
 #'   }
+#'
+#'   # non-negativiy constraint
+#'   Aeq_non_neg <- matrix(1, nrow = 1, ncol = vctrs::vec_size(p))
+#'   beq_non_neg <- 1
+#'
+#'   Aeq <- rbind(Aeq, Aeq_non_neg)
+#'   beq <- rbind(beq, beq_non_neg)
 #'
 #'   K_ <- nrow(A)
 #'   K  <- nrow(Aeq)
@@ -55,7 +80,7 @@
 #'       # Solving with nlminb
 #'       } else {
 #'
-#'         p_ <- ep_nlminb(p = p, Aeq = Aeq, beq = beq)
+#'         p_ <- ep_nlminb(p = p, Aeq = Aeq, beq = beq, objective = objective, gradient = gradient)
 #'
 #'       }
 #'
@@ -81,7 +106,6 @@
 #'     # Solving equalities contraint with nloptr
 #'     } else {
 #'
-#'       cat("nloptr \n")
 #'       eval_f_list <- function(v) {
 #'         x <- exp(log(p) - 1 - Aeq_ %*% v)
 #'         x <- apply(cbind(x , 1e-32), 1, max)
@@ -94,7 +118,7 @@
 #'
 #'      ep_nloptr <- nloptr::nloptr(x0 = x0, eval_f = eval_f_list,
 #'                                  opts = list(algorithm = "NLOPT_LD_LBFGS" ,
-#'                                              xtol_rel = 1e-6 ,
+#'                                              xtol_rel = 1e-5 ,
 #'                                              check_derivatives = TRUE,
 #'                                              maxeval = 1000))
 #'      v <- ep_nloptr$solution
@@ -111,8 +135,6 @@
 #'
 #'     # Solving inequalities with solnl
 #'     if (solver == "solnl") {
-#'
-#'       cat("solnl \n")
 #'
 #'       nestedfunC <- function(lv, K_, p, A_, Aeq_, .A, .b, .Aeq, .beq) {
 #'         lv <- as.matrix(lv)
@@ -141,7 +163,6 @@
 #'     # Solving inequalities with nloptr
 #'     } else {
 #'
-#'       cat("nloptr \n")
 #'       InqConstraint <- function(x) InqMat %*% x
 #'       jacobian_constraint <- function(x) InqMat
 #'
@@ -188,11 +209,11 @@
 #'   if (any(p_ < 0)) {
 #'     p_[p_ < 0] <- 1e-32
 #'   }
-#'   if (sum(p_) < 0.99999999 && sum(p_) > 1.00000001) {
-#'     p_ <- p_ / sum(p_)
-#'   }
+#'   # if (sum(p_) < 0.99999999 && sum(p_) > 1.00000001) {
+#'   #   p_ <- p_ / sum(p_)
+#'   # }
 #'
-#'   p_
+#'   p_ / sum(p_)
 #'
 #' }
 #'

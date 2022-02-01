@@ -4,9 +4,9 @@
 #' double-decay covariance matrix.
 #'
 #' @param X A \code{matrix} of size \code{TxN} with relevant the risk drivers.
-#' @param m A \code{matrix} of size \code{Nx1} given by \code{\link{DoubleDecay}}
+#' @param m A \code{matrix} of size \code{Nx1} given by \code{Double_Decay}
 #' with risk drivers location.
-#' @param S A \code{matrix} of size \code{NxN} given by \code{\link{DoubleDecay}}
+#' @param S A \code{matrix} of size \code{NxN} given by \code{Double_Decay}
 #' with the dispersion matrix of the risk drivers.
 #'
 #' @return A \code{matrix} vector with the posterior probabilities.
@@ -14,7 +14,7 @@
 #' @export
 #'
 #' @keywords internal
-Fit2Moms <- function(X, m, S) {
+fit_to_moments <- function(X, m, S) {
 
   T_ <- nrow(X)
   N  <- ncol(X)
@@ -37,6 +37,6 @@ Fit2Moms <- function(X, m, S) {
   p_0 <- matrix(1, nrow = T_, ncol = 1) / T_
 
   # ...compute posterior probabilities
-  entropy_pooling(p = p_0, A = NULL, b = NULL, Aeq = Aeq, beq = beq)
+  entropy_pooling(p = p_0, A = NULL, b = NULL, Aeq = Aeq, beq = beq, solver = "nloptr")
 
 }

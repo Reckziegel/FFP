@@ -39,15 +39,23 @@ Helper to construct constraints on volatility for entropy programming.
 \examples{
 # invariants
 ret <- diff(log(EuStockMarkets))
-# expected volalility (20\% a year)
+
+# expected volalility 30\% higher than average
 vol <- apply(ret, 2, stats::sd) * 1.3
 
+# Prior Probabilities
 prior <- rep(1 / nrow(ret), nrow(ret))
 
 views <- view_on_volatility(x = ret, vol = vol)
 views
 
-ep <- entropy_pooling(p = prior, Aeq = rbind(1, views$Aeq), beq = c(1, views$beq))
+ep <- entropy_pooling(p = prior, Aeq = views$Aeq, beq = views$beq, solver = "nlminb")
 
-ffp_moments(x = ret, p = ep / sum(ep))
+# desired vol
+vol
+# posterior vol
+pvol <- sqrt(diag(ffp_moments(x = ret, p = ep / sum(ep))$sigma))
+pvol
+# ratio among prior and posterior vol
+pvol / vol
 }

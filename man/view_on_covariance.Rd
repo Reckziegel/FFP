@@ -40,19 +40,26 @@ Helper to construct constraints on variance-covariance matrix for
 entropy programming.
 }
 \examples{
-# invariants
+# invariants (stationarity)
 ret <- diff(log(EuStockMarkets))
-# expected returns
-mean <- rep(0, 4)
-covs <- stats::cov(ret)
 
+# Expectations for location and dispersion
+mean <- colMeans(ret)
+covs <- matrix(0, ncol = 4, nrow = 4) # all assets are uncorrelated
+
+# prior probabilities (usually equal weight scheme)
 prior <- rep(1 / nrow(ret), nrow(ret))
 
+# construct the views
 views <- view_on_covariance(x = ret, mean = mean, sigma = covs)
 views
 
-ep <- entropy_pooling(p = prior, Aeq = rbind(1, views$Aeq), beq = c(1, views$beq))
+ep <- entropy_pooling(p = prior, Aeq = views$Aeq, beq = views$beq, solver = "solnl")
 
-ffp_moments(x = ret, p = ep / sum(ep))
+# original covariance matrix
+stats::cov(ret)
+# Posterior covariance matrix
+# Parameters are much closer than zero than the original ones
+ffp_moments(x = ret, p = ep)$sigma
 }
 \keyword{internal}

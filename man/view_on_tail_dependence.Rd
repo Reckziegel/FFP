@@ -31,7 +31,7 @@ Helper to construct constraints on tail dependence for entropy programming.
 }
 \examples{
 u <- matrix(stats::runif(100 * 2), ncol = 2)
-tail <- c(0.4, 0.3)
+tail <- c(0.25, 0.3)
 
 view_on_tail_dependence(x = u, tail = tail)
 }

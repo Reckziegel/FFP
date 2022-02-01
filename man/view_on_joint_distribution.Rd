@@ -6,7 +6,7 @@
 \alias{view_on_joint_distribution.matrix}
 \alias{view_on_joint_distribution.xts}
 \alias{view_on_joint_distribution.tbl_df}
-\title{Views on the Marginal Distribution}
+\title{Views on the Joint Distribution}
 \usage{
 view_on_joint_distribution(x, simul, p)
 
@@ -29,7 +29,7 @@ view_on_joint_distribution(x, simul, p)
 A \code{list} of the \code{view} class.
 }
 \description{
-Helper to construct constraints on the entire marginal distribution for
+Helper to construct constraints on the entire distribution for
 entropy programming.
 }
 \details{
@@ -39,5 +39,25 @@ entropy programming.
 }
 }
 \examples{
-#
+# invariants
+ret <- diff(log(EuStockMarkets))
+# simulated marginals
+n <- nrow(ret)
+simul <- cbind(
+  stats::rnorm(n) ,
+  stats::rnorm(n, 0.01) ,
+  stats::rt(n, 2, 0.00005) ,
+  stats::rnorm(n, 0.03)
+)
+colnames(simul) <- colnames(EuStockMarkets)
+
+# prior probability distribution
+prior <- rep(1 / n, n)
+
+views <- view_on_joint_distribution(x = ret, simul = simul / 100, p = prior)
+views
+
+#ep <- entropy_pooling(p = prior, Aeq = views$Aeq, beq = views$beq, solver = "nlminb")
+
+#ffp_moments(x = ret, p = ep)
 }

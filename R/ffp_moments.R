@@ -1,12 +1,12 @@
 
 # Fully Flexible Moments --------------------------------------------------
 
-#' Moments under Flexible Probabilities
+#' Moments with Flexible Probabilities
 #'
 #' Computes the location and dispersion statistics under flexible probabilities.
 #'
 #' @param x A tabular (non-tidy) data structure.
-#' @param p A probability vector.
+#' @param p An object of the `ffp` class.
 #'
 #' @return A \code{list} with 2 elements: \code{mu} and \code{sigma}.
 #'
@@ -36,19 +36,19 @@ ffp_moments.default <- function(x, p = NULL) {
 #' @rdname ffp_moments
 #' @export
 ffp_moments.numeric <- function(x, p = NULL) {
-  ffp_moments_(x = x, p = check_p(p))
+  ffp_moments_(x = x, p = as_ffp(p))
 }
 
 #' @rdname ffp_moments
 #' @export
 ffp_moments.matrix <- function(x, p = NULL) {
-  ffp_moments_(x = x, p = check_p(p))
+  ffp_moments_(x = x, p = as_ffp(p))
 }
 
 #' @rdname ffp_moments
 #' @export
 ffp_moments.xts <- function(x, p = NULL) {
-  ffp_moments_(x = as.matrix(x), p = check_p(p))
+  ffp_moments_(x = as.matrix(x), p = as_ffp(p))
 }
 
 #' @rdname ffp_moments
@@ -56,7 +56,7 @@ ffp_moments.xts <- function(x, p = NULL) {
 ffp_moments.data.frame <- function(x, p = NULL) {
   x <- dplyr::select(x, where(is.numeric))
   assertthat::assert_that(!is_empty(x), msg = "`x` argument must contain at least one numeric column.")
-  ffp_moments_(x = as.matrix(x), p = check_p(p))
+  ffp_moments_(x = as.matrix(x), p = as_ffp(p))
 }
 
 #' @rdname ffp_moments
@@ -64,7 +64,7 @@ ffp_moments.data.frame <- function(x, p = NULL) {
 ffp_moments.tbl_df <- function(x, p = NULL) {
   x <- dplyr::select(x, where(is.numeric))
   assertthat::assert_that(!is_empty(x), msg = "`x` argument must contain at least one numeric column.")
-  ffp_moments_(x = as.matrix(x), p = check_p(p))
+  ffp_moments_(x = as.matrix(x), p = as_ffp(p))
 }
 
 #' @keywords internal

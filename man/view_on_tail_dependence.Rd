@@ -27,7 +27,7 @@ view_on_tail_dependence(x, tail)
 A \code{list} of the \code{view} class.
 }
 \description{
-Helper to construct constraints on tail dependence for entropy programming.
+Helper to construct views on tail dependence.
 }
 \examples{
 u <- matrix(stats::runif(100 * 2), ncol = 2)

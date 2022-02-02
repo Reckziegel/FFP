@@ -3,22 +3,16 @@
 \name{view_on_volatility}
 \alias{view_on_volatility}
 \alias{view_on_volatility.default}
-\alias{view_on_volatility.numeric}
 \alias{view_on_volatility.matrix}
-\alias{view_on_volatility.ts}
 \alias{view_on_volatility.xts}
 \alias{view_on_volatility.tbl_df}
-\title{Views on the Volatility}
+\title{Views on Volatility}
 \usage{
 view_on_volatility(x, vol)
 
 \method{view_on_volatility}{default}(x, vol)
 
-\method{view_on_volatility}{numeric}(x, vol)
-
 \method{view_on_volatility}{matrix}(x, vol)
-
-\method{view_on_volatility}{ts}(x, vol)
 
 \method{view_on_volatility}{xts}(x, vol)
 
@@ -34,28 +28,32 @@ of the series in \code{x}.}
 A \code{list} of the \code{view} class.
 }
 \description{
-Helper to construct constraints on volatility for entropy programming.
+Helper to construct views on volatility.
 }
 \examples{
-# invariants
-ret <- diff(log(EuStockMarkets))
+library(ggplot2)
 
-# expected volalility 30\% higher than average
+# Invariant
+ret <- diff(log(EuStockMarkets))
+n   <- nrow(ret)
+
+# Expected a volatility 30\% higher than historical average
 vol <- apply(ret, 2, stats::sd) * 1.3
 
 # Prior Probabilities
-prior <- rep(1 / nrow(ret), nrow(ret))
+prior <- rep(1 / n, n)
 
+# Views
 views <- view_on_volatility(x = ret, vol = vol)
 views
 
+# Optimization
 ep <- entropy_pooling(p = prior, Aeq = views$Aeq, beq = views$beq, solver = "nlminb")
+autoplot(ep)
 
-# desired vol
+# Desired vol
 vol
-# posterior vol
-pvol <- sqrt(diag(ffp_moments(x = ret, p = ep / sum(ep))$sigma))
-pvol
-# ratio among prior and posterior vol
-pvol / vol
+
+# Posterior vol matches very closely with the desired vol
+sqrt(diag(ffp_moments(x = ret, p = ep / sum(ep))$sigma))
 }

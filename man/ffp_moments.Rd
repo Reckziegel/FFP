@@ -8,7 +8,7 @@
 \alias{ffp_moments.xts}
 \alias{ffp_moments.data.frame}
 \alias{ffp_moments.tbl_df}
-\title{Moments under Flexible Probabilities}
+\title{Moments with Flexible Probabilities}
 \usage{
 ffp_moments(x, p = NULL)
 
@@ -27,7 +27,7 @@ ffp_moments(x, p = NULL)
 \arguments{
 \item{x}{A tabular (non-tidy) data structure.}
 
-\item{p}{A probability vector.}
+\item{p}{An object of the \code{ffp} class.}
 }
 \value{
 A \code{list} with 2 elements: \code{mu} and \code{sigma}.

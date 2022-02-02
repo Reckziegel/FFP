@@ -3,9 +3,7 @@
 \name{view_on_covariance}
 \alias{view_on_covariance}
 \alias{view_on_covariance.default}
-\alias{view_on_covariance.numeric}
 \alias{view_on_covariance.matrix}
-\alias{view_on_covariance.ts}
 \alias{view_on_covariance.xts}
 \alias{view_on_covariance.tbl_df}
 \title{Views on the Covariance Matrix}
@@ -14,11 +12,7 @@ view_on_covariance(x, mean, sigma)
 
 \method{view_on_covariance}{default}(x, mean, sigma)
 
-\method{view_on_covariance}{numeric}(x, mean, sigma)
-
 \method{view_on_covariance}{matrix}(x, mean, sigma)
-
-\method{view_on_covariance}{ts}(x, mean, sigma)
 
 \method{view_on_covariance}{xts}(x, mean, sigma)
 
@@ -36,30 +30,35 @@ of the series in \code{x}.}
 A \code{list} of the \code{view} class.
 }
 \description{
-Helper to construct constraints on variance-covariance matrix for
-entropy programming.
+Helper to construct views on variance-covariance matrix.
 }
 \examples{
-# invariants (stationarity)
+library(ggplot2)
+
+# Invariant (stationarity)
 ret <- diff(log(EuStockMarkets))
 
-# Expectations for location and dispersion
+# Expectations for location and dispersion parameters
 mean <- colMeans(ret)
-covs <- matrix(0, ncol = 4, nrow = 4) # all assets are uncorrelated
+covs <- matrix(0, ncol = 4, nrow = 4) # assuming all assets are uncorrelated
 
 # prior probabilities (usually equal weight scheme)
 prior <- rep(1 / nrow(ret), nrow(ret))
 
-# construct the views
+# Views
 views <- view_on_covariance(x = ret, mean = mean, sigma = covs)
 views
 
-ep <- entropy_pooling(p = prior, Aeq = views$Aeq, beq = views$beq, solver = "solnl")
+# Optimization
+ep <- entropy_pooling(p = prior, Aeq = views$Aeq, beq = views$beq, solver = "nlminb")
+autoplot(ep)
 
 # original covariance matrix
 stats::cov(ret)
+
 # Posterior covariance matrix
-# Parameters are much closer than zero than the original ones
+# Parameters are very close to zero (non-correlated) as the
+# suggested by the initial belief
 ffp_moments(x = ret, p = ep)$sigma
 }
 \keyword{internal}

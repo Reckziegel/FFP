@@ -51,7 +51,7 @@ make_kernel_entropy <- function(x, mean, sigma) {
 
 #' @keywords internal
 make_double_decay <- function(x, decay_low, decay_high) {
-  dd <- Double_Decay(x, decay_low, decay_high)
+  dd <- DoubleDecay(x, decay_low, decay_high)
   p  <- fit_to_moments(x, dd$m, dd$s)
   if (any(p == 0)) {
     p[p == 0] <- 1e-30

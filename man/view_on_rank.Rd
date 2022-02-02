@@ -4,7 +4,6 @@
 \alias{view_on_rank}
 \alias{view_on_rank.default}
 \alias{view_on_rank.matrix}
-\alias{view_on_rank.ts}
 \alias{view_on_rank.xts}
 \alias{view_on_rank.tbl_df}
 \title{Views on Relative Performance}
@@ -14,8 +13,6 @@ view_on_rank(x, p, rank)
 \method{view_on_rank}{default}(x, p, rank)
 
 \method{view_on_rank}{matrix}(x, p, rank)
-
-\method{view_on_rank}{ts}(x, p, rank)
 
 \method{view_on_rank}{xts}(x, p, rank)
 
@@ -35,9 +32,14 @@ A \code{list} of the \code{view} class.
 Helper to construct constraints on ranking assets for entropy programming.
 }
 \examples{
+# Invariants
 x <- matrix(diff(log(EuStockMarkets)), ncol = 4)
 colnames(x) <- colnames(EuStockMarkets)
-prior <- as.matrix(rep(1/nrow(x), nrow(x)))
+
+# Prior Probabilities
+n <- nrow(x)
+prior <- rep(1 / n, n)
+
 # asset in the first col will outperform the asset in the second col.
 views <- view_on_rank(x = x, p = prior, rank = c(2, 1, 4))
 views

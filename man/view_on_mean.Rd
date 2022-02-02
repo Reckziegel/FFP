@@ -3,22 +3,16 @@
 \name{view_on_mean}
 \alias{view_on_mean}
 \alias{view_on_mean.default}
-\alias{view_on_mean.numeric}
 \alias{view_on_mean.matrix}
-\alias{view_on_mean.ts}
 \alias{view_on_mean.xts}
 \alias{view_on_mean.tbl_df}
-\title{Views on the Location}
+\title{Views on Expected Returns}
 \usage{
 view_on_mean(x, mean)
 
 \method{view_on_mean}{default}(x, mean)
 
-\method{view_on_mean}{numeric}(x, mean)
-
 \method{view_on_mean}{matrix}(x, mean)
-
-\method{view_on_mean}{ts}(x, mean)
 
 \method{view_on_mean}{xts}(x, mean)
 
@@ -33,26 +27,30 @@ view_on_mean(x, mean)
 A \code{list} of the \code{view} class.
 }
 \description{
-Helper to construct constraints on means for entropy programming.
+Helper to construct views on expected returns.
 }
 \examples{
-# invariants (stationarity)
-ret <- diff(log(EuStockMarkets))
+library(ggplot2)
 
-# prior belief for expected returns (it could be anything)
-# here is 2\% for each asset
+# Invariant
+ret <- diff(log(EuStockMarkets))
+n   <- nrow(ret)
+
+# Prior belief for expected returns (here is 2\% for each asset)
 mean <- rep(0.02, 4)
 
-# prior probabilities (usually equal weight scheme)
-prior <- rep(1 / nrow(ret), nrow(ret))
+# Prior probabilities (usually equal weight scheme)
+prior <- rep(1 / n, n)
 
-# construct the views
+# View
 views <- view_on_mean(x = ret, mean = mean)
 views
 
+# Optimization
 ep <- entropy_pooling(p = prior, Aeq = views$Aeq, beq = views$beq, solver = "nlminb")
+autoplot(ep)
 
-# probabilities are twisted in such a way that the posterior `mu`
-# match's exactly with the stated believes (2\%)
+# Probabilities are twisted in such a way that the posterior
+# `mu` match's exactly with previously stated believes
 ffp_moments(x = ret, p = ep)$mu
 }

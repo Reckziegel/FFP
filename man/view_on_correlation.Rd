@@ -3,22 +3,16 @@
 \name{view_on_correlation}
 \alias{view_on_correlation}
 \alias{view_on_correlation.default}
-\alias{view_on_correlation.numeric}
 \alias{view_on_correlation.matrix}
-\alias{view_on_correlation.ts}
 \alias{view_on_correlation.xts}
 \alias{view_on_correlation.tbl_df}
-\title{Views on the Correlation Matrix}
+\title{Views on Correlation Structure}
 \usage{
 view_on_correlation(x, cor)
 
 \method{view_on_correlation}{default}(x, cor)
 
-\method{view_on_correlation}{numeric}(x, cor)
-
 \method{view_on_correlation}{matrix}(x, cor)
-
-\method{view_on_correlation}{ts}(x, cor)
 
 \method{view_on_correlation}{xts}(x, cor)
 
@@ -34,27 +28,33 @@ the series in \code{x}.}
 A \code{list} of the \code{view} class.
 }
 \description{
-Helper to construct constraints on the correlation matrix for
-entropy programming.
+Helper to construct views  on the correlation matrix.
 }
 \examples{
-# invariants
+library(ggplot2)
+
+# Invariant
 ret <- diff(log(EuStockMarkets))
 
-# Assume that a panic event throws correlations to the roof!
+# Assume that a panic event throws all correlations to the roof!
 co <- matrix(0.95, 4, 4)
 diag(co) <- 1
 co
 
+# Prior probability (usually the equal-weight setting)
 prior <- rep(1 / nrow(ret), nrow(ret))
 
+# View
 views <- view_on_correlation(x = ret, cor = co)
 views
 
+# Optimization
 ep <- entropy_pooling(p = prior, Aeq = views$Aeq, beq = views$beq, solver = "nlminb")
+autoplot(ep)
 
-# prior correlation
+# prior correlation structure
 stats::cor(ret)
-# posterior correlation
+
+# posterior correlation matches the initial view very closely
 stats::cov2cor(ffp_moments(x = ret, p = ep)$sigma)
 }

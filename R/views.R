@@ -3,9 +3,9 @@
 
 # Views on Means ----------------------------------------------------------
 
-#' Views on the Location
+#' Views on Expected Returns
 #'
-#' Helper to construct constraints on means for entropy programming.
+#' Helper to construct views on expected returns.
 #'
 #' @param x An univariate or a multivariate dataset.
 #' @param mean A \code{double} for the target location parameter of the series in `x`.
@@ -14,24 +14,28 @@
 #' @export
 #'
 #' @examples
-#' # invariants (stationarity)
-#' ret <- diff(log(EuStockMarkets))
+#' library(ggplot2)
 #'
-#' # prior belief for expected returns (it could be anything)
-#' # here is 2% for each asset
+#' # Invariant
+#' ret <- diff(log(EuStockMarkets))
+#' n   <- nrow(ret)
+#'
+#' # Prior belief for expected returns (here is 2% for each asset)
 #' mean <- rep(0.02, 4)
 #'
-#' # prior probabilities (usually equal weight scheme)
-#' prior <- rep(1 / nrow(ret), nrow(ret))
+#' # Prior probabilities (usually equal weight scheme)
+#' prior <- rep(1 / n, n)
 #'
-#' # construct the views
+#' # View
 #' views <- view_on_mean(x = ret, mean = mean)
 #' views
 #'
+#' # Optimization
 #' ep <- entropy_pooling(p = prior, Aeq = views$Aeq, beq = views$beq, solver = "nlminb")
+#' autoplot(ep)
 #'
-#' # probabilities are twisted in such a way that the posterior `mu`
-#' # match's exactly with the stated believes (2%)
+#' # Probabilities are twisted in such a way that the posterior
+#' # `mu` match's exactly with previously stated believes
 #' ffp_moments(x = ret, p = ep)$mu
 view_on_mean <- function(x, mean) {
   UseMethod("view_on_mean", x)
@@ -45,20 +49,8 @@ view_on_mean.default <- function(x, mean) {
 
 #' @rdname view_on_mean
 #' @export
-view_on_mean.numeric <- function(x, mean) {
-  construct_view_on_mean(x, mean)
-}
-
-#' @rdname view_on_mean
-#' @export
 view_on_mean.matrix <- function(x, mean) {
   construct_view_on_mean(x, mean)
-}
-
-#' @rdname view_on_mean
-#' @export
-view_on_mean.ts <- function(x, mean) {
-  construct_view_on_mean(as.matrix(x), mean)
 }
 
 #' @rdname view_on_mean
@@ -96,8 +88,7 @@ construct_view_on_mean <- function(x, mean) {
 
 #' Views on the Covariance Matrix
 #'
-#' Helper to construct constraints on variance-covariance matrix for
-#' entropy programming.
+#' Helper to construct views on variance-covariance matrix.
 #'
 #' @param x An univariate or a multivariate dataset.
 #' @param mean A \code{double} for the location parameter of the series in `x`.
@@ -108,26 +99,32 @@ construct_view_on_mean <- function(x, mean) {
 #' @export
 #'
 #' @examples
-#' # invariants (stationarity)
+#' library(ggplot2)
+#'
+#' # Invariant (stationarity)
 #' ret <- diff(log(EuStockMarkets))
 #'
-#' # Expectations for location and dispersion
+#' # Expectations for location and dispersion parameters
 #' mean <- colMeans(ret)
-#' covs <- matrix(0, ncol = 4, nrow = 4) # all assets are uncorrelated
+#' covs <- matrix(0, ncol = 4, nrow = 4) # assuming all assets are uncorrelated
 #'
 #' # prior probabilities (usually equal weight scheme)
 #' prior <- rep(1 / nrow(ret), nrow(ret))
 #'
-#' # construct the views
+#' # Views
 #' views <- view_on_covariance(x = ret, mean = mean, sigma = covs)
 #' views
 #'
-#' ep <- entropy_pooling(p = prior, Aeq = views$Aeq, beq = views$beq, solver = "solnl")
+#' # Optimization
+#' ep <- entropy_pooling(p = prior, Aeq = views$Aeq, beq = views$beq, solver = "nlminb")
+#' autoplot(ep)
 #'
 #' # original covariance matrix
 #' stats::cov(ret)
+#'
 #' # Posterior covariance matrix
-#' # Parameters are much closer than zero than the original ones
+#' # Parameters are very close to zero (non-correlated) as the
+#' # suggested by the initial belief
 #' ffp_moments(x = ret, p = ep)$sigma
 view_on_covariance <- function(x, mean, sigma) {
   UseMethod("view_on_covariance", x)
@@ -141,20 +138,8 @@ view_on_covariance.default <- function(x, mean, sigma) {
 
 #' @rdname view_on_covariance
 #' @export
-view_on_covariance.numeric <- function(x, mean, sigma) {
-  construct_view_on_covariance(x, mean, sigma)
-}
-
-#' @rdname view_on_covariance
-#' @export
 view_on_covariance.matrix <- function(x, mean, sigma) {
   construct_view_on_covariance(x, mean, sigma)
-}
-
-#' @rdname view_on_covariance
-#' @export
-view_on_covariance.ts <- function(x, mean, sigma) {
-  construct_view_on_covariance(as.matrix(x), mean, sigma)
 }
 
 #' @rdname view_on_covariance
@@ -201,10 +186,9 @@ construct_view_on_covariance <- function(x, mean, sigma) {
 
 # Views on Correlation ----------------------------------------------------
 
-#' Views on the Correlation Matrix
+#' Views on Correlation Structure
 #'
-#' Helper to construct constraints on the correlation matrix for
-#' entropy programming.
+#' Helper to construct views  on the correlation matrix.
 #'
 #' @param x An univariate or a multivariate dataset.
 #' @param cor A \code{matrix} for the target correlation structure of
@@ -214,24 +198,31 @@ construct_view_on_covariance <- function(x, mean, sigma) {
 #' @export
 #'
 #' @examples
-#' # invariants
+#' library(ggplot2)
+#'
+#' # Invariant
 #' ret <- diff(log(EuStockMarkets))
 #'
-#' # Assume that a panic event throws correlations to the roof!
+#' # Assume that a panic event throws all correlations to the roof!
 #' co <- matrix(0.95, 4, 4)
 #' diag(co) <- 1
 #' co
 #'
+#' # Prior probability (usually the equal-weight setting)
 #' prior <- rep(1 / nrow(ret), nrow(ret))
 #'
+#' # View
 #' views <- view_on_correlation(x = ret, cor = co)
 #' views
 #'
+#' # Optimization
 #' ep <- entropy_pooling(p = prior, Aeq = views$Aeq, beq = views$beq, solver = "nlminb")
+#' autoplot(ep)
 #'
-#' # prior correlation
+#' # prior correlation structure
 #' stats::cor(ret)
-#' # posterior correlation
+#'
+#' # posterior correlation matches the initial view very closely
 #' stats::cov2cor(ffp_moments(x = ret, p = ep)$sigma)
 view_on_correlation <- function(x, cor) {
   UseMethod("view_on_correlation", x)
@@ -245,19 +236,7 @@ view_on_correlation.default <- function(x, cor) {
 
 #' @rdname view_on_correlation
 #' @export
-view_on_correlation.numeric <- function(x, cor) {
-  construct_view_on_correlation(x, cor)
-}
-
-#' @rdname view_on_correlation
-#' @export
 view_on_correlation.matrix <- function(x, cor) {
-  construct_view_on_correlation(x, cor)
-}
-
-#' @rdname view_on_correlation
-#' @export
-view_on_correlation.ts <- function(x, cor) {
   construct_view_on_correlation(x, cor)
 }
 
@@ -305,9 +284,9 @@ construct_view_on_correlation <- function(x, cor) {
 
 # Views on the Volatility -------------------------------------------------
 
-#' Views on the Volatility
+#' Views on Volatility
 #'
-#' Helper to construct constraints on volatility for entropy programming.
+#' Helper to construct views on volatility.
 #'
 #' @param x An univariate or a multivariate dataset.
 #' @param vol A \code{double} for the target volatility structure
@@ -317,27 +296,31 @@ construct_view_on_correlation <- function(x, cor) {
 #' @export
 #'
 #' @examples
-#' # invariants
-#' ret <- diff(log(EuStockMarkets))
+#' library(ggplot2)
 #'
-#' # expected volalility 30% higher than average
+#' # Invariant
+#' ret <- diff(log(EuStockMarkets))
+#' n   <- nrow(ret)
+#'
+#' # Expected a volatility 30% higher than historical average
 #' vol <- apply(ret, 2, stats::sd) * 1.3
 #'
 #' # Prior Probabilities
-#' prior <- rep(1 / nrow(ret), nrow(ret))
+#' prior <- rep(1 / n, n)
 #'
+#' # Views
 #' views <- view_on_volatility(x = ret, vol = vol)
 #' views
 #'
+#' # Optimization
 #' ep <- entropy_pooling(p = prior, Aeq = views$Aeq, beq = views$beq, solver = "nlminb")
+#' autoplot(ep)
 #'
-#' # desired vol
+#' # Desired vol
 #' vol
-#' # posterior vol
-#' pvol <- sqrt(diag(ffp_moments(x = ret, p = ep / sum(ep))$sigma))
-#' pvol
-#' # ratio among prior and posterior vol
-#' pvol / vol
+#'
+#' # Posterior vol matches very closely with the desired vol
+#' sqrt(diag(ffp_moments(x = ret, p = ep / sum(ep))$sigma))
 view_on_volatility <- function(x, vol) {
   UseMethod("view_on_volatility", x)
 }
@@ -350,19 +333,7 @@ view_on_volatility.default <- function(x, vol) {
 
 #' @rdname view_on_volatility
 #' @export
-view_on_volatility.numeric <- function(x, vol) {
-  construct_view_on_volatility(x, vol)
-}
-
-#' @rdname view_on_volatility
-#' @export
 view_on_volatility.matrix <- function(x, vol) {
-  construct_view_on_volatility(x, vol)
-}
-
-#' @rdname view_on_volatility
-#' @export
-view_on_volatility.ts <- function(x, vol) {
   construct_view_on_volatility(x, vol)
 }
 
@@ -413,11 +384,14 @@ construct_view_on_volatility <- function(x, vol) {
 #' @export
 #'
 #' @examples
+#' # Invariants
 #' x <- matrix(diff(log(EuStockMarkets)), ncol = 4)
 #' colnames(x) <- colnames(EuStockMarkets)
-
-#' prior <- as.matrix(rep(1/nrow(x), nrow(x)))
-
+#'
+#' # Prior Probabilities
+#' n <- nrow(x)
+#' prior <- rep(1 / n, n)
+#'
 #' # asset in the first col will outperform the asset in the second col.
 #' views <- view_on_rank(x = x, p = prior, rank = c(2, 1, 4))
 #' views
@@ -434,25 +408,19 @@ view_on_rank.default <- function(x, p, rank) {
 #' @rdname view_on_rank
 #' @export
 view_on_rank.matrix <- function(x, p, rank) {
-  construct_view_on_rank(x = x, p = check_p(p), rank = rank)
-}
-
-#' @rdname view_on_rank
-#' @export
-view_on_rank.ts <- function(x, p, rank) {
-  construct_view_on_rank(x = as.matrix(x), p = check_p(p), rank = rank)
+  construct_view_on_rank(x = x, p = as_ffp(p), rank = rank)
 }
 
 #' @rdname view_on_rank
 #' @export
 view_on_rank.xts <- function(x, p, rank) {
-  construct_view_on_rank(x = as.matrix(x), p = check_p(p), rank = rank)
+  construct_view_on_rank(x = as.matrix(x), p = as_ffp(p), rank = rank)
 }
 
 #' @rdname view_on_rank
 #' @export
 view_on_rank.tbl_df <- function(x, p, rank) {
-  construct_view_on_rank(x = tbl_to_mtx(x), p = check_p(p), rank = rank)
+  construct_view_on_rank(x = tbl_to_mtx(x), p = as_ffp(p), rank = rank)
 }
 
 #' @keywords internal
@@ -484,7 +452,7 @@ construct_view_on_rank <- function(x, p, rank) {
 
 #' Views on Tail Dependence
 #'
-#' Helper to construct constraints on tail dependence for entropy programming.
+#' Helper to construct views on tail dependence.
 #'
 #' @param x A multivariate copula.
 #' @param tail A \code{double} with tail index of each asset.
@@ -594,19 +562,19 @@ view_on_copula.default <- function(x, simul, p) {
 #' @rdname view_on_copula
 #' @export
 view_on_copula.matrix <- function(x, simul, p) {
-  construct_view_on_copula(x = x, simul = check_input(simul), p = check_p(p))
+  construct_view_on_copula(x = x, simul = check_input(simul), p = as_ffp(p))
 }
 
 #' @rdname view_on_copula
 #' @export
 view_on_copula.xts <- function(x, simul, p) {
-  construct_view_on_copula(x = as.matrix(x), simul = check_input(simul), p = check_p(p))
+  construct_view_on_copula(x = as.matrix(x), simul = check_input(simul), p = as_ffp(p))
 }
 
 #' @rdname view_on_copula
 #' @export
 view_on_copula.tbl_df <- function(x, simul, p) {
-  construct_view_on_copula(x = tbl_to_mtx(x), simul = check_input(simul), p = check_p(p))
+  construct_view_on_copula(x = tbl_to_mtx(x), simul = check_input(simul), p = as_ffp(p))
 }
 
 #' @keywords internal
@@ -654,8 +622,7 @@ construct_view_on_copula <- function(x, simul, p) {
 
 #' Views on the Marginal Distribution
 #'
-#' Helper to construct constraints on the entire marginal distribution for
-#' entropy programming.
+#' Helper to construct constraints on the entire marginal distribution.
 #'
 #' \itemize{
 #'   \item `simul` must have the same number of columns than `x`
@@ -706,32 +673,20 @@ view_on_marginal_distribution.default <- function(x, simul, p, on_mean = TRUE, o
 
 #' @rdname view_on_marginal_distribution
 #' @export
-view_on_marginal_distribution.numeric <- function(x, simul, p, on_mean = TRUE, on_sigma = TRUE) {
-  construct_view_on_marginal_distribution(x = x, simul = check_input(simul), p = check_p(p), on_mean = on_mean, on_sigma = on_sigma)
-}
-
-#' @rdname view_on_marginal_distribution
-#' @export
 view_on_marginal_distribution.matrix <- function(x, simul, p, on_mean = TRUE, on_sigma = TRUE) {
-  construct_view_on_marginal_distribution(x = x, simul = check_input(simul), p = check_p(p), on_mean = on_mean, on_sigma = on_sigma)
-}
-
-#' @rdname view_on_marginal_distribution
-#' @export
-view_on_marginal_distribution.ts <- function(x, simul, p, on_mean = TRUE, on_sigma = TRUE) {
-  construct_view_on_marginal_distribution(x = x, simul = check_input(simul), p = check_p(p), on_mean = on_mean, on_sigma = on_sigma)
+  construct_view_on_marginal_distribution(x = x, simul = check_input(simul), p = as_ffp(p), on_mean = on_mean, on_sigma = on_sigma)
 }
 
 #' @rdname view_on_marginal_distribution
 #' @export
 view_on_marginal_distribution.xts <- function(x, simul, p, on_mean = TRUE, on_sigma = TRUE) {
-  construct_view_on_marginal_distribution(x = as.matrix(x), simul = check_input(simul), p = check_p(p), on_mean = on_mean, on_sigma = on_sigma)
+  construct_view_on_marginal_distribution(x = as.matrix(x), simul = check_input(simul), p = as_ffp(p), on_mean = on_mean, on_sigma = on_sigma)
 }
 
 #' @rdname view_on_marginal_distribution
 #' @export
 view_on_marginal_distribution.tbl_df <- function(x, simul, p, on_mean = TRUE, on_sigma = TRUE) {
-  construct_view_on_marginal_distribution(x = tbl_to_mtx(x), simul = check_input(simul), p = check_p(p), on_mean = on_mean, on_sigma = on_sigma)
+  construct_view_on_marginal_distribution(x = tbl_to_mtx(x), simul = check_input(simul), p = as_ffp(p), on_mean = on_mean, on_sigma = on_sigma)
 }
 
 #' @keywords internal
@@ -775,8 +730,7 @@ construct_view_on_marginal_distribution <- function(x, simul, p, on_mean = TRUE,
 
 #' Views on the Joint Distribution
 #'
-#' Helper to construct constraints on the entire distribution for
-#' entropy programming.
+#' Helper to construct constraints on the entire distribution.
 #'
 #' \itemize{
 #'   \item `simul` must have the same number of columns than `x`
@@ -825,19 +779,19 @@ view_on_joint_distribution.default <- function(x, simul, p) {
 #' @rdname view_on_joint_distribution
 #' @export
 view_on_joint_distribution.matrix <- function(x, simul, p) {
-  construct_view_on_joint_distribution(x = x, simul = check_input(simul), p = check_p(p))
+  construct_view_on_joint_distribution(x = x, simul = check_input(simul), p = as_ffp(p))
 }
 
 #' @rdname view_on_joint_distribution
 #' @export
 view_on_joint_distribution.xts <- function(x, simul, p) {
-  construct_view_on_joint_distribution(x = as.matrix(x), simul = check_input(simul), p = check_p(p))
+  construct_view_on_joint_distribution(x = as.matrix(x), simul = check_input(simul), p = as_ffp(p))
 }
 
 #' @rdname view_on_joint_distribution
 #' @export
 view_on_joint_distribution.tbl_df <- function(x, simul, p) {
-  construct_view_on_joint_distribution(x = tbl_to_mtx(x), simul = check_input(simul), p = check_p(p))
+  construct_view_on_joint_distribution(x = tbl_to_mtx(x), simul = check_input(simul), p = as_ffp(p))
 }
 
 #' @keywords internal

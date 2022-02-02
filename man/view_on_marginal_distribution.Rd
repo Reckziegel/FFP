@@ -3,9 +3,7 @@
 \name{view_on_marginal_distribution}
 \alias{view_on_marginal_distribution}
 \alias{view_on_marginal_distribution.default}
-\alias{view_on_marginal_distribution.numeric}
 \alias{view_on_marginal_distribution.matrix}
-\alias{view_on_marginal_distribution.ts}
 \alias{view_on_marginal_distribution.xts}
 \alias{view_on_marginal_distribution.tbl_df}
 \title{Views on the Marginal Distribution}
@@ -14,11 +12,7 @@ view_on_marginal_distribution(x, simul, p, on_mean = TRUE, on_sigma = TRUE)
 
 \method{view_on_marginal_distribution}{default}(x, simul, p, on_mean = TRUE, on_sigma = TRUE)
 
-\method{view_on_marginal_distribution}{numeric}(x, simul, p, on_mean = TRUE, on_sigma = TRUE)
-
 \method{view_on_marginal_distribution}{matrix}(x, simul, p, on_mean = TRUE, on_sigma = TRUE)
-
-\method{view_on_marginal_distribution}{ts}(x, simul, p, on_mean = TRUE, on_sigma = TRUE)
 
 \method{view_on_marginal_distribution}{xts}(x, simul, p, on_mean = TRUE, on_sigma = TRUE)
 
@@ -40,8 +34,7 @@ matrix?}
 A \code{list} of the \code{view} class.
 }
 \description{
-Helper to construct constraints on the entire marginal distribution for
-entropy programming.
+Helper to construct constraints on the entire marginal distribution.
 }
 \details{
 \itemize{

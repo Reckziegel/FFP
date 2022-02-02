@@ -51,12 +51,16 @@ as_ffp <- function(x) {
 #' @rdname ffp
 #' @export
 as_ffp.default <- function(x) {
+  assertthat::assert_that(dplyr::near(sum(x), 1), msg = "Probabilities must sum 1.")
+  assertthat::assert_that(all(x >= 0), msg = "Probabilities can't be negative.")
   vctrs::vec_cast(x, new_ffp())
 }
 
 #' @rdname ffp
 #' @export
 as_ffp.integer <- function(x) {
+  assertthat::assert_that(dplyr::near(sum(x), 1), msg = "Probabilities must sum 1.")
+  assertthat::assert_that(all(x >= 0), msg = "Probabilities can't be negative.")
   vctrs::vec_cast(as.double(x), new_ffp())
 }
 

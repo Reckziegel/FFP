@@ -214,7 +214,7 @@ entropy_pooling <- function(p, A = NULL, b = NULL, Aeq, beq, solver = c("optim",
   #   p_ <- p_ / sum(p_)
   # }
 
-  p_ / sum(p_)
+  as_ffp(as.double(p_ / sum(p_)))
 
 }
 

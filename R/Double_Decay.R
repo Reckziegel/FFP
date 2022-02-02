@@ -13,7 +13,7 @@
 #' @return A \code{list} with the posterior mean ans sigma.
 #'
 #' @keywords internal
-Double_Decay <- function(x, decay_low, decay_high) {
+DoubleDecay <- function(x, decay_low, decay_high) {
 
   T_ <- nrow(x)
   N  <- ncol(x)

@@ -29,8 +29,7 @@ view_on_joint_distribution(x, simul, p)
 A \code{list} of the \code{view} class.
 }
 \description{
-Helper to construct constraints on the entire distribution for
-entropy programming.
+Helper to construct constraints on the entire distribution.
 }
 \details{
 \itemize{

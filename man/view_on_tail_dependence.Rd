@@ -30,8 +30,23 @@ A \code{list} of the \code{view} class.
 Helper to construct views on tail dependence.
 }
 \examples{
-u <- matrix(stats::runif(100 * 2), ncol = 2)
-tail <- c(0.25, 0.3)
+library(ggplot2)
+set.seed(1)
 
-view_on_tail_dependence(x = u, tail = tail)
+# Invariants
+x <- diff(log(EuStockMarkets))
+u <- apply(x, 2, stats::pnorm) # normal copula (assumption, it could be anything)
+n <- nrow(x)
+tail <- c(0.49, 0.5, 0.5002, 0.5) # tail index
+
+# Prior Probabilities
+prior <- rep(1 / n, n)
+
+# Views
+views <- view_on_tail_dependence(x = u, tail = tail)
+views
+
+# Optimization
+ep <- entropy_pooling(p = prior, Aeq = views$Aeq, beq = views$beq, solver = "nlminb")
+autoplot(ep)
 }

@@ -8,20 +8,18 @@
 \alias{view_on_rank.tbl_df}
 \title{Views on Relative Performance}
 \usage{
-view_on_rank(x, p, rank)
+view_on_rank(x, rank)
 
-\method{view_on_rank}{default}(x, p, rank)
+\method{view_on_rank}{default}(x, rank)
 
-\method{view_on_rank}{matrix}(x, p, rank)
+\method{view_on_rank}{matrix}(x, rank)
 
-\method{view_on_rank}{xts}(x, p, rank)
+\method{view_on_rank}{xts}(x, rank)
 
-\method{view_on_rank}{tbl_df}(x, p, rank)
+\method{view_on_rank}{tbl_df}(x, rank)
 }
 \arguments{
 \item{x}{An univariate ou multivariate dataset.}
-
-\item{p}{An object of the \code{ffp} class.}
 
 \item{rank}{A \code{double} with the asset indexes.}
 }
@@ -34,13 +32,9 @@ Helper to construct constraints on ranking assets for entropy programming.
 \examples{
 # Invariants
 x <- matrix(diff(log(EuStockMarkets)), ncol = 4)
-colnames(x) <- colnames(EuStockMarkets)
-
-# Prior Probabilities
-n <- nrow(x)
-prior <- rep(1 / n, n)
+n <- ncol(x)
 
 # asset in the first col will outperform the asset in the second col.
-views <- view_on_rank(x = x, p = prior, rank = c(2, 1, 4))
+views <- view_on_rank(x = x, rank = c(2, 1))
 views
 }

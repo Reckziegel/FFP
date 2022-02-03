@@ -51,6 +51,6 @@ ep <- entropy_pooling(p = prior, Aeq = views$Aeq, beq = views$beq, solver = "nlm
 autoplot(ep)
 
 # Probabilities are twisted in such a way that the posterior
-# `mu` match's exactly with previously stated believes
+# `mu` match's exactly with previously stated beliefs
 ffp_moments(x = ret, p = ep)$mu
 }

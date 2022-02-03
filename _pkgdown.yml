@@ -55,7 +55,6 @@ reference:
       contents:
       - bind_probs
       - bootstrap_scenarios
-      - entropy_pooling
       - ens
       - empirical_stats
       - half_life

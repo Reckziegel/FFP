@@ -51,9 +51,9 @@ views
 ep <- entropy_pooling(p = prior, Aeq = views$Aeq, beq = views$beq, solver = "nlminb")
 autoplot(ep)
 
-# Desired vol
+# Desired volatility
 vol
 
-# Posterior vol matches very closely with the desired vol
-sqrt(diag(ffp_moments(x = ret, p = ep / sum(ep))$sigma))
+# Posterior volatility matches very closely with the desired volatility
+sqrt(diag(ffp_moments(x = ret, p = ep)$sigma))
 }

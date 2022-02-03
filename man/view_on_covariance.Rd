@@ -39,8 +39,9 @@ library(ggplot2)
 ret <- diff(log(EuStockMarkets))
 
 # Expectations for location and dispersion parameters
-mean <- colMeans(ret)
+mean <- colMeans(ret) # No active expectations for returns
 covs <- matrix(0, ncol = 4, nrow = 4) # assuming all assets are uncorrelated
+                                      # very strong view!
 
 # prior probabilities (usually equal weight scheme)
 prior <- rep(1 / nrow(ret), nrow(ret))
@@ -57,8 +58,6 @@ autoplot(ep)
 stats::cov(ret)
 
 # Posterior covariance matrix
-# Parameters are very close to zero (non-correlated) as the
-# suggested by the initial belief
 ffp_moments(x = ret, p = ep)$sigma
 }
 \keyword{internal}

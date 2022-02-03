@@ -6,7 +6,7 @@
 \alias{view_on_joint_distribution.matrix}
 \alias{view_on_joint_distribution.xts}
 \alias{view_on_joint_distribution.tbl_df}
-\title{Views on the Joint Distribution}
+\title{Views on Joint Distribution}
 \usage{
 view_on_joint_distribution(x, simul, p)
 
@@ -19,7 +19,7 @@ view_on_joint_distribution(x, simul, p)
 \method{view_on_joint_distribution}{tbl_df}(x, simul, p)
 }
 \arguments{
-\item{x}{An univariate ou multivariate dataset.}
+\item{x}{An univariate or multivariate dataset.}
 
 \item{simul}{An univariate or multivariate dataset.}
 
@@ -38,25 +38,30 @@ Helper to construct constraints on the entire distribution.
 }
 }
 \examples{
-# invariants
-ret <- diff(log(EuStockMarkets))
-# simulated marginals
-n <- nrow(ret)
-simul <- cbind(
-  stats::rnorm(n) ,
-  stats::rnorm(n, 0.01) ,
-  stats::rt(n, 2, 0.00005) ,
-  stats::rnorm(n, 0.03)
-)
-colnames(simul) <- colnames(EuStockMarkets)
+set.seed(1)
+library(ggplot2)
 
-# prior probability distribution
+# Invariants
+ret <- diff(log(EuStockMarkets))
+n <- nrow(ret)
+
+#' Prior probability distribution
 prior <- rep(1 / n, n)
 
-views <- view_on_joint_distribution(x = ret, simul = simul / 100, p = prior)
+# Simulated marginals
+simul <- bootstrap_scenarios(ret, as_ffp(prior), as.double(n))
+
+views <- view_on_joint_distribution(x = ret, simul = simul, p = prior)
 views
 
-#ep <- entropy_pooling(p = prior, Aeq = views$Aeq, beq = views$beq, solver = "nlminb")
+ep <- entropy_pooling(p = prior, Aeq = views$Aeq, beq = views$beq, solver = "nlminb")
+autoplot(ep)
 
-#ffp_moments(x = ret, p = ep)
+# location matches
+colMeans(simul)
+ffp_moments(x = ret, p = ep)$mu
+
+# dispersion matches
+cov(simul)
+ffp_moments(x = ret, p = ep)$sigma
 }

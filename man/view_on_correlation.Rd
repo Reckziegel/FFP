@@ -55,6 +55,6 @@ autoplot(ep)
 # prior correlation structure
 stats::cor(ret)
 
-# posterior correlation matches the initial view very closely
+# posterior correlation structure matches the initial view very closely
 stats::cov2cor(ffp_moments(x = ret, p = ep)$sigma)
 }

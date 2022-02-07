@@ -19,7 +19,7 @@ view_on_volatility(x, vol)
 \method{view_on_volatility}{tbl_df}(x, vol)
 }
 \arguments{
-\item{x}{An univariate or a multivariate dataset.}
+\item{x}{An univariate or a multivariate distribution.}
 
 \item{vol}{A \code{double} for the target volatility structure
 of the series in \code{x}.}

@@ -2,7 +2,7 @@
 
 #' Partial Information Kernel-Damping
 #'
-#' This function uses entropy-pooling to find the probability distribution that can
+#' Find the probability distribution that can
 #' constrain the first two moments while imposing the minimal structure in the data.
 #'
 #' @param x An univariate or a multivariate distribution.
@@ -162,8 +162,7 @@ kernel_entropy.data.frame <- function(x, mean, sigma = NULL) {
 
 #' Flexible Probabilities using Partial Information
 #'
-#' This function uses entropy-pooling to match different decay-factors on the
-#' covariance matrix.
+#' Match different decay-factors on the covariance matrix.
 #'
 #' @param x An univariate or a multivariate distribution.
 #' @param slow A number with the long half-life (slow decay) for the correlation

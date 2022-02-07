@@ -19,7 +19,7 @@ view_on_correlation(x, cor)
 \method{view_on_correlation}{tbl_df}(x, cor)
 }
 \arguments{
-\item{x}{An univariate or a multivariate dataset.}
+\item{x}{An univariate or a multivariate distribution.}
 
 \item{cor}{A \code{matrix} for the target correlation structure of
 the series in \code{x}.}

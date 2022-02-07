@@ -19,7 +19,7 @@ view_on_covariance(x, mean, sigma)
 \method{view_on_covariance}{tbl_df}(x, mean, sigma)
 }
 \arguments{
-\item{x}{An univariate or a multivariate dataset.}
+\item{x}{An univariate or a multivariate distribution.}
 
 \item{mean}{A \code{double} for the location parameter of the series in \code{x}.}
 

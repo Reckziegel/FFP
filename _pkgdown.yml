@@ -54,6 +54,7 @@ reference:
       desc: Functions to manipulate data.
       contents:
       - bind_probs
+      - bind_views
       - bootstrap_scenarios
       - ens
       - empirical_stats

@@ -37,6 +37,6 @@ fit_to_moments <- function(X, m, S) {
   p_0 <- matrix(1, nrow = T_, ncol = 1) / T_
 
   # ...compute posterior probabilities
-  entropy_pooling(p = p_0, A = NULL, b = NULL, Aeq = Aeq, beq = beq, solver = "nloptr")
+  entropy_pooling(p = p_0, A = NULL, b = NULL, Aeq = Aeq, beq = beq, solver = "nlminb")
 
 }

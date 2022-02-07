@@ -19,7 +19,7 @@ view_on_copula(x, simul, p)
 \method{view_on_copula}{tbl_df}(x, simul, p)
 }
 \arguments{
-\item{x}{The empirical copula.}
+\item{x}{A multivariate copula.}
 
 \item{simul}{A simulated target copula.}
 
@@ -32,7 +32,7 @@ A \code{list} of the \code{view} class.
 Helper to construct constraints on copulas for entropy programming.
 }
 \examples{
-set.seed(2)
+set.seed(1)
 library(ggplot2)
 
 # Invariants

@@ -37,15 +37,14 @@ A numerical vector of class \code{ffp} with the new
 probabilities distribution.
 }
 \description{
-Give full weight to occurrences when a macroeconomic statement satisfies
-a logical condition.
+Give full weight to occurrences that satisfies a logical condition.
 }
 \examples{
 library(ggplot2)
 # invariance (stationarity)
 ret <- diff(log(EuStockMarkets))
 
-# full weight on scenarios where CAC operated above 2\%
+# full weight on scenarios where CAC returns were above 2\%
 market_condition <- crisp(x = ret, ret[ , 3] > 0.02)
 market_condition
 

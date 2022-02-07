@@ -2,8 +2,7 @@
 
 #' Full Information by Market Conditioning
 #'
-#' Give full weight to occurrences when a macroeconomic statement satisfies
-#' a logical condition.
+#' Give full weight to occurrences that satisfies a logical condition.
 #'
 #' @param x An univariate or a multivariate distribution.
 #' @param lgl A \code{logical} vector with TRUE's and FALSE's indicating which scenarios should considered.
@@ -20,7 +19,7 @@
 #' # invariance (stationarity)
 #' ret <- diff(log(EuStockMarkets))
 #'
-#' # full weight on scenarios where CAC operated above 2%
+#' # full weight on scenarios where CAC returns were above 2%
 #' market_condition <- crisp(x = ret, ret[ , 3] > 0.02)
 #' market_condition
 #'
@@ -132,7 +131,8 @@ crisp.tbl_df <- function(x, lgl) {
 #'
 #' * \code{HL = log(2) / lambda}.
 #'
-#' For example: log(2) / 0.0166 is approximately 42. So, a parameter `lambda` of 0.0166 can be associated with a half-life of two-months.
+#' For example: log(2) / 0.0166 is approximately 42. So, a parameter `lambda` of 0.0166
+#' can be associated with a half-life of two-months (21 * 2).
 #'
 #' @param x An univariate or a multivariate distribution.
 #' @param lambda A number for the decay parameter.
@@ -234,8 +234,8 @@ exp_decay.tbl <- function(x, lambda) {
 
 #' Full Information by Kernel-Damping
 #'
-#' In this framework, historical realizations receive a weight proportional to
-#' its distance from a target mean that is surrounded by normal kernel.
+#' Historical realizations receive a weight proportional to
+#' their distance from a target mean.
 #'
 #' @param x An univariate or a multivariate distribution.
 #' @param mean A numeric vector in which the kernel should be centered.

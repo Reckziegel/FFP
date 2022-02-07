@@ -19,7 +19,7 @@ view_on_marginal_distribution(x, simul, p)
 \method{view_on_marginal_distribution}{tbl_df}(x, simul, p)
 }
 \arguments{
-\item{x}{An univariate or multivariate dataset.}
+\item{x}{An univariate or a multivariate distribution.}
 
 \item{simul}{An univariate or multivariate dataset.}
 

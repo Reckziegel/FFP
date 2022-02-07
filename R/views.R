@@ -7,7 +7,7 @@
 #'
 #' Helper to construct views on expected returns.
 #'
-#' @param x An univariate or a multivariate dataset.
+#' @param x An univariate or a multivariate distribution.
 #' @param mean A \code{double} for the target location parameter of the series in `x`.
 #'
 #' @return A \code{list} of the `view` class.
@@ -31,7 +31,7 @@
 #' views
 #'
 #' # Optimization
-#' ep <- entropy_pooling(p = prior, Aeq = views$Aeq, beq = views$beq, solver = "nlminb")
+#' ep <- entropy_pooling(p = prior, Aeq = views$Aeq, beq = views$beq, solver = "nloptr")
 #' autoplot(ep)
 #'
 #' # Probabilities are twisted in such a way that the posterior
@@ -90,7 +90,7 @@ construct_view_on_mean <- function(x, mean) {
 #'
 #' Helper to construct views on variance-covariance matrix.
 #'
-#' @param x An univariate or a multivariate dataset.
+#' @param x An univariate or a multivariate distribution.
 #' @param mean A \code{double} for the location parameter of the series in `x`.
 #' @param sigma A \code{matrix} for the target variance-covariance parameter
 #' of the series in `x`.
@@ -189,7 +189,7 @@ construct_view_on_covariance <- function(x, mean, sigma) {
 #'
 #' Helper to construct views  on the correlation matrix.
 #'
-#' @param x An univariate or a multivariate dataset.
+#' @param x An univariate or a multivariate distribution.
 #' @param cor A \code{matrix} for the target correlation structure of
 #' the series in `x`.
 #'
@@ -287,7 +287,7 @@ construct_view_on_correlation <- function(x, cor) {
 #'
 #' Helper to construct views on volatility.
 #'
-#' @param x An univariate or a multivariate dataset.
+#' @param x An univariate or a multivariate distribution.
 #' @param vol A \code{double} for the target volatility structure
 #' of the series in `x`.
 #'
@@ -373,9 +373,9 @@ construct_view_on_volatility <- function(x, vol) {
 
 #' Views on Relative Performance
 #'
-#' Helper to construct constraints on ranking assets for entropy programming.
+#' Helper to construct views on relative performance of assets.
 #'
-#' @param x An univariate ou multivariate dataset.
+#' @param x An univariate or a multivariate distribution.
 #' @param rank A \code{double} with the asset indexes.
 #'
 #' @return A \code{list} of the `view` class.
@@ -532,7 +532,7 @@ construct_view_on_tail_dependence <- function(x, tail) {
 #'
 #' Helper to construct constraints on copulas for entropy programming.
 #'
-#' @param x The empirical copula.
+#' @param x A multivariate copula.
 #' @param simul A simulated target copula.
 #' @param p An object of the `ffp` class.
 #'
@@ -540,7 +540,7 @@ construct_view_on_tail_dependence <- function(x, tail) {
 #' @export
 #'
 #' @examples
-#' set.seed(2)
+#' set.seed(1)
 #' library(ggplot2)
 #'
 #' # Invariants
@@ -636,14 +636,12 @@ construct_view_on_copula <- function(x, simul, p) {
 #'
 #' Helper to construct constraints on the marginal distribution.
 #'
-#'
-#'
 #' \itemize{
 #'   \item `simul` must have the same number of columns than `x`
 #'   \item `p` should have the same number of rows that `simul`.
 #' }
 #'
-#' @param x An univariate or multivariate dataset.
+#' @param x An univariate or a multivariate distribution.
 #' @param simul An univariate or multivariate dataset.
 #' @param p An object of the `ffp` class.
 #'
@@ -755,7 +753,7 @@ construct_view_on_marginal_distribution <- function(x, simul, p) {
 #'   \item `p` should have the same number of rows that `simul`.
 #' }
 #'
-#' @param x An univariate or multivariate dataset.
+#' @param x An univariate or a multivariate distribution.
 #' @param simul An univariate or multivariate dataset.
 #' @param p An object of the `ffp` class.
 #'
@@ -858,6 +856,66 @@ construct_view_on_joint_distribution <- function(x, simul, p) {
 
 }
 
+
+
+# Bind Views --------------------------------------------------------------
+
+#' Stack Different Views
+#'
+#' Bind views for entropy programming.
+#'
+#' @param ... Objects of the class \code{ffp_views} to combine.
+#'
+#' @return  A \code{list} of the `view` class.
+#' @export
+#'
+#' @examples
+#' library(ggplot2)
+#'
+#' # Invariant
+#' ret <- diff(log(EuStockMarkets))
+#' n   <- nrow(ret)
+#'
+#' # Prior belief for expected returns (here is 1% for each asset)
+#' mean <- rep(0, 4)
+#'
+#' # Prior probabilities (usually equal weight scheme)
+#' prior <- rep(1 / n, n)
+#'
+#' # View on returns
+#' view_mean <- view_on_mean(x = ret, mean = mean)
+#'
+#' #' view on volatility
+#' vol <- apply(ret, 2, stats::sd) * 1.1
+#' view_volatility <- view_on_volatility(x = ret, vol = vol)
+#'
+#' views_comb <- bind_views(view_mean, view_volatility)
+#' views_comb
+#'
+#' ep <- entropy_pooling(p      = prior,
+#'                       Aeq    = views_comb$Aeq,
+#'                       beq    = views_comb$beq,
+#'                       A      = views_comb$A,
+#'                       b      = views_comb$b,
+#'                       solver = "nlminb")
+#' autoplot(ep)
+bind_views <- function(...) {
+
+  dots <- rlang::list2(...)
+  dots <- purrr::keep(dots, inherits, "ffp_views")
+
+  .Aeq <- do.call(rbind, purrr::map(dots, "Aeq"))
+  .beq <- do.call(rbind, purrr::map(purrr::map(dots, "beq"), ~ if (is.null(.x)) .x else as.matrix(.x)))
+  .A   <- do.call(rbind, purrr::map(dots, "A"))
+  .b   <- do.call(rbind, purrr::map(purrr::map(dots, "b"),   ~ if (is.null(.x)) .x else as.matrix(.x)))
+
+  vctrs::new_list_of(
+    x      = list(Aeq = .Aeq, beq = .beq, A = .A, b = .b),
+    .ptype = double(),
+    class  = "ffp_views",
+    type   = "multiple_views")
+
+}
 
 # Printing methods --------------------------------------------------------
 

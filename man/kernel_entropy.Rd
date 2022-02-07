@@ -39,7 +39,7 @@ A numerical vector of class \code{ffp} with the new
 probabilities distribution.
 }
 \description{
-This function uses entropy-pooling to find the probability distribution that can
+Find the probability distribution that can
 constrain the first two moments while imposing the minimal structure in the data.
 }
 \examples{

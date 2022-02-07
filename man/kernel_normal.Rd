@@ -39,8 +39,8 @@ A numerical vector of class \code{ffp} with the new
 probabilities distribution.
 }
 \description{
-In this framework, historical realizations receive a weight proportional to
-its distance from a target mean that is surrounded by normal kernel.
+Historical realizations receive a weight proportional to
+their distance from a target mean.
 }
 \examples{
 library(ggplot2)

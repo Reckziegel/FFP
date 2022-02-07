@@ -19,7 +19,7 @@ view_on_rank(x, rank)
 \method{view_on_rank}{tbl_df}(x, rank)
 }
 \arguments{
-\item{x}{An univariate ou multivariate dataset.}
+\item{x}{An univariate or a multivariate distribution.}
 
 \item{rank}{A \code{double} with the asset indexes.}
 }
@@ -27,7 +27,7 @@ view_on_rank(x, rank)
 A \code{list} of the \code{view} class.
 }
 \description{
-Helper to construct constraints on ranking assets for entropy programming.
+Helper to construct views on relative performance of assets.
 }
 \examples{
 # Invariants

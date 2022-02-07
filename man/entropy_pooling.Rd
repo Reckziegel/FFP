@@ -10,7 +10,7 @@ entropy_pooling(
   b = NULL,
   Aeq,
   beq,
-  solver = c("optim", "nlminb", "solnl", "nloptr"),
+  solver = c("nlminb", "solnl", "nloptr"),
   ...
 )
 }
@@ -25,9 +25,9 @@ entropy_pooling(
 
 \item{beq}{The linear equality constraint (right-hand side).}
 
-\item{solver}{A \code{character}. One of: "optim", "nlminb", "solnl" and "nloptr".}
+\item{solver}{A \code{character}. One of: "nlminb", "solnl" or "nloptr".}
 
-\item{...}{Further arguments passed to one of the solvers above.}
+\item{...}{Further arguments passed to one of the solvers.}
 }
 \value{
 A vector of posterior probabilities.

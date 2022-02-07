@@ -19,7 +19,7 @@ view_on_mean(x, mean)
 \method{view_on_mean}{tbl_df}(x, mean)
 }
 \arguments{
-\item{x}{An univariate or a multivariate dataset.}
+\item{x}{An univariate or a multivariate distribution.}
 
 \item{mean}{A \code{double} for the target location parameter of the series in \code{x}.}
 }
@@ -47,7 +47,7 @@ views <- view_on_mean(x = ret, mean = mean)
 views
 
 # Optimization
-ep <- entropy_pooling(p = prior, Aeq = views$Aeq, beq = views$beq, solver = "nlminb")
+ep <- entropy_pooling(p = prior, Aeq = views$Aeq, beq = views$beq, solver = "nloptr")
 autoplot(ep)
 
 # Probabilities are twisted in such a way that the posterior

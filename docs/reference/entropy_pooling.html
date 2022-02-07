@@ -76,7 +76,7 @@ the least the prior (equal-weights probabilities), given the constraints.</p>
   b <span class="op">=</span> <span class="cn">NULL</span>,
   <span class="va">Aeq</span>,
   <span class="va">beq</span>,
-  solver <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"optim"</span>, <span class="st">"nlminb"</span>, <span class="st">"solnl"</span>, <span class="st">"nloptr"</span><span class="op">)</span>,
+  solver <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"nlminb"</span>, <span class="st">"solnl"</span>, <span class="st">"nloptr"</span><span class="op">)</span>,
   <span class="va">...</span>
 <span class="op">)</span></code></pre></div>
     </div>
@@ -94,9 +94,9 @@ the least the prior (equal-weights probabilities), given the constraints.</p>
 <dt>beq</dt>
 <dd><p>The linear equality constraint (right-hand side).</p></dd>
 <dt>solver</dt>
-<dd><p>A <code>character</code>. One of: "optim", "nlminb", "solnl" and "nloptr".</p></dd>
+<dd><p>A <code>character</code>. One of: "nlminb", "solnl" or "nloptr".</p></dd>
 <dt>...</dt>
-<dd><p>Further arguments passed to one of the solvers above.</p></dd>
+<dd><p>Further arguments passed to one of the solvers.</p></dd>
 </dl></div>
     <div id="value">
     <h2>Value</h2>

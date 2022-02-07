@@ -57,3 +57,4 @@ test_that("argument level impacts the VaR and CVaR", {
   expect_true(lvl_0.05 > lvl_0.10)
 
 })
+

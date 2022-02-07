@@ -157,9 +157,9 @@ test_that("works on univariate tibbles", {
 
 test_that("results are identical and don't depend on the class", {
   # univariate
-  expect_equal(kernel_normal_tblu, kernel_normal_matu)
-  expect_equal(kernel_normal_dfu, kernel_normal_tblu)
+  expect_equal(as.double(kernel_normal_tblu), as.double(kernel_normal_matu))
+  expect_equal(as.double(kernel_normal_dfu), as.double(kernel_normal_tblu))
   # multivariate
-  expect_equal(kernel_normal_tblm, kernel_normal_matm)
-  expect_equal(kernel_normal_dfm, kernel_normal_tsm)
+  expect_equal(as.double(kernel_normal_tblm), as.double(kernel_normal_matm))
+  expect_equal(as.double(kernel_normal_dfm), as.double(kernel_normal_tsm))
 })

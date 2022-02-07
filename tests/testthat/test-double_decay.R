@@ -157,9 +157,9 @@ test_that("works on multivariate tibbles", {
 
 test_that("results are identical and don't depend on the class", {
   # univariate
-  expect_equal(double_decay_tblu, double_decay_matu, tolerance = 0.0001)
-  expect_equal(double_decay_dfu, double_decay_tblu, tolerance = 0.0001)
+  expect_equal(as.double(double_decay_tblu), as.double(double_decay_matu), tolerance = 0.0001)
+  expect_equal(as.double(double_decay_dfu), as.double(double_decay_tblu), tolerance = 0.0001)
   # multivariate
-  expect_equal(double_decay_tsm, double_decay_matm, tolerance = 0.0001)
-  expect_equal(double_decay_xtsm, double_decay_tblm, tolerance = 0.0001)
+  expect_equal(as.double(double_decay_tsm), as.double(double_decay_matm), tolerance = 0.0001)
+  expect_equal(as.double(double_decay_xtsm), as.double(double_decay_tblm), tolerance = 0.0001)
 })

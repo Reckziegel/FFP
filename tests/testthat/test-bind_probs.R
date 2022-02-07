@@ -15,6 +15,6 @@ test_that("bind_probs keeps the same n of rows and cols", {
   #class
   expect_type(p_tidy, "list")
   expect_s3_class(p_tidy, "tbl_df")
-  expect_equal(purrr::map(p_tidy, class), list(rowid = "integer", probs = c("ffp", "vctrs_vctr"), key = "factor"))
+  expect_equal(purrr::map(p_tidy, class), list(rowid = "integer", probs = c("ffp", "vctrs_vctr"), fn = "factor"))
 })
 

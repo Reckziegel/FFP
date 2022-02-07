@@ -26,15 +26,16 @@ have different \code{ffp} objects and want to stack them in the \code{tidy} (lon
 library(ggplot2)
 library(dplyr, warn.conflicts = FALSE)
 
-x <- exp_decay(EuStockMarkets, 0.001)
-y <- exp_decay(EuStockMarkets, 0.002)
+x <- exp_decay(EuStockMarkets, lambda = 0.001)
+y <- exp_decay(EuStockMarkets, lambda = 0.002)
 
 bind_probs(x, y)
 
 bind_probs(x, y) \%>\%
-  ggplot(aes(x = rowid, y = probs, color = key)) +
+  ggplot(aes(x = rowid, y = probs, color = fn)) +
   geom_line() +
-  scale_color_viridis_d()
+  scale_color_viridis_d() +
+  theme(legend.position="bottom")
 }
 \seealso{
 \code{\link{crisp}} \code{\link{exp_decay}} \code{\link{kernel_normal}}

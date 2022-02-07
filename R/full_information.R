@@ -2,8 +2,7 @@
 
 #' Full Information by Market Conditioning
 #'
-#' Give full weight to occurrences when a macroeconomic statement satisfies
-#' a logical condition.
+#' Give full weight to occurrences that satisfies a logical condition.
 #'
 #' @param x An univariate or a multivariate distribution.
 #' @param lgl A \code{logical} vector with TRUE's and FALSE's indicating which scenarios should considered.
@@ -20,7 +19,7 @@
 #' # invariance (stationarity)
 #' ret <- diff(log(EuStockMarkets))
 #'
-#' # full weight on scenarios where CAC operated above 2%
+#' # full weight on scenarios where CAC returns were above 2%
 #' market_condition <- crisp(x = ret, ret[ , 3] > 0.02)
 #' market_condition
 #'
@@ -46,7 +45,8 @@ crisp.numeric <- function(x, lgl) {
 
   p <- make_crisp(x, lgl)
 
-  ffp(p)
+  ffp(p, fn = "crisp", user_call = match.call())
+
 }
 
 #' @rdname crisp
@@ -59,7 +59,7 @@ crisp.matrix <- function(x, lgl) {
 
   p <- make_crisp(x, lgl)
 
-  ffp(p)
+  ffp(p, fn = "crisp", user_call = match.call())
 
 }
 
@@ -72,7 +72,9 @@ crisp.ts <- function(x, lgl) {
   vctrs::vec_assert(lgl, logical())
 
   p <- make_crisp(x, lgl)
-  ffp(p)
+
+  ffp(p, fn = "crisp", user_call = match.call())
+
 }
 
 #' @rdname crisp
@@ -85,7 +87,8 @@ crisp.xts <- function(x, lgl) {
 
   p <- make_crisp(x, lgl)
 
-  ffp(p)
+  ffp(p, fn = "crisp", user_call = match.call())
+
 }
 
 #' @rdname crisp
@@ -98,7 +101,8 @@ crisp.data.frame <- function(x, lgl) {
 
   p <- make_crisp(x, lgl)
 
-  ffp(p)
+  ffp(p, fn = "crisp", user_call = match.call())
+
 }
 
 #' @rdname crisp
@@ -111,7 +115,8 @@ crisp.tbl_df <- function(x, lgl) {
 
   p <- make_crisp(x, lgl)
 
-  ffp(p)
+  ffp(p, fn = "crisp", user_call = match.call())
+
 }
 
 
@@ -126,7 +131,8 @@ crisp.tbl_df <- function(x, lgl) {
 #'
 #' * \code{HL = log(2) / lambda}.
 #'
-#' For example: log(2) / 0.0166 is approximately 42. So, a parameter `lambda` of 0.0166 can be associated with a half-life of two-months.
+#' For example: log(2) / 0.0166 is approximately 42. So, a parameter `lambda` of 0.0166
+#' can be associated with a half-life of two-months (21 * 2).
 #'
 #' @param x An univariate or a multivariate distribution.
 #' @param lambda A number for the decay parameter.
@@ -168,7 +174,9 @@ exp_decay.default <- function(x, lambda) {
 exp_decay.numeric <- function(x, lambda) {
   vctrs::vec_assert(lambda, double(), 1)
   p <- make_decay(x, lambda)
-  ffp(p)
+
+  ffp(p, fn = "exp_decay", user_call = match.call())
+
 }
 
 #' @rdname exp_decay
@@ -176,7 +184,9 @@ exp_decay.numeric <- function(x, lambda) {
 exp_decay.matrix <- function(x, lambda) {
   vctrs::vec_assert(lambda, double(), 1)
   p <- make_decay(x, lambda)
-  ffp(p)
+
+  ffp(p, fn = "exp_decay", user_call = match.call())
+
 }
 
 #' @rdname exp_decay
@@ -184,7 +194,9 @@ exp_decay.matrix <- function(x, lambda) {
 exp_decay.ts <- function(x, lambda) {
   vctrs::vec_assert(lambda, double(), 1)
   p <- make_decay(x, lambda)
-  ffp(p)
+
+  ffp(p, fn = "exp_decay", user_call = match.call())
+
 }
 
 #' @rdname exp_decay
@@ -192,7 +204,9 @@ exp_decay.ts <- function(x, lambda) {
 exp_decay.xts <- function(x, lambda) {
   vctrs::vec_assert(lambda, double(), 1)
   p <- make_decay(x, lambda)
-  ffp(p)
+
+  ffp(p, fn = "exp_decay", user_call = match.call())
+
 }
 
 #' @rdname exp_decay
@@ -200,7 +214,9 @@ exp_decay.xts <- function(x, lambda) {
 exp_decay.data.frame <- function(x, lambda) {
   vctrs::vec_assert(lambda, double(), 1)
   p <- make_decay(x, lambda)
-  ffp(p)
+
+  ffp(p, fn = "exp_decay", user_call = match.call())
+
 }
 
 #' @rdname exp_decay
@@ -208,7 +224,9 @@ exp_decay.data.frame <- function(x, lambda) {
 exp_decay.tbl <- function(x, lambda) {
   vctrs::vec_assert(lambda, double(), 1)
   p <- make_decay(x, lambda)
-  ffp(p)
+
+  ffp(p, fn = "exp_decay", user_call = match.call())
+
 }
 
 
@@ -216,8 +234,8 @@ exp_decay.tbl <- function(x, lambda) {
 
 #' Full Information by Kernel-Damping
 #'
-#' In this framework, historical realizations receive a weight proportional to
-#' its distance from a target mean that is surrounded by normal kernel.
+#' Historical realizations receive a weight proportional to
+#' their distance from a target mean.
 #'
 #' @param x An univariate or a multivariate distribution.
 #' @param mean A numeric vector in which the kernel should be centered.
@@ -266,7 +284,9 @@ kernel_normal.numeric <- function(x, mean, sigma) {
   vctrs::vec_assert(sigma, double(), 1)
 
   p <- make_kernel_normal(x = x, mean, sigma)
-  ffp(p)
+
+  ffp(p, fn = "kernel_normal", user_call = match.call())
+
 }
 
 #' @rdname kernel_normal
@@ -282,7 +302,7 @@ kernel_normal.matrix <- function(x, mean, sigma) {
 
   p <- make_kernel_normal(x = x, mean, sigma)
 
-  ffp(p)
+  ffp(p, fn = "kernel_normal", user_call = match.call())
 
 }
 
@@ -299,7 +319,7 @@ kernel_normal.ts <- function(x, mean, sigma) {
 
   p <- make_kernel_normal(x = x, mean, sigma)
 
-  ffp(p)
+  ffp(p, fn = "kernel_normal", user_call = match.call())
 
 }
 
@@ -316,7 +336,8 @@ kernel_normal.xts <- function(x, mean, sigma) {
 
   p <- make_kernel_normal(x = x, mean, sigma)
 
-  ffp(p)
+  ffp(p, fn = "kernel_normal", user_call = match.call())
+
 }
 
 #' @rdname kernel_normal
@@ -334,7 +355,7 @@ kernel_normal.tbl_df <- function(x, mean, sigma) {
 
   p <- make_kernel_normal(x = x, mean, sigma)
 
-  ffp(p)
+  ffp(p, fn = "kernel_normal", user_call = match.call())
 
 }
 
@@ -353,7 +374,8 @@ kernel_normal.data.frame <- function(x, mean, sigma) {
 
   p <- make_kernel_normal(x = x, mean, sigma)
 
-  ffp(p)
+  ffp(p, fn = "kernel_normal", user_call = match.call())
+
 }
 
 

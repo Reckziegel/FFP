@@ -149,11 +149,11 @@ Six different objects are estimated with varying degrees of flexibility, as the 
 
 ```{r, echo = FALSE, fig.align='center', fig.height=5, fig.width=7}
 bind_probs(fp_es1, fp_es2, fp_cc, fp_kd, fp_ekd, fp_emc) %>% 
-  ggplot2::ggplot(ggplot2::aes(x = rowid, y = probs, color = key)) + 
+  ggplot2::ggplot(ggplot2::aes(x = rowid, y = probs, color = fn)) + 
   ggplot2::geom_line(show.legend = FALSE) + 
-  ggplot2::facet_wrap(~key, 
+  ggplot2::facet_wrap(~fn, 
                       labeller = ggplot2::labeller(
-                        key = c("1" = "Exp. Smoothing", "2" = "Exp. Smoothing", 
+                        fn = c("1" = "Exp. Smoothing", "2" = "Exp. Smoothing", 
                                 "3" = "Market-Conditioning", "4" = "Normal Kernel", 
                                 "5" = "FFP Kernel", "6" = "FFP Double-Decay"))) +
   ggplot2::scale_y_continuous(labels = scales::percent_format()) + 

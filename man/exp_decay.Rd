@@ -46,7 +46,8 @@ The half-life is linked with the lambda parameter as follows:
 \item \code{HL = log(2) / lambda}.
 }
 
-For example: log(2) / 0.0166 is approximately 42. So, a parameter \code{lambda} of 0.0166 can be associated with a half-life of two-months.
+For example: log(2) / 0.0166 is approximately 42. So, a parameter \code{lambda} of 0.0166
+can be associated with a half-life of two-months (21 * 2).
 }
 \examples{
 library(ggplot2)

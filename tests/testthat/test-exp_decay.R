@@ -146,9 +146,9 @@ test_that("works on multivariate tibbles", {
 
 test_that("results are identical and don't depend on the class", {
   # univariate
-  expect_equal(smooth_numeric, smooth_matu)
-  expect_equal(smooth_tsu, smooth_tblu)
+  expect_equal(as.double(smooth_numeric), as.double(smooth_matu))
+  expect_equal(as.double(smooth_tsu), as.double(smooth_tblu))
   # multivariate
-  expect_equal(smooth_matm, smooth_xtsm)
-  expect_equal(smooth_tsm, smooth_tblm)
+  expect_equal(as.double(smooth_matm), as.double(smooth_xtsm))
+  expect_equal(as.double(smooth_tsm), as.double(smooth_tblm))
 })

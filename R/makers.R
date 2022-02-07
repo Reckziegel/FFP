@@ -42,7 +42,7 @@ make_kernel_normal <- function(x, mean, sigma) {
 
 #' @keywords internal
 make_kernel_entropy <- function(x, mean, sigma) {
-  p <- LeastInfoKernel(x, mean, sigma)
+  p <- least_info_kernel(x, mean, sigma)
   if (any(p == 0)) {
     p[p == 0] <- 1e-30
   }
@@ -52,7 +52,7 @@ make_kernel_entropy <- function(x, mean, sigma) {
 #' @keywords internal
 make_double_decay <- function(x, decay_low, decay_high) {
   dd <- DoubleDecay(x, decay_low, decay_high)
-  p  <- Fit2Moms(x, dd$m, dd$s)
+  p  <- fit_to_moments(x, dd$m, dd$s)
   if (any(p == 0)) {
     p[p == 0] <- 1e-30
   }
@@ -122,10 +122,10 @@ make_empirical_stats <- function(x, p, level) {
       tmp       <- sort(x[ , n, drop = FALSE], index.return = TRUE)
       SortedEps <- tmp$x
       idx       <- tmp$ix
-      SortedP <- p[idx]
-      VarPos <- which(cumsum(SortedP) <= level)
-      new_VaR  <- min(-SortedEps[VarPos])
-      new_CVaR <- -sum(SortedEps[VarPos] * SortedP[VarPos]) / sum(SortedP[VarPos])
+      SortedP   <- p[idx]
+      VarPos    <- which(cumsum(SortedP) <= level)
+      new_VaR   <- min(-SortedEps[VarPos])
+      new_CVaR  <- -sum(SortedEps[VarPos] * SortedP[VarPos]) / sum(SortedP[VarPos])
       VaR <- c(VaR, new_VaR)
       CVaR <- c(CVaR, new_CVaR)
     }
@@ -155,7 +155,7 @@ make_scenarios <- function(x, p, n) {
   # random matrix
   rand_uniform <- stats::runif(n)
   # scenarios
-  tmp <- pracma::histc(rand_uniform, empirical_cdf)
+  tmp <- histc(rand_uniform, empirical_cdf)
   ind <- tmp$bin
   X_sample <- x[ind, , drop = FALSE]
   X_sample

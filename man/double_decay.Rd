@@ -40,8 +40,7 @@ A numerical vector of class \code{ffp} with the new
 probabilities distribution.
 }
 \description{
-This function uses entropy-pooling to match different decay-factors on the
-covariance matrix.
+Match different decay-factors on the covariance matrix.
 }
 \examples{
 \donttest{

@@ -32,12 +32,30 @@ reference:
       - kernel_entropy
       - double_decay
 
+    - title: Views on the Market
+      desc: Functions that help to construct the elements of entropy programming.
+      contents:
+      - view_on_mean
+      - view_on_covariance
+      - view_on_correlation
+      - view_on_volatility
+      - view_on_rank
+      - view_on_tail_dependency
+      - view_on_copula
+      - view_on_marginal_distribution
+      - view_on_joint_distribution
+
+    - title: Optimization
+      desc: Minimum Relative Entropy
+      contents:
+      - entropy_pooling
+
     - title: Utilities
       desc: Functions to manipulate data.
       contents:
       - bind_probs
+      - bind_views
       - bootstrap_scenarios
-      - entropy_pooling
       - ens
       - empirical_stats
       - half_life

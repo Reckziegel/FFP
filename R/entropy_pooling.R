@@ -2,7 +2,10 @@
 #'
 #' This function solves the entropy minimization problem with equality and inequality
 #' constraints. The solution is a vector of posterior probabilities that distorts
-#' the least the prior (equal-weights probabilities), given the constraints.
+#' the least the prior - equal-weights probabilities - given the constraints.
+#'
+#' For the arguments accepted in \code{...}, please see the documentation of
+#' \code{\link[stats]{nlminb}}, \code{\link[NlcOptim]{solnl}} and \code{\link[nloptr]{nloptr}}.
 #'
 #' @param p A vector of prior probabilities.
 #' @param A The linear inequality constraint (left-hand side).
@@ -73,7 +76,7 @@ entropy_pooling <- function(p, A = NULL, b = NULL, Aeq, beq, solver = c("nlminb"
         beq - Aeq %*% x
       }
 
-      p_ <- ep_nlminb(p = p, Aeq = Aeq, beq = beq, objective = objective, gradient = gradient)
+      p_ <- ep_nlminb(p = p, Aeq = Aeq, beq = beq, objective = objective, gradient = gradient, ...)
 
       # Solving equalities constraint with solnl
     } else if (solver == "solnl") {
@@ -88,6 +91,7 @@ entropy_pooling <- function(p, A = NULL, b = NULL, Aeq, beq, solver = c("nlminb"
       ep_solnl <- ep_solnl(
         x0  = x0,
         fn  = nestedfunU,
+        ... = ...,
         p   = p, Aeq_ = Aeq_, beq_ = beq_,
         tolX = 1e-10, tolFun = 1e-10, tolCon = 1e-10,maxIter = 10000
       )
@@ -111,7 +115,8 @@ entropy_pooling <- function(p, A = NULL, b = NULL, Aeq, beq, solver = c("nlminb"
                                   opts = list(algorithm = "NLOPT_LD_LBFGS" ,
                                               xtol_rel = 1e-5 ,
                                               check_derivatives = FALSE,
-                                              maxeval = 1000))
+                                              maxeval = 1000),
+                                  ... = ...)
       v <- ep_nloptr$solution
       p_ <- exp(log(p) - 1 - Aeq_ %*% v)
 
@@ -143,7 +148,7 @@ entropy_pooling <- function(p, A = NULL, b = NULL, Aeq, beq, solver = c("nlminb"
         K_ = K_, A_ = A_, Aeq_ = Aeq_, p = p, .A = A, .b = b, .Aeq = Aeq, .beq = beq,
         A = as.matrix(InqMat),
         b = InqVec,
-        tolX = 1e-10, tolFun = 1e-10, tolCon = 1e-10,maxIter = 10000
+        tolX = 1e-10, tolFun = 1e-10, tolCon = 1e-10,maxIter = 10000, ... = ...
       )
 
       lv <- matrix(ep_solnl$par , ncol = 1)
@@ -183,7 +188,8 @@ entropy_pooling <- function(p, A = NULL, b = NULL, Aeq, beq, solver = c("nlminb"
                                              local_opts = local_opts,
                                              maxeval    = 1000,
                                              check_derivatives = FALSE,
-                                             xtol_rel   = 1e-10))
+                                             xtol_rel   = 1e-10),
+                                 ... = ...)
       lv <- matrix(ep_nloptr$solution, ncol = 1)
       l  <- lv[1:K_ , , drop = FALSE]
       v  <- lv[(K_ + 1):nrow(lv) , , drop = FALSE]
@@ -221,35 +227,36 @@ ep_solnl <- function(x0, fn, gr = NULL, ...,
 }
 
 #' @keywords internal
-ep_nlminb <- function(p, Aeq, beq, objective, gradient) {
+ep_nlminb <- function(p, Aeq, beq, objective, gradient, ...) {
   v_dual <- stats::nlminb(
     start     = rep(0, NROW(Aeq)),
     objective = objective,
     gradient  = gradient,
     Aeq       = Aeq,
     beq       = beq,
-    p         = p)
+    p         = p,
+    ...       = ...)
   v <- v_dual$par
   v <- v_dual$par
   p_ <- exp(log(p) - 1 - t(Aeq) %*% v)
   p_
 }
 
-#' @keywords internal
-ep_optim <- function(p, Aeq, beq, objective, gradient) {
-  v_dual <- stats::optim(
-    par    = rep(0, NROW(Aeq)),
-    fn     = objective,
-    gr     = gradient,
-    Aeq    = Aeq,
-    beq    = beq,
-    p      = p,
-    method = "BFGS"
-  )
-  v  <- v_dual$par
-  p_ <- exp(log(p) - 1 - t(Aeq) %*% v)
-  p_
-}
+# @keywords internal
+# ep_optim <- function(p, Aeq, beq, objective, gradient) {
+#   v_dual <- stats::optim(
+#     par    = rep(0, NROW(Aeq)),
+#     fn     = objective,
+#     gr     = gradient,
+#     Aeq    = Aeq,
+#     beq    = beq,
+#     p      = p,
+#     method = "BFGS"
+#   )
+#   v  <- v_dual$par
+#   p_ <- exp(log(p) - 1 - t(Aeq) %*% v)
+#   p_
+# }
 
 #' @keywords internal
 ep_nloptr_eq <- function(p, x0, Aeq, Aeq_, beq, beq_) {

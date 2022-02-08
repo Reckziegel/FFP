@@ -642,7 +642,7 @@ construct_view_on_copula <- function(x, simul, p) {
 #' }
 #'
 #' @param x An univariate or a multivariate distribution.
-#' @param simul An univariate or multivariate dataset.
+#' @param simul An univariate or multivariate simulated panel.
 #' @param p An object of the `ffp` class.
 #'
 #' @return A \code{list} of the `view` class.
@@ -754,7 +754,7 @@ construct_view_on_marginal_distribution <- function(x, simul, p) {
 #' }
 #'
 #' @param x An univariate or a multivariate distribution.
-#' @param simul An univariate or multivariate dataset.
+#' @param simul An univariate or multivariate simulated panel.
 #' @param p An object of the `ffp` class.
 #'
 #' @return A \code{list} of the `view` class.
@@ -876,17 +876,14 @@ construct_view_on_joint_distribution <- function(x, simul, p) {
 #' ret <- diff(log(EuStockMarkets))
 #' n   <- nrow(ret)
 #'
-#' # Prior belief for expected returns (here is 1% for each asset)
-#' mean <- rep(0, 4)
-#'
 #' # Prior probabilities (usually equal weight scheme)
 #' prior <- rep(1 / n, n)
 #'
-#' # View on returns
-#' view_mean <- view_on_mean(x = ret, mean = mean)
+#' # Prior belief for expected returns (here is 0% for each asset)
+#' view_mean <- view_on_mean(x = ret, mean = rep(0, 4))
 #'
 #' #' view on volatility
-#' vol <- apply(ret, 2, stats::sd) * 1.1
+#' vol <- apply(ret, 2, stats::sd) * 1.1 # volatility 10% higher than average
 #' view_volatility <- view_on_volatility(x = ret, vol = vol)
 #'
 #' views_comb <- bind_views(view_mean, view_volatility)

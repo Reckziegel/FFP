@@ -35,7 +35,11 @@ A vector of posterior probabilities.
 \description{
 This function solves the entropy minimization problem with equality and inequality
 constraints. The solution is a vector of posterior probabilities that distorts
-the least the prior (equal-weights probabilities), given the constraints.
+the least the prior - equal-weights probabilities - given the constraints.
+}
+\details{
+For the arguments accepted in \code{...}, please see the documentation of
+\code{\link[stats]{nlminb}}, \code{\link[NlcOptim]{solnl}} and \code{\link[nloptr]{nloptr}}.
 }
 \examples{
 #

@@ -21,7 +21,7 @@ view_on_joint_distribution(x, simul, p)
 \arguments{
 \item{x}{An univariate or a multivariate distribution.}
 
-\item{simul}{An univariate or multivariate dataset.}
+\item{simul}{An univariate or multivariate simulated panel.}
 
 \item{p}{An object of the \code{ffp} class.}
 }

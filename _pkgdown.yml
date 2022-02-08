@@ -40,7 +40,7 @@ reference:
       - view_on_correlation
       - view_on_volatility
       - view_on_rank
-      - view_on_tail_dependency
+      - view_on_tail_dependence
       - view_on_copula
       - view_on_marginal_distribution
       - view_on_joint_distribution

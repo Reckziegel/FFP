@@ -1,7 +1,7 @@
 
 # Fully Flexible Moments --------------------------------------------------
 
-#' Moments with Flexible Probabilities
+#' Moments under Flexible Probabilities
 #'
 #' Computes the location and dispersion statistics under flexible probabilities.
 #'

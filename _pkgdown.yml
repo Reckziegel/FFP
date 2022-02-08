@@ -58,6 +58,7 @@ reference:
       - bootstrap_scenarios
       - ens
       - empirical_stats
+      - ffp_moments
       - half_life
 
     - title: Visualization

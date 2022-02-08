@@ -20,6 +20,8 @@
 <![endif]-->
 </head>
 <body data-spy="scroll" data-target="#toc">
+    
+
     <div class="container template-home">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -32,7 +34,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">ffp</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.0.9000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.0.9000</span>
       </span>
     </div>
 
@@ -62,7 +64,7 @@
       </ul>
 <ul class="nav navbar-nav navbar-right">
 <li>
-  <a href="https://github.com/Reckziegel/FFP/">
+  <a href="https://github.com/Reckziegel/FFP/" class="external-link">
     <span class="fab fa-github fa-lg"></span>
      
   </a>
@@ -79,9 +81,9 @@
 
       </header><div class="row">
   <div class="contents col-md-9">
-<div id="fully-flexible-probabilities" class="section level1">
-<div class="page-header"><h1 class="hasAnchor">
-<a href="#fully-flexible-probabilities" class="anchor"></a>Fully Flexible Probabilities</h1></div>
+<div class="section level1">
+<div class="page-header"><h1 id="fully-flexible-probabilities">Fully Flexible Probabilities<a class="anchor" aria-label="anchor" href="#fully-flexible-probabilities"></a>
+</h1></div>
 <!-- badges: start -->
 
 <blockquote>
@@ -89,20 +91,20 @@
 </blockquote>
 <p>Oftentimes, the econometrician needs to stress-test the potential outcomes for a given set of risk-drivers. This process can be computationally costly when the entire set of scenarios needs to be repriced (bootstrapped, resampled, etc.).</p>
 <p>To overcome this difficulty, the Fully Flexible Probabilities (FFP) approach offers an inexpensive way for scenario generation: it reprices the <em>probabilities</em> associated to each scenario, instead of the scenarios themselves. Once the new probabilities have been defined, the computations can be performed very quickly because the burden of scenario generation and valuation is left aside.</p>
-<div id="installation" class="section level2">
-<h2 class="hasAnchor">
-<a href="#installation" class="anchor"></a>Installation</h2>
+<div class="section level2">
+<h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
+</h2>
 <p>Install the official version from CRAN with:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html">install.packages</a></span><span class="op">(</span><span class="st">"ffp"</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"ffp"</span><span class="op">)</span></code></pre></div>
 <p>Install the development version from github with:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># install.packages("devtools")</span>
 <span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"Reckziegel/ffp"</span><span class="op">)</span></code></pre></div>
 </div>
-<div id="probability-estimation" class="section level2">
-<h2 class="hasAnchor">
-<a href="#probability-estimation" class="anchor"></a>Probability Estimation</h2>
+<div class="section level2">
+<h2 id="probability-estimation">Probability Estimation<a class="anchor" aria-label="anchor" href="#probability-estimation"></a>
+</h2>
 <p>The package <code>ffp</code> comes with five functions to extract probabilities from the historical scenarios:</p>
 <ul>
 <li>
@@ -118,19 +120,19 @@
 </ul>
 <p><img src="reference/figures/README-unnamed-chunk-4-1.png" width="70%" height="70%" style="display: block; margin: auto;"></p>
 </div>
-<div id="scenario-analysis" class="section level2">
-<h2 class="hasAnchor">
-<a href="#scenario-analysis" class="anchor"></a>Scenario Analysis</h2>
+<div class="section level2">
+<h2 id="scenario-analysis">Scenario Analysis<a class="anchor" aria-label="anchor" href="#scenario-analysis"></a>
+</h2>
 <p>Once the probabilities have been estimated, <code><a href="reference/bootstrap_scenarios.html">bootstrap_scenarios()</a></code> can be used to sample data, while keeping the structure of the empirical copulas intact. The main statistics of arbitrary scenarios can be computed with <code><a href="reference/empirical_stats.html">empirical_stats()</a></code>.</p>
 </div>
-<div id="references" class="section level2">
-<h2 class="hasAnchor">
-<a href="#references" class="anchor"></a>References</h2>
+<div class="section level2">
+<h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
+</h2>
 <ul>
-<li><p>Attilio Meucci (2021). Historical Scenarios with Fully Flexible Probabilities (<a href="https://www.mathworks.com/matlabcentral/fileexchange/31360-historical-scenarios-with-fully-flexible-probabilities" class="uri">https://www.mathworks.com/matlabcentral/fileexchange/31360-historical-scenarios-with-fully-flexible-probabilities</a>), MATLAB Central File Exchange. Retrieved June 11, 2021.</p></li>
+<li><p>Attilio Meucci (2021). Historical Scenarios with Fully Flexible Probabilities (<a href="https://www.mathworks.com/matlabcentral/fileexchange/31360-historical-scenarios-with-fully-flexible-probabilities" class="external-link uri">https://www.mathworks.com/matlabcentral/fileexchange/31360-historical-scenarios-with-fully-flexible-probabilities</a>), MATLAB Central File Exchange. Retrieved June 11, 2021.</p></li>
 <li><p>De Santis, G., R. Litterman, A. Vesval, and K. Winkelmann, 2003, Covariance matrix estimation, Modern investment management: an equilibrium approach, Wiley.</p></li>
-<li><p>Meucci, Attilio, Fully Flexible Views: Theory and Practice (August 8, 2008). Fully Flexible Views: Theory and Practice, Risk, Vol. 21, No. 10, pp. 97-102, October 2008, Available at SSRN: <a href="https://www.ssrn.com/abstract=1213325" class="uri">https://www.ssrn.com/abstract=1213325</a></p></li>
-<li><p>Meucci, Attilio, Historical Scenarios with Fully Flexible Probabilities (October 23, 2010). GARP Risk Professional, pp. 47-51, December 2010, Available at SSRN: <a href="https://www.ssrn.com/abstract=1696802" class="uri">https://www.ssrn.com/abstract=1696802</a> or <a href="http://dx.doi.org/10.2139/ssrn.1696802" class="uri">http://dx.doi.org/10.2139/ssrn.1696802</a></p></li>
+<li><p>Meucci, Attilio, Fully Flexible Views: Theory and Practice (August 8, 2008). Fully Flexible Views: Theory and Practice, Risk, Vol. 21, No. 10, pp. 97-102, October 2008, Available at SSRN: <a href="https://www.ssrn.com/abstract=1213325" class="external-link uri">https://www.ssrn.com/abstract=1213325</a></p></li>
+<li><p>Meucci, Attilio, Historical Scenarios with Fully Flexible Probabilities (October 23, 2010). GARP Risk Professional, pp. 47-51, December 2010, Available at SSRN: <a href="https://www.ssrn.com/abstract=1696802" class="external-link uri">https://www.ssrn.com/abstract=1696802</a> or <a href="http://dx.doi.org/10.2139/ssrn.1696802" class="external-link uri">http://dx.doi.org/10.2139/ssrn.1696802</a></p></li>
 </ul>
 </div>
 </div>
@@ -138,57 +140,67 @@
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <div class="links">
-<h2>Links</h2>
+<h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
-<li>Download from CRAN at <br><a href="https://cloud.r-project.org/package=ffp">https://​cloud.r-project.org/​package=ffp</a>
-</li>
-<li>Browse source code at <br><a href="https://github.com/Reckziegel/FFP/">https://​github.com/​Reckziegel/​FFP/​</a>
-</li>
-<li>Report a bug at <br><a href="https://github.com/Reckziegel/FFP/issues">https://​github.com/​Reckziegel/​FFP/​issues</a>
-</li>
+<li><a href="https://cloud.r-project.org/package=ffp" class="external-link">View on CRAN</a></li>
+<li><a href="https://github.com/Reckziegel/FFP/" class="external-link">Browse source code</a></li>
+<li><a href="https://github.com/Reckziegel/FFP/issues" class="external-link">Report a bug</a></li>
 </ul>
 </div>
+
 <div class="license">
-<h2>License</h2>
+<h2 data-toc-skip>License</h2>
 <ul class="list-unstyled">
 <li><a href="LICENSE.html">Full license</a></li>
-<li><small><a href="https://opensource.org/licenses/mit-license.php">MIT</a> + file <a href="LICENSE-text.html">LICENSE</a></small></li>
+<li><small><a href="https://opensource.org/licenses/mit-license.php" class="external-link">MIT</a> + file <a href="LICENSE-text.html">LICENSE</a></small></li>
 </ul>
 </div>
+
 <div class="community">
-<h2>Community</h2>
+<h2 data-toc-skip>Community</h2>
 <ul class="list-unstyled">
 <li><a href="CONTRIBUTING.html">Contributing guide</a></li>
 </ul>
 </div>
+
+<div class="citation">
+<h2 data-toc-skip>Citation</h2>
+<ul class="list-unstyled">
+<li><a href="authors.html#citation">Citing ffp</a></li>
+</ul>
+</div>
+
 <div class="developers">
-<h2>Developers</h2>
+<h2 data-toc-skip>Developers</h2>
 <ul class="list-unstyled">
 <li>Bernardo Reckziegel <br><small class="roles"> Author, maintainer, copyright holder </small>  </li>
 </ul>
 </div>
 
-  <div class="dev-status">
-<h2>Dev status</h2>
+<div class="dev-status">
+<h2 data-toc-skip>Dev status</h2>
 <ul class="list-unstyled">
-<li><a href="https://lifecycle.r-lib.org/articles/stages.html#experimental"><img src="https://img.shields.io/badge/lifecycle-experimental-orange.svg" alt="Lifecycle: experimental"></a></li>
-<li><a href="https://CRAN.R-project.org/package=ffp"><img src="https://www.r-pkg.org/badges/version/ffp" alt="CRAN status"></a></li>
-<li><a href="https://github.com/Reckziegel/FFP/actions"><img src="https://github.com/Reckziegel/FFP/workflows/R-CMD-check/badge.svg" alt="R-CMD-check"></a></li>
-<li><a href="https://travis-ci.com/Reckziegel/FFP"><img src="https://travis-ci.com/Reckziegel/FFP.svg?branch=main" alt="Travis build status"></a></li>
-<li><a href="https://ci.appveyor.com/project/Reckziegel/FFP"><img src="https://ci.appveyor.com/api/projects/status/github/Reckziegel/FFP?branch=main&amp;svg=true" alt="AppVeyor build status"></a></li>
-<li><a href="https://codecov.io/gh/Reckziegel/FFP?branch=main"><img src="https://codecov.io/gh/Reckziegel/FFP/branch/main/graph/badge.svg" alt="Codecov test coverage"></a></li>
+<li><a href="https://lifecycle.r-lib.org/articles/stages.html#experimental" class="external-link"><img src="https://img.shields.io/badge/lifecycle-experimental-orange.svg" alt="Lifecycle: experimental"></a></li>
+<li><a href="https://CRAN.R-project.org/package=ffp" class="external-link"><img src="https://www.r-pkg.org/badges/version/ffp" alt="CRAN status"></a></li>
+<li><a href="https://github.com/Reckziegel/FFP/actions" class="external-link"><img src="https://github.com/Reckziegel/FFP/workflows/R-CMD-check/badge.svg" alt="R-CMD-check"></a></li>
+<li><a href="https://travis-ci.com/Reckziegel/FFP" class="external-link"><img src="https://travis-ci.com/Reckziegel/FFP.svg?branch=main" alt="Travis build status"></a></li>
+<li><a href="https://ci.appveyor.com/project/Reckziegel/FFP" class="external-link"><img src="https://ci.appveyor.com/api/projects/status/github/Reckziegel/FFP?branch=main&amp;svg=true" alt="AppVeyor build status"></a></li>
+<li><a href="https://codecov.io/gh/Reckziegel/FFP?branch=main" class="external-link"><img src="https://codecov.io/gh/Reckziegel/FFP/branch/main/graph/badge.svg" alt="Codecov test coverage"></a></li>
 </ul>
 </div>
-</div>
+
+  </div>
 </div>
 
 
       <footer><div class="copyright">
-  <p>Developed by Bernardo Reckziegel.</p>
+  <p></p>
+<p>Developed by Bernardo Reckziegel.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
+  <p></p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.2.</p>
 </div>
 
       </footer>
@@ -196,6 +208,8 @@
 
   
 
+
+  
 
   </body>
 </html>

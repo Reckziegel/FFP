@@ -8,7 +8,7 @@
 \alias{ffp_moments.xts}
 \alias{ffp_moments.data.frame}
 \alias{ffp_moments.tbl_df}
-\title{Moments under Flexible Probabilities}
+\title{Moments with Flexible Probabilities}
 \usage{
 ffp_moments(x, p = NULL)
 

@@ -41,6 +41,3 @@ the least the prior - equal-weights probabilities - given the constraints.
 For the arguments accepted in \code{...}, please see the documentation of
 \code{\link[stats]{nlminb}}, \code{\link[NlcOptim]{solnl}} and \code{\link[nloptr]{nloptr}}.
 }
-\examples{
-#
-}

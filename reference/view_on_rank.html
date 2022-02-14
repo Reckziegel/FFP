@@ -28,16 +28,6 @@
 <li>
   <a href="../reference/index.html">Function Reference</a>
 </li>
-<li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-    Vignettes
-     
-    <span class="caret"></span>
-  </a>
-  <ul class="dropdown-menu" role="menu"><li>
-      <a href="../articles/Replicating-Meucci-Paper.html">Replicating Meucci's Paper</a>
-    </li>
-  </ul></li>
 <li>
   <a href="../news/index.html">News</a>
 </li>
@@ -92,12 +82,20 @@
     <h2>Value</h2>
     <p>A <code>list</code> of the <code>view</code> class.</p>
     </div>
+    <div id="details">
+    <h2>Details</h2>
+    <p>If <code>rank = c(2, 1)</code> then, it is implied that asset 1 will outperform asset 2.
+For more asset the interpretation is the same: assets on the right will outperform
+assets on the left.</p>
+    </div>
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="co"># Invariants</span></span>
-<span class="r-in"><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/diff.html" class="external-link">diff</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">EuStockMarkets</span><span class="op">)</span><span class="op">)</span>, ncol <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span>
-<span class="r-in"><span class="va">n</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
+<span class="r-in"></span>
+<span class="r-in"><span class="co"># Invariants</span></span>
+<span class="r-in"><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/diff.html" class="external-link">diff</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">EuStockMarkets</span><span class="op">)</span><span class="op">)</span></span>
+<span class="r-in"><span class="va">prior</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span></span>
 <span class="r-in"></span>
 <span class="r-in"><span class="co"># asset in the first col will outperform the asset in the second col.</span></span>
 <span class="r-in"><span class="va">views</span> <span class="op">&lt;-</span> <span class="fu">view_on_rank</span><span class="op">(</span>x <span class="op">=</span> <span class="va">x</span>, rank <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
@@ -106,6 +104,20 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span> Type:  <span style="font-weight: 100;">View On Rank</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> A :  Dim 1 x 1859 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> b :  Dim 1 x 1 </span>
+<span class="r-in"></span>
+<span class="r-in"><span class="va">ep</span> <span class="op">&lt;-</span> <span class="fu"><a href="entropy_pooling.html">entropy_pooling</a></span><span class="op">(</span>p <span class="op">=</span> <span class="va">prior</span>, A <span class="op">=</span> <span class="va">views</span><span class="op">$</span><span class="va">A</span>, b <span class="op">=</span> <span class="va">views</span><span class="op">$</span><span class="va">b</span>, solver <span class="op">=</span> <span class="st">"solnl"</span><span class="op">)</span></span>
+<span class="r-in"><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html" class="external-link">autoplot</a></span><span class="op">(</span><span class="va">ep</span><span class="op">)</span></span>
+<span class="r-plt img"><img src="view_on_rank-1.png" alt="" width="700" height="433"></span>
+<span class="r-in"></span>
+<span class="r-in"><span class="co"># Prior Returns (SMI &gt; DAX)</span></span>
+<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/base/colSums.html" class="external-link">colMeans</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          DAX          SMI </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 0.0006520417 0.0008178997 </span>
+<span class="r-in"></span>
+<span class="r-in"><span class="co"># Posterior Returns (DAX &gt; SMI)</span></span>
+<span class="r-in"><span class="fu"><a href="ffp_moments.html">ffp_moments</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">ep</span><span class="op">)</span><span class="op">$</span><span class="va">mu</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          DAX          SMI </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 0.0007647181 0.0007646580 </span>
 </code></pre></div>
     </div>
   </div>

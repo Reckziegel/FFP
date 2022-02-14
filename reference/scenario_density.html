@@ -29,16 +29,6 @@ View in the P&amp;amp;L distribution."><!-- mathjax --><script src="https://cdnj
 <li>
   <a href="../reference/index.html">Function Reference</a>
 </li>
-<li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-    Vignettes
-     
-    <span class="caret"></span>
-  </a>
-  <ul class="dropdown-menu" role="menu"><li>
-      <a href="../articles/Replicating-Meucci-Paper.html">Replicating Meucci's Paper</a>
-    </li>
-  </ul></li>
 <li>
   <a href="../news/index.html">News</a>
 </li>
@@ -99,8 +89,13 @@ with the <code>n</code> argument (default is <code>n = 10000</code>).</p>
 <span class="r-in"><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="exp_decay.html">exp_decay</a></span><span class="op">(</span><span class="va">pnl</span>, <span class="fl">0.005</span><span class="op">)</span></span>
 <span class="r-in"></span>
 <span class="r-in"><span class="fu">scenario_density</span><span class="op">(</span><span class="va">pnl</span>, <span class="va">p</span>, <span class="fl">500</span><span class="op">)</span></span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Computation failed in `stat_pointinterval()`:</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> object 'median_qi' of mode 'function' was not found</span>
 <span class="r-plt img"><img src="scenario_density-1.png" alt="" width="700" height="433"></span>
+<span class="r-in"></span>
 <span class="r-in"><span class="fu">scenario_histogram</span><span class="op">(</span><span class="va">pnl</span>, <span class="va">p</span>, <span class="fl">500</span><span class="op">)</span></span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Computation failed in `stat_histinterval()`:</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> object 'median_qi' of mode 'function' was not found</span>
 <span class="r-plt img"><img src="scenario_density-2.png" alt="" width="700" height="433"></span>
 </code></pre></div>
     </div>

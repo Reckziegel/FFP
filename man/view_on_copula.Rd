@@ -52,6 +52,6 @@ simul_cop <- apply(simul_marg, 2, stats::pnorm) # assuming normal copula
 views <- view_on_copula(x = u, simul = simul_cop, p = prior)
 views
 
-ep <- entropy_pooling(p = prior, Aeq = views$Aeq, beq = views$beq, solver = "nloptr")
+ep <- entropy_pooling(p = prior, Aeq = views$Aeq, beq = views$beq, solver = "solnl")
 autoplot(ep)
 }

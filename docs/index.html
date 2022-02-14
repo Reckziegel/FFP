@@ -46,18 +46,6 @@
 <li>
   <a href="reference/index.html">Function Reference</a>
 </li>
-<li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-    Vignettes
-     
-    <span class="caret"></span>
-  </a>
-  <ul class="dropdown-menu" role="menu">
-<li>
-      <a href="articles/Replicating-Meucci-Paper.html">Replicating Meucci's Paper</a>
-    </li>
-  </ul>
-</li>
 <li>
   <a href="news/index.html">News</a>
 </li>
@@ -90,7 +78,7 @@
 <p>Functions for Scenario Analysis and Risk Management</p>
 </blockquote>
 <p>Oftentimes, the econometrician needs to stress-test the potential outcomes for a given set of risk-drivers. This process can be computationally costly when the entire set of scenarios needs to be repriced (bootstrapped, resampled, etc.).</p>
-<p>To overcome this difficulty, the Fully Flexible Probabilities (FFP) approach offers an inexpensive way for scenario generation: it reprices the <em>probabilities</em> associated to each scenario, instead of the scenarios themselves. Once the new probabilities have been defined, the computations can be performed very quickly because the burden of scenario generation and valuation is left aside.</p>
+<p>To overcome this difficulty, the Fully Flexible Probabilities (FFP) approach offers an inexpensive way for scenario generation: it reprices the <em>probabilities</em> associated to each scenario, instead of the scenarios themselves. Once the new probabilities have been defined, the computations can be performed very quickly because the burden of scenario generation is left aside.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
@@ -116,14 +104,31 @@
 <li>
 <code><a href="reference/kernel_entropy.html">kernel_entropy()</a></code>: uses entropy-polling to satisfy a conditioning statement;</li>
 <li>
-<code><a href="reference/double_decay.html">double_decay()</a></code>: uses entropy-polling and double-decay factor to constrain the first two moments of a distribution.</li>
+<code><a href="reference/double_decay.html">double_decay()</a></code>: uses entropy-polling and a double-decay factor to constrain the first two moments of a distribution.</li>
 </ul>
 <p><img src="reference/figures/README-unnamed-chunk-4-1.png" width="70%" height="70%" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level2">
+<h2 id="portfolio-construction">Portfolio Construction<a class="anchor" aria-label="anchor" href="#portfolio-construction"></a>
+</h2>
+<p>The package also offers eight different constructors to make it easier to input views on the market for portfolio construction (mean-variance, risk-parity, etc.):</p>
+<ul>
+<li><code><a href="reference/view_on_mean.html">view_on_mean()</a></code></li>
+<li><code><a href="reference/view_on_covariance.html">view_on_covariance()</a></code></li>
+<li><code><a href="reference/view_on_correlation.html">view_on_correlation()</a></code></li>
+<li><code><a href="reference/view_on_volatility.html">view_on_volatility()</a></code></li>
+<li><code><a href="reference/view_on_rank.html">view_on_rank()</a></code></li>
+<li><code><a href="reference/view_on_copula.html">view_on_copula()</a></code></li>
+<li><code><a href="reference/view_on_marginal_distribution.html">view_on_marginal_distribution()</a></code></li>
+<li><code><a href="reference/view_on_joint_distribution.html">view_on_joint_distribution()</a></code></li>
+</ul>
+<p>The output is a list that <code><a href="reference/entropy_pooling.html">entropy_pooling()</a></code> can handle easily. To combine multiple views in a single object use <code><a href="reference/bind_views.html">bind_views()</a></code>.</p>
+</div>
+<div class="section level2">
 <h2 id="scenario-analysis">Scenario Analysis<a class="anchor" aria-label="anchor" href="#scenario-analysis"></a>
 </h2>
-<p>Once the probabilities have been estimated, <code><a href="reference/bootstrap_scenarios.html">bootstrap_scenarios()</a></code> can be used to sample data, while keeping the structure of the empirical copulas intact. The main statistics of arbitrary scenarios can be computed with <code><a href="reference/empirical_stats.html">empirical_stats()</a></code>.</p>
+<p>Once the new probabilities have been estimated, <code><a href="reference/bootstrap_scenarios.html">bootstrap_scenarios()</a></code> can be used to sample data, while keeping the structure of the empirical copulas intact.</p>
+<p>The main statistics of arbitrary scenarios can be computed with <code><a href="reference/empirical_stats.html">empirical_stats()</a></code>.</p>
 </div>
 <div class="section level2">
 <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>

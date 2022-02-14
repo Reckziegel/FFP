@@ -30,7 +30,7 @@ approach offers an inexpensive way for scenario generation: it reprices
 the *probabilities* associated to each scenario, instead of the
 scenarios themselves. Once the new probabilities have been defined, the
 computations can be performed very quickly because the burden of
-scenario generation and valuation is left aside.
+scenario generation is left aside.
 
 ## Installation
 
@@ -60,17 +60,37 @@ from the historical scenarios:
     scenarios over a normal kernel;
 -   `kernel_entropy()`: uses entropy-polling to satisfy a conditioning
     statement;
--   `double_decay()`: uses entropy-polling and double-decay factor to
+-   `double_decay()`: uses entropy-polling and a double-decay factor to
     constrain the first two moments of a distribution.
 
 <img src="man/figures/README-unnamed-chunk-4-1.png" width="70%" height="70%" style="display: block; margin: auto;" />
 
+## Portfolio Construction
+
+The package also offers eight different constructors to make it easier
+to input views on the market for portfolio construction (mean-variance,
+risk-parity, etc.):
+
+-   `view_on_mean()`
+-   `view_on_covariance()`
+-   `view_on_correlation()`
+-   `view_on_volatility()`
+-   `view_on_rank()`
+-   `view_on_copula()`
+-   `view_on_marginal_distribution()`
+-   `view_on_joint_distribution()`
+
+The output is a list that `entropy_pooling()` can handle easily. To
+combine multiple views in a single object use `bind_views()`.
+
 ## Scenario Analysis
 
-Once the probabilities have been estimated, `bootstrap_scenarios()` can
-be used to sample data, while keeping the structure of the empirical
-copulas intact. The main statistics of arbitrary scenarios can be
-computed with `empirical_stats()`.
+Once the new probabilities have been estimated, `bootstrap_scenarios()`
+can be used to sample data, while keeping the structure of the empirical
+copulas intact.
+
+The main statistics of arbitrary scenarios can be computed with
+`empirical_stats()`.
 
 ## References
 

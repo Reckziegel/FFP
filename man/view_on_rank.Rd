@@ -29,12 +29,28 @@ A \code{list} of the \code{view} class.
 \description{
 Helper to construct views on relative performance of assets.
 }
+\details{
+If \code{rank = c(2, 1)} then, it is implied that asset 1 will outperform asset 2.
+For more asset the interpretation is the same: assets on the right will outperform
+assets on the left.
+}
 \examples{
+library(ggplot2)
+
 # Invariants
-x <- matrix(diff(log(EuStockMarkets)), ncol = 4)
-n <- ncol(x)
+x <- diff(log(EuStockMarkets))
+prior <- rep(1 / nrow(x), nrow(x))
 
 # asset in the first col will outperform the asset in the second col.
 views <- view_on_rank(x = x, rank = c(2, 1))
 views
+
+ep <- entropy_pooling(p = prior, A = views$A, b = views$b, solver = "solnl")
+autoplot(ep)
+
+# Prior Returns (SMI > DAX)
+colMeans(x)[1:2]
+
+# Posterior Returns (DAX > SMI)
+ffp_moments(x, ep)$mu[1:2]
 }

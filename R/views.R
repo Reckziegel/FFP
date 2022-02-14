@@ -31,7 +31,7 @@
 #' views
 #'
 #' # Optimization
-#' ep <- entropy_pooling(p = prior, Aeq = views$Aeq, beq = views$beq, solver = "nloptr")
+#' ep <- entropy_pooling(p = prior, Aeq = views$Aeq, beq = views$beq, solver = "nlminb")
 #' autoplot(ep)
 #'
 #' # Probabilities are twisted in such a way that the posterior
@@ -375,6 +375,10 @@ construct_view_on_volatility <- function(x, vol) {
 #'
 #' Helper to construct views on relative performance of assets.
 #'
+#' If `rank = c(2, 1)` then, it is implied that asset 1 will outperform asset 2.
+#' For more asset the interpretation is the same: assets on the right will outperform
+#' assets on the left.
+#'
 #' @param x An univariate or a multivariate distribution.
 #' @param rank A \code{double} with the asset indexes.
 #'
@@ -382,13 +386,24 @@ construct_view_on_volatility <- function(x, vol) {
 #' @export
 #'
 #' @examples
+#' library(ggplot2)
+#'
 #' # Invariants
-#' x <- matrix(diff(log(EuStockMarkets)), ncol = 4)
-#' n <- ncol(x)
+#' x <- diff(log(EuStockMarkets))
+#' prior <- rep(1 / nrow(x), nrow(x))
 #'
 #' # asset in the first col will outperform the asset in the second col.
 #' views <- view_on_rank(x = x, rank = c(2, 1))
 #' views
+#'
+#' ep <- entropy_pooling(p = prior, A = views$A, b = views$b, solver = "solnl")
+#' autoplot(ep)
+#'
+#' # Prior Returns (SMI > DAX)
+#' colMeans(x)[1:2]
+#'
+#' # Posterior Returns (DAX > SMI)
+#' ffp_moments(x, ep)$mu[1:2]
 view_on_rank <- function(x, rank) {
   UseMethod("view_on_rank", x)
 }
@@ -425,12 +440,8 @@ construct_view_on_rank <- function(x, rank) {
 
   rank_size <- vctrs::vec_size(rank)
 
-  # ...constrain the expectations... A*x <= 0
+  # ...constrain the expectations...
   view <- x[ , rank[1:(rank_size - 1)]] - x[ , rank[2:rank_size]]
-  # Jx1 vector. Expectation is assigned to each scenario
-
-  # The expectation is that (Lower - Upper)x <= 0.
-  # (i.e. The returns of upper are greater than zero for each scenario)
   A <- t(view)
   b <- matrix(rep(0, nrow(A)), ncol = 1)
 
@@ -444,85 +455,85 @@ construct_view_on_rank <- function(x, rank) {
 
 # Views on tail codependence ----------------------------------------------
 
-#' Views on Tail Dependence
-#'
-#' Helper to construct views on tail dependence.
-#'
-#' @param x A multivariate copula.
-#' @param tail A \code{double} with tail index of each asset.
-#'
-#' @return A \code{list} of the `view` class.
-#' @export
-#'
-#' @examples
-#' library(ggplot2)
-#' set.seed(1)
-#'
-#' # Invariants
-#' x <- diff(log(EuStockMarkets))
-#' u <- apply(x, 2, stats::pnorm) # normal copula (assumption, it could be anything)
-#' n <- nrow(x)
-#' tail <- c(0.49, 0.5, 0.5002, 0.5) # tail index
-#'
-#' # Prior Probabilities
-#' prior <- rep(1 / n, n)
-#'
-#' # Views
-#' views <- view_on_tail_dependence(x = u, tail = tail)
-#' views
-#'
-#' # Optimization
-#' ep <- entropy_pooling(p = prior, Aeq = views$Aeq, beq = views$beq, solver = "nlminb")
-#' autoplot(ep)
-view_on_tail_dependence <- function(x, tail) {
-  UseMethod("view_on_tail_dependence", x)
-}
+# Views on Tail Dependence
+#
+# Helper to construct views on tail dependence.
+#
+# @param x A multivariate copula.
+# @param tail A \code{double} with tail index of each asset.
+#
+# @return A \code{list} of the `view` class.
+# @export
+#
+# @examples
+# library(ggplot2)
+# set.seed(1)
+#
+# # Invariants
+# x <- diff(log(EuStockMarkets))
+# u <- apply(x, 2, stats::pnorm) # normal copula (assumption, it could be anything)
+# n <- nrow(x)
+# tail <- c(0.49, 0.5, 0.5002, 0.5) # tail index
+#
+# # Prior Probabilities
+# prior <- rep(1 / n, n)
+#
+# # Views
+# views <- view_on_tail_dependence(x = u, tail = tail)
+# views
+#
+# # Optimization
+# ep <- entropy_pooling(p = prior, Aeq = views$Aeq, beq = views$beq, solver = "nlminb")
+# autoplot(ep)
+# view_on_tail_dependence <- function(x, tail) {
+#   UseMethod("view_on_tail_dependence", x)
+# }
 
-#' @rdname view_on_tail_dependence
-#' @export
-view_on_tail_dependence.default <- function(x, tail) {
-  stop("Method not implemented for class `", class(x), "` yet.", call. = FALSE)
-}
+# @rdname view_on_tail_dependence
+# @export
+# view_on_tail_dependence.default <- function(x, tail) {
+#   stop("Method not implemented for class `", class(x), "` yet.", call. = FALSE)
+# }
 
-#' @rdname view_on_tail_dependence
-#' @export
-view_on_tail_dependence.matrix <- function(x, tail) {
-  construct_view_on_tail_dependence(x = x, tail = tail)
-}
+# @rdname view_on_tail_dependence
+# @export
+# view_on_tail_dependence.matrix <- function(x, tail) {
+#   construct_view_on_tail_dependence(x = x, tail = tail)
+# }
 
-#' @rdname view_on_tail_dependence
-#' @export
-view_on_tail_dependence.xts <- function(x, tail) {
-  construct_view_on_tail_dependence(x = as.matrix(x), tail = tail)
-}
+# @rdname view_on_tail_dependence
+# @export
+#view_on_tail_dependence.xts <- function(x, tail) {
+#  construct_view_on_tail_dependence(x = as.matrix(x), tail = tail)
+#}
 
-#' @rdname view_on_tail_dependence
-#' @export
-view_on_tail_dependence.tbl_df <- function(x, tail) {
-  construct_view_on_tail_dependence(x = tbl_to_mtx(x), tail = tail)
-}
+# @rdname view_on_tail_dependence
+# @export
+#view_on_tail_dependence.tbl_df <- function(x, tail) {
+#  construct_view_on_tail_dependence(x = tbl_to_mtx(x), tail = tail)
+#}
 
-#' @keywords internal
-construct_view_on_tail_dependence <- function(x, tail) {
-
-  assertthat::assert_that(assertthat::are_equal(NCOL(x), vctrs::vec_size(tail)))
-  vctrs::vec_assert(tail, double())
-
-  cop <- matrix(NA_real_, nrow = nrow(x), ncol = ncol(x))
-  for (i in 1:NCOL(x)) {
-    cop[ , i] <- as.double(x[ , i] <= tail[[i]])
-  }
-  Aeq <- t(cop)
-  beq <- tail
-
-  vctrs::new_list_of(
-    x      = list(Aeq = Aeq, beq = beq),
-    .ptype = double(),
-    class  = "ffp_views",
-    type   = "view_on_tail_depedence"
-  )
-
-}
+# @keywords internal
+# construct_view_on_tail_dependence <- function(x, tail) {
+#
+#   assertthat::assert_that(assertthat::are_equal(NCOL(x), vctrs::vec_size(tail)))
+#   vctrs::vec_assert(tail, double())
+#
+#   cop <- matrix(NA_real_, nrow = nrow(x), ncol = ncol(x))
+#   for (i in 1:NCOL(x)) {
+#     cop[ , i] <- as.double(x[ , i] <= tail[[i]])
+#   }
+#   Aeq <- t(cop)
+#   beq <- tail
+#
+#   vctrs::new_list_of(
+#     x      = list(Aeq = Aeq, beq = beq),
+#     .ptype = double(),
+#     class  = "ffp_views",
+#     type   = "view_on_tail_depedence"
+#   )
+#
+# }
 
 # FULL INFORMATION --------------------------------------------------------
 
@@ -560,7 +571,7 @@ construct_view_on_tail_dependence <- function(x, tail) {
 #' views <- view_on_copula(x = u, simul = simul_cop, p = prior)
 #' views
 #'
-#' ep <- entropy_pooling(p = prior, Aeq = views$Aeq, beq = views$beq, solver = "nloptr")
+#' ep <- entropy_pooling(p = prior, Aeq = views$Aeq, beq = views$beq, solver = "solnl")
 #' autoplot(ep)
 view_on_copula <- function(x, simul, p) {
   UseMethod("view_on_copula", x)
@@ -708,8 +719,6 @@ construct_view_on_marginal_distribution <- function(x, simul, p) {
 
   assertthat::assert_that(assertthat::are_equal(NCOL(x), NCOL(simul)))
   assertthat::assert_that(assertthat::are_equal(NROW(p), NROW(simul)))
-
-  #N <- NCOL(x)
 
   Aeq <- NULL
   beq <- NULL

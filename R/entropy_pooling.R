@@ -2,7 +2,11 @@
 #'
 #' This function solves the entropy minimization problem with equality and inequality
 #' constraints. The solution is a vector of posterior probabilities that distorts
-#' the least the prior - equal-weights probabilities - given the constraints.
+#' the least the prior (equal-weights probabilities) given the constraints (views on
+#' the market).
+#'
+#' When imposing views constraints there is no need to specify the non-negativity
+#' constraint, which is done automatically by `entropy_pooling`.
 #'
 #' For the arguments accepted in \code{...}, please see the documentation of
 #' \code{\link[stats]{nlminb}}, \code{\link[NlcOptim]{solnl}} and \code{\link[nloptr]{nloptr}}.
@@ -17,7 +21,7 @@
 #'
 #' @return A vector of posterior probabilities.
 #' @export
-entropy_pooling <- function(p, A = NULL, b = NULL, Aeq, beq, solver = c("nlminb", "solnl", "nloptr"), ...) {
+entropy_pooling <- function(p, A = NULL, b = NULL, Aeq = NULL, beq = NULL, solver = c("nlminb", "solnl", "nloptr"), ...) {
 
   assertthat::assert_that(assertthat::is.string(solver))
   if (solver == "nlminb" & (!is.null(A) | !is.null(b))) {
@@ -75,19 +79,19 @@ entropy_pooling <- function(p, A = NULL, b = NULL, Aeq, beq, solver = c("nlminb"
 
       p_ <- ep_nlminb(p = p, Aeq = Aeq, beq = beq, objective = objective, gradient = gradient, ...)
 
-      # Solving equalities constraint with solnl
+    # Solving equalities constraint with solnl
     } else if (solver == "solnl") {
 
-      nestedfunU <- function(v, p, Aeq_, beq_) {
+      nestedfunU_solnl <- function(v, p, Aeq_, beq_) {
         x  <- exp(log(p) - 1 - Aeq_ %*% v)
         x  <- apply(cbind(x, 10 ^ -32), 1, max)
-        L  <- t(x) %*% (log(x) - log(p) + Aeq_ %*% v) - beq_ %*% v # formula (88)
+        L  <- t(x) %*% (log(x) - log(p) + Aeq_ %*% v) - beq_ %*% v
         -L
       }
 
       ep_solnl <- ep_solnl(
         x0  = x0,
-        fn  = nestedfunU,
+        fn  = nestedfunU_solnl,
         ... = ...,
         p   = p, Aeq_ = Aeq_, beq_ = beq_,
         tolX = 1e-10, tolFun = 1e-10, tolCon = 1e-10,maxIter = 10000
@@ -95,31 +99,30 @@ entropy_pooling <- function(p, A = NULL, b = NULL, Aeq, beq, solver = c("nlminb"
       v  <- ep_solnl$par
       p_ <- exp(log(p) - 1 - Aeq_ %*% v)
 
-      # Solving equalities contraint with nloptr
+    # Solving equalities contraint with nloptr
     } else {
 
-      eval_f_list <- function(v) {
+      nestedfunU_nloptr <- function(v) {
         x <- exp(log(p) - 1 - Aeq_ %*% v)
         x <- apply(cbind(x , 1e-32), 1, max)
         L <- t(x) %*% (log(x) - log(p) + Aeq_ %*% v) - beq_ %*% v
-        L <- -L # take negative values since we want to maximize
-        # evaluate gradient
+        L <- -L
         gradient <- beq - Aeq %*% x
         list(objective = L, gradient = gradient)
       }
 
-      ep_nloptr <- nloptr::nloptr(x0 = x0, eval_f = eval_f_list,
+      ep_nloptr <- nloptr::nloptr(x0 = x0, eval_f = nestedfunU_nloptr,
                                   opts = list(algorithm = "NLOPT_LD_LBFGS" ,
-                                              xtol_rel = 1e-5 ,
+                                              xtol_rel = 1e-10 ,
                                               check_derivatives = FALSE,
-                                              maxeval = 1000),
+                                              maxeval = 10000),
                                   ... = ...)
       v <- ep_nloptr$solution
       p_ <- exp(log(p) - 1 - Aeq_ %*% v)
 
     }
 
-    # Inequalities can only be solved with `solnl` or `nloptr`
+  # Inequalities can only be solved with `solnl` or `nloptr`
   } else {
 
     InqMat <- -diag(1, K_ + K)
@@ -143,8 +146,8 @@ entropy_pooling <- function(p, A = NULL, b = NULL, Aeq, beq, solver = c("nlminb"
         x0 = x0,
         fn = nestedfunC_solnl,
         K_ = K_, A_ = A_, Aeq_ = Aeq_, p = p, .A = A, .b = b, .Aeq = Aeq, .beq = beq,
-        A = as.matrix(InqMat),
-        b = InqVec,
+        A  = matrix(InqMat, nrow = 1),
+        b  = InqVec,
         tolX = 1e-10, tolFun = 1e-10, tolCon = 1e-10,maxIter = 10000, ... = ...
       )
 
@@ -153,13 +156,10 @@ entropy_pooling <- function(p, A = NULL, b = NULL, Aeq, beq, solver = c("nlminb"
       v  <- lv[(K_ + 1):nrow(lv), , drop = FALSE]
       p_ <- exp(log(p) - 1 - A_ %*% l - Aeq_ %*% v)
 
-      # Solving inequalities with nloptr
+    # Solving inequalities with nloptr
     } else {
 
-      InqConstraint <- function(x) InqMat %*% x
-      jacobian_constraint <- function(x) InqMat
-
-      nestedfunC <- function(lv) {
+      nestedfunC_nloptr <- function(lv) {
         lv <- as.matrix(lv)
         l  <- lv[1:K_ , , drop = FALSE] # inequality Lagrange multiplier
         v  <- lv[(K_ + 1):length(lv) , , drop = FALSE] # equality Lagrange multiplier
@@ -168,24 +168,22 @@ entropy_pooling <- function(p, A = NULL, b = NULL, Aeq, beq, solver = c("nlminb"
 
         L <- t(x) %*% (log(x) - log(p)) + t(l) %*% (A %*% x - b) + t(v) %*% (Aeq %*% x - beq)
         objective = -L
-
-        # calculate the gradient
         gradient <- rbind(b - A %*% x, beq - Aeq %*% x)
 
         list(objective = objective, gradient = gradient)
 
       }
 
-      local_opts <- list(algorithm = "NLOPT_LD_SLSQP", xtol_rel = 1e-10, check_derivatives = FALSE)
+      local_opts <- list(algorithm = "NLOPT_LD_SLSQP", xtol_rel = 1e-05, check_derivatives = FALSE)
       ep_nloptr <- nloptr::nloptr(x0 = x0,
-                                 eval_f = nestedfunC ,
-                                 eval_g_ineq = InqConstraint ,
-                                 eval_jac_g_ineq = jacobian_constraint ,
+                                 eval_f = nestedfunC_nloptr,
+                                 eval_g_ineq     = function(x) InqMat %*% x,
+                                 eval_jac_g_ineq = function(x) InqMat,
                                  opts = list(algorithm  = "NLOPT_LD_AUGLAG",
                                              local_opts = local_opts,
-                                             maxeval    = 1000,
+                                             maxeval    = 10000,
                                              check_derivatives = FALSE,
-                                             xtol_rel   = 1e-10),
+                                             xtol_rel   = 1e-05),
                                  ... = ...)
       lv <- matrix(ep_nloptr$solution, ncol = 1)
       l  <- lv[1:K_ , , drop = FALSE]
@@ -257,71 +255,6 @@ ep_nlminb <- function(p, Aeq, beq, objective, gradient, ...) {
 #   p_ <- exp(log(p) - 1 - t(Aeq) %*% v)
 #   p_
 # }
-
-#' @keywords internal
-ep_nloptr_eq <- function(p, x0, Aeq, Aeq_, beq, beq_) {
-
-  eval_f_list <- function(v) {
-    x <- exp(log(p) - 1 - Aeq_ %*% v)
-    x <- apply(cbind(x , 1e-32), 1, max)
-    L <- t(x) %*% (log(x) - log(p) + Aeq_ %*% v) - beq_ %*% v
-    L <- -L # take negative values since we want to maximize
-    # evaluate gradient
-    gradient <- beq - Aeq %*% x
-    list(objective = L, gradient = gradient)
-  }
-
-  ep_nloptr <- nloptr::nloptr(x0     = x0,
-                              eval_f = eval_f_list,
-                              opts  = list(
-                                algorithm         = "NLOPT_LD_LBFGS" ,
-                                xtol_rel          = 1e-10 ,
-                                check_derivatives = FALSE,
-                                maxeval           = 1000
-                                )
-                              )
-  ep_nloptr
-
-}
-
-#' @keywords internal
-ep_nloptr_ineq <- function(p, x0, Aeq, Aeq_, beq, beq_, A, A_, b, K_, InqMat, InqVec) {
-
-  InqConstraint <- function(x) InqMat %*% x
-  jacobian_constraint <- function(x) InqMat
-
-  nestedfunC <- function(lv) {
-    lv <- as.matrix(lv)
-    l  <- lv[1:K_ , , drop = FALSE] # inequality Lagrange multiplier
-    v  <- lv[(K_ + 1):length(lv) , , drop = FALSE] # equality Lagrange multiplier
-    x  <- exp(log(p) - 1 - A_ %*% l - Aeq_ %*% v)
-    x  <- apply(cbind(x, 1e-32), 1, max)
-
-    L <- t(x) %*% (log(x) - log(p)) + t(l) %*% (A %*% x - b) + t(v) %*% (Aeq %*% x - beq)
-    objective = -L
-
-    # calculate the gradient
-    gradient <- rbind(b - A %*% x, beq - Aeq %*% x)
-
-    list(objective = objective, gradient = gradient)
-
-  }
-
-  local_opts <- list( algorithm = "NLOPT_LD_SLSQP",
-                      xtol_rel = 1e-10 ,
-                      check_derivatives = TRUE
-  )
-  ep_nloptr <- nloptr::nloptr(x0 = x0 ,
-                              eval_f = nestedfunC ,
-                              eval_g_ineq = InqConstraint ,
-                              eval_jac_g_ineq = jacobian_constraint ,
-                              opts = list(algorithm = "NLOPT_LD_AUGLAG",
-                                         local_opts = local_opts,
-                                         maxeval = 1000,
-                                         check_derivatives = FALSE,
-                                         xtol_rel = 1e-10))
-  ep_nloptr
-}
 
 
 

@@ -1,3 +1,4 @@
+url: ~
 template:
   params:
     bootswatch: yeti
@@ -9,11 +10,6 @@ navbar:
       href: index.html
     - text: "Function Reference"
       href: reference/index.html
-    - text: "Vignettes"
-      href: articles/index.html
-      menu:
-        - text: "Replicating Meucci's Paper"
-          href: articles/Replicating-Meucci-Paper.html
     - text: "News"
       href: news/index.html
 
@@ -40,7 +36,6 @@ reference:
       - view_on_correlation
       - view_on_volatility
       - view_on_rank
-      - view_on_tail_dependence
       - view_on_copula
       - view_on_marginal_distribution
       - view_on_joint_distribution
@@ -78,6 +73,3 @@ reference:
       contents:
       - db
       - db_tbl
-
-
-

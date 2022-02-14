@@ -18,5 +18,6 @@ scenario_histogram <- function(x, p, n = 10000) {
     ggplot2::ggplot(ggplot2::aes(fill = .data$scenario, color = .data$scenario, x = .data$.pnl)) +
     ggdist::stat_histinterval(alpha = 0.8, breaks = 10 * log(.size), outline_bars = FALSE) +
     ggplot2::coord_cartesian(xlim = stats::quantile(scenarios_unconditional, c(0.001, 0.999))) +
-    ggplot2::labs(x = NULL, y = NULL, fill = "Scenario", color = "Scenario")
+    ggplot2::labs(x = NULL, y = NULL, fill = "Scenario", color = "Scenario") +
+    ggplot2::theme(axis.text.y = ggplot2::element_blank(), axis.ticks.y = ggplot2::element_blank())
 }

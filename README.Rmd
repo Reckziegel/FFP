@@ -28,7 +28,7 @@ knitr::opts_chunk$set(
 
 Oftentimes, the econometrician needs to stress-test the potential outcomes for a given set of risk-drivers. This process can be computationally costly when the entire set of scenarios needs to be repriced (bootstrapped, resampled, etc.). 
 
-To overcome this difficulty, the Fully Flexible Probabilities (FFP) approach offers an inexpensive way for scenario generation: it reprices the _probabilities_ associated to each scenario, instead of the scenarios themselves. Once the new probabilities have been defined, the computations can be performed very quickly because the burden of scenario generation and valuation is left aside.
+To overcome this difficulty, the Fully Flexible Probabilities (FFP) approach offers an inexpensive way for scenario generation: it reprices the _probabilities_ associated to each scenario, instead of the scenarios themselves. Once the new probabilities have been defined, the computations can be performed very quickly because the burden of scenario generation is left aside.
 
 ## Installation
 
@@ -54,7 +54,7 @@ The package `ffp` comes with five functions to extract probabilities from the hi
 - `kernel_normal()`: generalizes the `crisp` condition by wrapping scenarios over 
 a normal kernel;
 - `kernel_entropy()`: uses entropy-polling to satisfy a conditioning statement;
-- `double_decay()`: uses entropy-polling and double-decay factor to constrain the first two moments of a distribution.
+- `double_decay()`: uses entropy-polling and a double-decay factor to constrain the first two moments of a distribution.
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.align='center', out.width="70%", out.height="70%"}
 library(dplyr)
@@ -84,13 +84,16 @@ fp_ekd <- kernel_entropy(inflation, mean = 3, sigma = var(diff(inflation[[1]])))
 fp_emc <- double_decay(invariants, slow = 0.0055, fast = 0.0166)
 
 bind_probs(fp_es1, fp_es2, fp_cc, fp_kd, fp_ekd, fp_emc) %>% 
-  ggplot2::ggplot(ggplot2::aes(x = rowid, y = probs, color = key)) + 
+  dplyr::mutate(names = c(rep("Exp. Smoothing (high decay)", 1082), rep("Exp. Smoothing (slow decay)", 1082), 
+                          rep("Market-Conditioning", 1082),  rep("Normal Kernel", 1082), 
+                          rep("FFP Kernel", 1082), rep("FFP Double-Decay", 1082))) %>% 
+  ggplot2::ggplot(ggplot2::aes(x = rowid, y = probs, color = names)) + 
   ggplot2::geom_line(show.legend = FALSE) + 
-  ggplot2::facet_wrap(~key, 
-                      labeller = ggplot2::labeller(
-                        key = c("1" = "Exp. Smoothing", "2" = "Exp. Smoothing", 
-                                "3" = "Market-Conditioning", "4" = "Normal Kernel", 
-                                "5" = "FFP Kernel", "6" = "FFP Double-Decay"))) +
+  ggplot2::facet_wrap(~names) +  
+                    #  labeller = ggplot2::labeller(
+                    #    fn = c("Exp. Smoothing", "Exp. Smoothing", 
+                    #            "Market-Conditioning", "Normal Kernel", 
+                    #            "FFP Kernel", "FFP Double-Decay"))) +
   ggplot2::scale_y_continuous(labels = scales::percent_format()) + 
   ggplot2::scale_x_continuous(labels = NULL, breaks = NULL) + 
   ggplot2::scale_color_brewer(palette = "Paired") + 
@@ -98,9 +101,28 @@ bind_probs(fp_es1, fp_es2, fp_cc, fp_kd, fp_ekd, fp_emc) %>%
   ggplot2::labs(title = NULL, subtitle = NULL, x = NULL, y = NULL) 
 ```
 
+## Portfolio Construction
+
+The package also offers eight different constructors to make it easier to input views 
+on the market for portfolio construction (mean-variance, risk-parity, etc.): 
+
+- `view_on_mean()`
+- `view_on_covariance()` 
+- `view_on_correlation()` 
+- `view_on_volatility()` 
+- `view_on_rank()` 
+- `view_on_copula()`
+- `view_on_marginal_distribution()`
+- `view_on_joint_distribution()`
+
+The output is a list that `entropy_pooling()` can handle easily. To combine multiple 
+views in a single object use `bind_views()`.
+
 ## Scenario Analysis
 
-Once the probabilities have been estimated, `bootstrap_scenarios()` can be used to sample data, while keeping the structure of the empirical copulas intact. The main statistics of arbitrary scenarios can be computed with `empirical_stats()`.
+Once the new probabilities have been estimated, `bootstrap_scenarios()` can be used to sample data, while keeping the structure of the empirical copulas intact. 
+
+The main statistics of arbitrary scenarios can be computed with `empirical_stats()`.
 
 
 ## References

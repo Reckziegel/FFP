@@ -47,7 +47,7 @@ views <- view_on_mean(x = ret, mean = mean)
 views
 
 # Optimization
-ep <- entropy_pooling(p = prior, Aeq = views$Aeq, beq = views$beq, solver = "nloptr")
+ep <- entropy_pooling(p = prior, Aeq = views$Aeq, beq = views$beq, solver = "nlminb")
 autoplot(ep)
 
 # Probabilities are twisted in such a way that the posterior

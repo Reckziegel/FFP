@@ -1,6 +1,8 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
+<a href='https://reckziegel.github.io/FFP/'><img src='man/figures/ffp_sticker.png' align="right" height="100" /></a>
+
 # Fully Flexible Probabilities
 
 <!-- badges: start -->

@@ -5,13 +5,13 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Stress Test Historical Scenarios with Fully Flexible Probabilities • ffp</title>
+<title>Fully Flexible Probabilities for Stress Testing and Portfolio Construction • ffp</title>
 <!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script><!-- Bootstrap --><link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.4.0/yeti/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="bootstrap-toc.css">
 <script src="bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="pkgdown.css" rel="stylesheet">
-<script src="pkgdown.js"></script><meta property="og:title" content="Stress Test Historical Scenarios with Fully Flexible Probabilities">
+<script src="pkgdown.js"></script><meta property="og:title" content="Fully Flexible Probabilities for Stress Testing and Portfolio Construction">
 <meta property="og:description" content="Implements numerical entropy-pooling for scenario analysis as
     described in Meucci, Attilio (2010) &lt;doi:10.2139/ssrn.1696802&gt;.">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
@@ -70,7 +70,7 @@
       </header><div class="row">
   <div class="contents col-md-9">
 
-<p><a href="https://reckziegel.github.io/FFP/" class="external-link"><img src="reference/figures/ffp_sticker.png" align="right" height="100"></a></p>
+<p><img src="reference/figures/ffp_sticker.png" align="right" width="147" height="170"></p>
 <div class="section level1">
 <div class="page-header"><h1 id="fully-flexible-probabilities">Fully Flexible Probabilities<a class="anchor" aria-label="anchor" href="#fully-flexible-probabilities"></a>
 </h1></div>
@@ -79,7 +79,7 @@
 <blockquote>
 <p>Functions for Scenario Analysis and Risk Management</p>
 </blockquote>
-<p>Oftentimes, the econometrician needs to stress-test the potential outcomes for a given set of risk-drivers. This process can be computationally costly when the entire set of scenarios needs to be repriced (bootstrapped, resampled, etc.).</p>
+<p>Oftentimes, the econometrician needs to stress-test the potential outcomes for a given set of risk-drivers. This process can be computationally costly when the entire set of scenarios needs to be repriced.</p>
 <p>To overcome this difficulty, the Fully Flexible Probabilities (FFP) approach offers an inexpensive way for scenario generation: it reprices the <em>probabilities</em> associated to each scenario, instead of the scenarios themselves. Once the new probabilities have been defined, the computations can be performed very quickly because the burden of scenario generation is left aside.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
@@ -100,7 +100,7 @@
 <li>
 <code><a href="reference/exp_decay.html">exp_decay()</a></code>: accounts for the time-changing nature of volatility by giving more weight to recent observations;</li>
 <li>
-<code><a href="reference/crisp.html">crisp()</a></code>: selects scenarios where a certain logical macroeconomic statement is satisfied;</li>
+<code><a href="reference/crisp.html">crisp()</a></code>: selects scenarios where a logical statement is satisfied;</li>
 <li>
 <code><a href="reference/kernel_normal.html">kernel_normal()</a></code>: generalizes the <code>crisp</code> condition by wrapping scenarios over a normal kernel;</li>
 <li>
@@ -191,9 +191,10 @@
 <li><a href="https://lifecycle.r-lib.org/articles/stages.html#experimental" class="external-link"><img src="https://img.shields.io/badge/lifecycle-experimental-orange.svg" alt="Lifecycle: experimental"></a></li>
 <li><a href="https://CRAN.R-project.org/package=ffp" class="external-link"><img src="https://www.r-pkg.org/badges/version/ffp" alt="CRAN status"></a></li>
 <li><a href="https://github.com/Reckziegel/FFP/actions" class="external-link"><img src="https://github.com/Reckziegel/FFP/workflows/R-CMD-check/badge.svg" alt="R-CMD-check"></a></li>
-<li><a href="https://travis-ci.com/Reckziegel/FFP" class="external-link"><img src="https://travis-ci.com/Reckziegel/FFP.svg?branch=main" alt="Travis build status"></a></li>
 <li><a href="https://ci.appveyor.com/project/Reckziegel/FFP" class="external-link"><img src="https://ci.appveyor.com/api/projects/status/github/Reckziegel/FFP?branch=main&amp;svg=true" alt="AppVeyor build status"></a></li>
-<li><a href="https://codecov.io/gh/Reckziegel/FFP?branch=main" class="external-link"><img src="https://codecov.io/gh/Reckziegel/FFP/branch/main/graph/badge.svg" alt="Codecov test coverage"></a></li>
+<li><a href="https://app.codecov.io/gh/Reckziegel/FFP?branch=main" class="external-link"><img src="https://codecov.io/gh/Reckziegel/FFP/branch/main/graph/badge.svg" alt="Codecov test coverage"></a></li>
+<li><a href="https://r-pkg.org/pkg/ffp" class="external-link"><img src="https://cranlogs.r-pkg.org/badges/last-month/ffp?color=blue" alt="CRAN RStudio mirror downloads"></a></li>
+<li><a href="https://r-pkg.org/pkg/ffp" class="external-link"><img src="https://cranlogs.r-pkg.org/badges/grand-total/ffp?color=blue" alt="CRAN RStudio mirror downloads"></a></li>
 </ul>
 </div>
 

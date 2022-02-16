@@ -102,22 +102,21 @@ entropy_pooling <- function(p, A = NULL, b = NULL, Aeq = NULL, beq = NULL, solve
     # Solving equalities contraint with nloptr
     } else {
 
-      nestedfunU_nloptr <- function(v) {
-        x <- exp(log(p) - 1 - Aeq_ %*% v)
-        x <- apply(cbind(x , 1e-32), 1, max)
-        L <- t(x) %*% (log(x) - log(p) + Aeq_ %*% v) - beq_ %*% v
-        L <- -L
-        gradient <- beq - Aeq %*% x
-        list(objective = L, gradient = gradient)
-      }
+      ep_nloptr <- nloptr::auglag(
+        x0 = x0,
+        fn = function(v) {
+          x <- exp(log(p) - 1 - t(Aeq) %*% v)
+          x <- apply(cbind(x, 10 ^ -32), 1, max)
+          L <- t(x) %*% (log(x) - log(p) + t(Aeq) %*% v) - t(beq) %*% v
+          -L
+        },
+        gr = function(v) {
+          x <- exp(log(p) - 1 - t(Aeq) %*% v)
+          beq - Aeq %*% x
+        },
+        localsolver = "SLSQP", ...)
 
-      ep_nloptr <- nloptr::nloptr(x0 = x0, eval_f = nestedfunU_nloptr,
-                                  opts = list(algorithm = "NLOPT_LD_LBFGS" ,
-                                              xtol_rel = 1e-10 ,
-                                              check_derivatives = FALSE,
-                                              maxeval = 10000),
-                                  ... = ...)
-      v <- ep_nloptr$solution
+      v <- ep_nloptr$par
       p_ <- exp(log(p) - 1 - Aeq_ %*% v)
 
     }
@@ -159,33 +158,25 @@ entropy_pooling <- function(p, A = NULL, b = NULL, Aeq = NULL, beq = NULL, solve
     # Solving inequalities with nloptr
     } else {
 
-      nestedfunC_nloptr <- function(lv) {
-        lv <- as.matrix(lv)
-        l  <- lv[1:K_ , , drop = FALSE] # inequality Lagrange multiplier
-        v  <- lv[(K_ + 1):length(lv) , , drop = FALSE] # equality Lagrange multiplier
-        x  <- exp(log(p) - 1 - A_ %*% l - Aeq_ %*% v)
-        x  <- apply(cbind(x, 1e-32), 1, max)
-
-        L <- t(x) %*% (log(x) - log(p)) + t(l) %*% (A %*% x - b) + t(v) %*% (Aeq %*% x - beq)
-        objective = -L
-        gradient <- rbind(b - A %*% x, beq - Aeq %*% x)
-
-        list(objective = objective, gradient = gradient)
-
-      }
-
-      local_opts <- list(algorithm = "NLOPT_LD_SLSQP", xtol_rel = 1e-05, check_derivatives = FALSE)
-      ep_nloptr <- nloptr::nloptr(x0 = x0,
-                                 eval_f = nestedfunC_nloptr,
-                                 eval_g_ineq     = function(x) InqMat %*% x,
-                                 eval_jac_g_ineq = function(x) InqMat,
-                                 opts = list(algorithm  = "NLOPT_LD_AUGLAG",
-                                             local_opts = local_opts,
-                                             maxeval    = 10000,
-                                             check_derivatives = FALSE,
-                                             xtol_rel   = 1e-05),
-                                 ... = ...)
-      lv <- matrix(ep_nloptr$solution, ncol = 1)
+      ep_nloptr <- nloptr::slsqp(
+        x0 = x0,
+        fn = function(lv) {
+          lv <- as.matrix(lv)
+          l  <- lv[1:K_ , , drop = FALSE]
+          v  <- lv[(K_ + 1):length(lv) , , drop = FALSE]
+          x  <- exp(log(p) - 1 - A_ %*% l - Aeq_ %*% v)
+          x  <- apply(cbind(x, 1e-32), 1, max)
+          L <- t(x) %*% (log(x) - log(p)) + t(l) %*% (A %*% x - b) + t(v) %*% (Aeq %*% x - beq)
+          - L
+        },
+        gr = function(v) {
+          x <- exp(log(p) - 1 - t(Aeq) %*% v)
+          rbind(b - A %*% x, beq - Aeq %*% x)
+        },
+        hin    = function(x) InqMat %*% x,
+        hinjac = function(x) InqMat,
+        ...)
+      lv <- matrix(ep_nloptr$par, ncol = 1)
       l  <- lv[1:K_ , , drop = FALSE]
       v  <- lv[(K_ + 1):nrow(lv) , , drop = FALSE]
       p_ <- exp(log(p) - 1 - A_ %*% l - Aeq_ %*% v)

@@ -551,28 +551,30 @@ construct_view_on_rank <- function(x, rank) {
 #' @export
 #'
 #' @examples
-#' set.seed(1)
-#' library(ggplot2)
+#' \donttest{
+#'   set.seed(1)
+#'   library(ggplot2)
 #'
-#' # Invariants
-#' ret <- diff(log(EuStockMarkets))
-#' u <- apply(ret, 2, stats::pnorm) # assuming normal copula
-#' n <- nrow(u)
+#'   # Invariants
+#'   ret <- diff(log(EuStockMarkets))
+#'   u <- apply(ret, 2, stats::pnorm) # assuming normal copula
+#'   n <- nrow(u)
 #'
-#' #' Prior probability distribution
-#' prior <- rep(1 / n, n)
+#'   #' Prior probability distribution
+#'   prior <- rep(1 / n, n)
 #'
-#' # Simulated marginals
-#' simul_marg <- bootstrap_scenarios(ret, as_ffp(prior), as.double(n))
+#'   # Simulated marginals
+#'   simul_marg <- bootstrap_scenarios(ret, as_ffp(prior), as.double(n))
 #'
-#' # Copulas derived from the simulated margins
-#' simul_cop <- apply(simul_marg, 2, stats::pnorm) # assuming normal copula
+#'   # Copulas derived from the simulated margins
+#'   simul_cop <- apply(simul_marg, 2, stats::pnorm) # assuming normal copula
 #'
-#' views <- view_on_copula(x = u, simul = simul_cop, p = prior)
-#' views
+#'   views <- view_on_copula(x = u, simul = simul_cop, p = prior)
+#'   views
 #'
-#' ep <- entropy_pooling(p = prior, Aeq = views$Aeq, beq = views$beq, solver = "solnl")
-#' autoplot(ep)
+#'   ep <- entropy_pooling(p = prior, Aeq = views$Aeq, beq = views$beq, solver = "nloptr")
+#'   autoplot(ep)
+#' }
 view_on_copula <- function(x, simul, p) {
   UseMethod("view_on_copula", x)
 }

@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-<a href='https://reckziegel.github.io/FFP/'><img src='man/figures/ffp_sticker.png' align="right" height="100" /></a>
+<img src='man/figures/ffp_sticker.png' align="right" width="147" height="170" />
 
 # Fully Flexible Probabilities
 
@@ -12,12 +12,15 @@ experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](h
 [![CRAN
 status](https://www.r-pkg.org/badges/version/ffp)](https://CRAN.R-project.org/package=ffp)
 [![R-CMD-check](https://github.com/Reckziegel/FFP/workflows/R-CMD-check/badge.svg)](https://github.com/Reckziegel/FFP/actions)
-[![Travis build
-status](https://travis-ci.com/Reckziegel/FFP.svg?branch=main)](https://travis-ci.com/Reckziegel/FFP)
+<!-- [![Travis build status](https://www.travis-ci.com/Reckziegel/FFP.svg?branch=main)](https://www.travis-ci.com/Reckziegel/FFP) -->
 [![AppVeyor build
 status](https://ci.appveyor.com/api/projects/status/github/Reckziegel/FFP?branch=main&svg=true)](https://ci.appveyor.com/project/Reckziegel/FFP)
 [![Codecov test
-coverage](https://codecov.io/gh/Reckziegel/FFP/branch/main/graph/badge.svg)](https://codecov.io/gh/Reckziegel/FFP?branch=main)
+coverage](https://codecov.io/gh/Reckziegel/FFP/branch/main/graph/badge.svg)](https://app.codecov.io/gh/Reckziegel/FFP?branch=main)
+[![CRAN RStudio mirror
+downloads](https://cranlogs.r-pkg.org/badges/last-month/ffp?color=blue)](https://r-pkg.org/pkg/ffp)
+[![CRAN RStudio mirror
+downloads](https://cranlogs.r-pkg.org/badges/grand-total/ffp?color=blue)](https://r-pkg.org/pkg/ffp)
 <!-- badges: end -->
 
 > Functions for Scenario Analysis and Risk Management
@@ -25,7 +28,7 @@ coverage](https://codecov.io/gh/Reckziegel/FFP/branch/main/graph/badge.svg)](htt
 Oftentimes, the econometrician needs to stress-test the potential
 outcomes for a given set of risk-drivers. This process can be
 computationally costly when the entire set of scenarios needs to be
-repriced (bootstrapped, resampled, etc.).
+repriced.
 
 To overcome this difficulty, the Fully Flexible Probabilities (FFP)
 approach offers an inexpensive way for scenario generation: it reprices
@@ -56,8 +59,7 @@ from the historical scenarios:
 
 -   `exp_decay()`: accounts for the time-changing nature of volatility
     by giving more weight to recent observations;
--   `crisp()`: selects scenarios where a certain logical macroeconomic
-    statement is satisfied;
+-   `crisp()`: selects scenarios where a logical statement is satisfied;
 -   `kernel_normal()`: generalizes the `crisp` condition by wrapping
     scenarios over a normal kernel;
 -   `kernel_entropy()`: uses entropy-polling to satisfy a conditioning

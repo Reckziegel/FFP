@@ -7,6 +7,6 @@
 
 0 errors | 0 warnings | 1 note
 
-* This is a new release.
+* This is an upgrade (version 0.1.0 to 0.2.0).
 
-* Used `\donttest{}` in `double_decay()` examples because it takes more than 5 secs to run.
+* Used `\donttest{}` in `double_decay()` and `view_on_copula()` examples because they take more than 5 secs to run.

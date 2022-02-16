@@ -1,3 +1,16 @@
+# ffp 0.2.0
+
+## New Features
+
+* A new class (`ffp_views`) was added to help the user to input views on the market for portfolio construction and simulation purposes. See the `view_*()` family of functions;
+* `entropy_pooling()` is now exported and can be used with three different solvers (`nlminb`, `solnl`, and `nloptr`);
+* `bind_views()` allows the user to "glue" multiple views into the same object;
+* `ffp_moments()` computes the location and dispersion parameters under flexible probabilities. 
+
+## Minor improvements and fixes
+
+* `bind_probs()` now returns the user call in the third column instead the old arbitrary `key` column (#13);
+
 # ffp (development version)
 
 # ffp 0.1.0

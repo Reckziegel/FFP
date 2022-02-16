@@ -375,8 +375,8 @@ construct_view_on_volatility <- function(x, vol) {
 #'
 #' Helper to construct views on relative performance of assets.
 #'
-#' If `rank = c(2, 1)` then, it is implied that asset 1 will outperform asset 2.
-#' For more asset the interpretation is the same: assets on the right will outperform
+#' If `rank = c(2, 1)` it is implied that asset 1 will outperform asset 2.
+#' For vectors of bigger size the interpretation is the same: assets on the right will outperform
 #' assets on the left.
 #'
 #' @param x An univariate or a multivariate distribution.

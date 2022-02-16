@@ -123,7 +123,3 @@ check_input.tbl_df <- function(x) tbl_to_mtx(x)
 
 
 
-# Test xts object ---------------------------------------------------------
-
-#' @keywords internal
-is_xts <- function(x) xts::is.xts(x)

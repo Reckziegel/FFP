@@ -12,3 +12,4 @@
 ^LICENSE\.md$
 ^README\.Rmd$
 ^codecov\.yml$
+^cran-comments\.md$

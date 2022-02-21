@@ -6,7 +6,7 @@
 \alias{view_on_covariance.matrix}
 \alias{view_on_covariance.xts}
 \alias{view_on_covariance.tbl_df}
-\title{Views on the Covariance Matrix}
+\title{Views on Covariance Matrix}
 \usage{
 view_on_covariance(x, mean, sigma)
 

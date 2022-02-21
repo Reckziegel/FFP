@@ -86,7 +86,7 @@ construct_view_on_mean <- function(x, mean) {
 
 # Views on Covariance Matrix ---------------------------------------------------
 
-#' Views on the Covariance Matrix
+#' Views on Covariance Matrix
 #'
 #' Helper to construct views on variance-covariance matrix.
 #'

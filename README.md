@@ -69,7 +69,7 @@ from the historical scenarios:
 ## Portfolio Construction
 
 The package also offers eight different constructors to make it easier
-to input views on the market for portfolio construction (mean-variance,
+to input views on the market for portfolio optimization (mean-variance,
 risk-parity, etc.):
 
 -   `view_on_mean()`

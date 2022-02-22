@@ -103,10 +103,10 @@ bind_probs(fp_es1, fp_es2, fp_cc, fp_kd, fp_ekd, fp_emc) %>%
   ggplot2::labs(title = NULL, subtitle = NULL, x = NULL, y = NULL) 
 ```
 
-## Portfolio Construction
+## Portfolio Construction 
 
 The package also offers eight different constructors to make it easier to input views 
-on the market for portfolio construction (mean-variance, risk-parity, etc.): 
+on the market for portfolio optimization (mean-variance, risk-parity, etc.): 
 
 - `view_on_mean()`
 - `view_on_covariance()` 

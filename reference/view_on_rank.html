@@ -105,7 +105,7 @@ assets on the left.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> A :  Dim 1 x 1859 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> b :  Dim 1 x 1 </span>
 <span class="r-in"></span>
-<span class="r-in"><span class="va">ep</span> <span class="op">&lt;-</span> <span class="fu"><a href="entropy_pooling.html">entropy_pooling</a></span><span class="op">(</span>p <span class="op">=</span> <span class="va">prior</span>, A <span class="op">=</span> <span class="va">views</span><span class="op">$</span><span class="va">A</span>, b <span class="op">=</span> <span class="va">views</span><span class="op">$</span><span class="va">b</span>, solver <span class="op">=</span> <span class="st">"solnl"</span><span class="op">)</span></span>
+<span class="r-in"><span class="va">ep</span> <span class="op">&lt;-</span> <span class="fu"><a href="entropy_pooling.html">entropy_pooling</a></span><span class="op">(</span>p <span class="op">=</span> <span class="va">prior</span>, A <span class="op">=</span> <span class="va">views</span><span class="op">$</span><span class="va">A</span>, b <span class="op">=</span> <span class="va">views</span><span class="op">$</span><span class="va">b</span>, solver <span class="op">=</span> <span class="st">"nloptr"</span><span class="op">)</span></span>
 <span class="r-in"><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html" class="external-link">autoplot</a></span><span class="op">(</span><span class="va">ep</span><span class="op">)</span></span>
 <span class="r-plt img"><img src="view_on_rank-1.png" alt="" width="700" height="433"></span>
 <span class="r-in"></span>
@@ -117,7 +117,7 @@ assets on the left.</p>
 <span class="r-in"><span class="co"># Posterior Returns (DAX &gt; SMI)</span></span>
 <span class="r-in"><span class="fu"><a href="ffp_moments.html">ffp_moments</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">ep</span><span class="op">)</span><span class="op">$</span><span class="va">mu</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>          DAX          SMI </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 0.0007647181 0.0007646580 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 0.0007646772 0.0007646772 </span>
 </code></pre></div>
     </div>
   </div>

@@ -396,7 +396,7 @@ construct_view_on_volatility <- function(x, vol) {
 #' views <- view_on_rank(x = x, rank = c(2, 1))
 #' views
 #'
-#' ep <- entropy_pooling(p = prior, A = views$A, b = views$b, solver = "solnl")
+#' ep <- entropy_pooling(p = prior, A = views$A, b = views$b, solver = "nloptr")
 #' autoplot(ep)
 #'
 #' # Prior Returns (SMI > DAX)

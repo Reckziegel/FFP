@@ -145,7 +145,7 @@ entropy_pooling <- function(p, A = NULL, b = NULL, Aeq = NULL, beq = NULL, solve
         x0 = x0,
         fn = nestedfunC_solnl,
         K_ = K_, A_ = A_, Aeq_ = Aeq_, p = p, .A = A, .b = b, .Aeq = Aeq, .beq = beq,
-        A  = matrix(InqMat, nrow = 1),
+        A  = if (is.null(dim(InqMat))) matrix(InqMat, nrow = 1) else as.matrix(InqMat),
         b  = InqVec,
         tolX = 1e-10, tolFun = 1e-10, tolCon = 1e-10,maxIter = 10000, ... = ...
       )
@@ -169,12 +169,6 @@ entropy_pooling <- function(p, A = NULL, b = NULL, Aeq = NULL, beq = NULL, solve
           L <- t(x) %*% (log(x) - log(p)) + t(l) %*% (A %*% x - b) + t(v) %*% (Aeq %*% x - beq)
           - L
         },
-        gr = function(v) {
-          x <- exp(log(p) - 1 - t(Aeq) %*% v)
-          rbind(b - A %*% x, beq - Aeq %*% x)
-        },
-        hin    = function(x) InqMat %*% x,
-        hinjac = function(x) InqMat,
         ...)
       lv <- matrix(ep_nloptr$par, ncol = 1)
       l  <- lv[1:K_ , , drop = FALSE]
@@ -249,4 +243,13 @@ ep_nlminb <- function(p, Aeq, beq, objective, gradient, ...) {
 
 
 
-
+# gr = function(lv, v) {
+#   lv <- as.matrix(lv)
+#   l  <- lv[1:K_ , , drop = FALSE]
+#   v  <- lv[(K_ + 1):length(lv) , , drop = FALSE]
+#   x  <- exp(log(p) - 1 - A_ %*% l - Aeq_ %*% v)
+#   x  <- apply(cbind(x, 1e-32), 1, max)
+#   rbind(b - A %*% x, beq - Aeq %*% x)
+# },
+# hin    = function(x) InqMat %*% x,
+# hinjac = function(x) InqMat,

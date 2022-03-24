@@ -30,7 +30,7 @@ knitr::opts_chunk$set(
 
 Oftentimes, the econometrician needs to stress-test the potential outcomes for a given set of risk-drivers. This process can be computationally costly when the entire set of scenarios needs to be repriced.
 
-To overcome this difficulty, the Fully Flexible Probabilities (FFP) approach offers an inexpensive way for scenario generation: it reprices the _probabilities_ associated to each scenario, instead of the scenarios themselves. Once the new probabilities have been defined, the computations can be performed very quickly because the burden of scenario generation is left aside.
+To overcome this difficulty, the Fully Flexible Probabilities (FFP) approach offers an inexpensive way for scenario generation: it reprices the _probabilities_ associated to each scenario, instead of the scenarios themselves. Once the new probabilities have been defined, the computations can be performed very quickly because the burden of scenario generation has been left aside.
 
 ## Installation
 
@@ -103,7 +103,7 @@ bind_probs(fp_es1, fp_es2, fp_cc, fp_kd, fp_ekd, fp_emc) %>%
   ggplot2::labs(title = NULL, subtitle = NULL, x = NULL, y = NULL) 
 ```
 
-## Portfolio Construction 
+## Stress-Testing and Portfolio Construction 
 
 The package also offers eight different constructors to make it easier to input views 
 on the market for portfolio optimization (mean-variance, risk-parity, etc.): 

@@ -36,7 +36,7 @@ library(ggplot2)
 ret <- diff(log(EuStockMarkets))
 n   <- nrow(ret)
 
-# Prior belief for expected returns (here is 2\% for each asset)
+# Prior beliefs for expected returns (here is 2\% for each asset)
 mean <- rep(0.02, 4)
 
 # Prior probabilities (usually equal weight scheme)

@@ -34,7 +34,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">ffp</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.0.9000</span>
       </span>
     </div>
 
@@ -80,7 +80,7 @@
 <p>Functions for Scenario Analysis and Risk Management</p>
 </blockquote>
 <p>Oftentimes, the econometrician needs to stress-test the potential outcomes for a given set of risk-drivers. This process can be computationally costly when the entire set of scenarios needs to be repriced.</p>
-<p>To overcome this difficulty, the Fully Flexible Probabilities (FFP) approach offers an inexpensive way for scenario generation: it reprices the <em>probabilities</em> associated to each scenario, instead of the scenarios themselves. Once the new probabilities have been defined, the computations can be performed very quickly because the burden of scenario generation is left aside.</p>
+<p>To overcome this difficulty, the Fully Flexible Probabilities (FFP) approach offers an inexpensive way for scenario generation: it reprices the <em>probabilities</em> associated to each scenario, instead of the scenarios themselves. Once the new probabilities have been defined, the computations can be performed very quickly because the burden of scenario generation has been left aside.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
@@ -111,9 +111,9 @@
 <p><img src="reference/figures/README-unnamed-chunk-4-1.png" width="70%" height="70%" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level2">
-<h2 id="portfolio-construction">Portfolio Construction<a class="anchor" aria-label="anchor" href="#portfolio-construction"></a>
+<h2 id="stress-testing-and-portfolio-construction">Stress-Testing and Portfolio Construction<a class="anchor" aria-label="anchor" href="#stress-testing-and-portfolio-construction"></a>
 </h2>
-<p>The package also offers eight different constructors to make it easier to input views on the market for portfolio construction (mean-variance, risk-parity, etc.):</p>
+<p>The package also offers eight different constructors to make it easier to input views on the market for portfolio optimization (mean-variance, risk-parity, etc.):</p>
 <ul>
 <li><code><a href="reference/view_on_mean.html">view_on_mean()</a></code></li>
 <li><code><a href="reference/view_on_covariance.html">view_on_covariance()</a></code></li>
@@ -189,10 +189,9 @@
 <h2 data-toc-skip>Dev status</h2>
 <ul class="list-unstyled">
 <li><a href="https://lifecycle.r-lib.org/articles/stages.html#experimental" class="external-link"><img src="https://img.shields.io/badge/lifecycle-experimental-orange.svg" alt="Lifecycle: experimental"></a></li>
-<li><a href="https://CRAN.R-project.org/package=ffp" class="external-link"><img src="https://www.r-pkg.org/badges/version/ffp" alt="CRAN status"></a></li>
 <li><a href="https://github.com/Reckziegel/FFP/actions" class="external-link"><img src="https://github.com/Reckziegel/FFP/workflows/R-CMD-check/badge.svg" alt="R-CMD-check"></a></li>
-<li><a href="https://ci.appveyor.com/project/Reckziegel/FFP" class="external-link"><img src="https://ci.appveyor.com/api/projects/status/github/Reckziegel/FFP?branch=main&amp;svg=true" alt="AppVeyor build status"></a></li>
 <li><a href="https://app.codecov.io/gh/Reckziegel/FFP?branch=main" class="external-link"><img src="https://codecov.io/gh/Reckziegel/FFP/branch/main/graph/badge.svg" alt="Codecov test coverage"></a></li>
+<li><a href="https://CRAN.R-project.org/package=ffp" class="external-link"><img src="https://www.r-pkg.org/badges/version/ffp" alt="CRAN status"></a></li>
 <li><a href="https://r-pkg.org/pkg/ffp" class="external-link"><img src="https://cranlogs.r-pkg.org/badges/last-month/ffp?color=blue" alt="CRAN RStudio mirror downloads"></a></li>
 <li><a href="https://r-pkg.org/pkg/ffp" class="external-link"><img src="https://cranlogs.r-pkg.org/badges/grand-total/ffp?color=blue" alt="CRAN RStudio mirror downloads"></a></li>
 </ul>

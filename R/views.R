@@ -20,7 +20,7 @@
 #' ret <- diff(log(EuStockMarkets))
 #' n   <- nrow(ret)
 #'
-#' # Prior belief for expected returns (here is 2% for each asset)
+#' # Prior beliefs for expected returns (here is 2% for each asset)
 #' mean <- rep(0.02, 4)
 #'
 #' # Prior probabilities (usually equal weight scheme)
@@ -375,12 +375,13 @@ construct_view_on_volatility <- function(x, vol) {
 #'
 #' Helper to construct views on relative performance of assets.
 #'
-#' If `rank = c(2, 1)` it is implied that asset 1 will outperform asset 2.
-#' For vectors of bigger size the interpretation is the same: assets on the right will outperform
-#' assets on the left.
+#' If `rank = c(2, 1)` it is implied that asset in the first column will outperform
+#' the asset in the second column. For vectors of bigger size the interpretation
+#' is the same: assets on the right will outperform assets on the left.
 #'
 #' @param x An univariate or a multivariate distribution.
-#' @param rank A \code{double} with the asset indexes.
+#' @param rank A \code{integer} with the assets rank (from the worst to the best
+#' performer).
 #'
 #' @return A \code{list} of the `view` class.
 #' @export
@@ -392,7 +393,8 @@ construct_view_on_volatility <- function(x, vol) {
 #' x <- diff(log(EuStockMarkets))
 #' prior <- rep(1 / nrow(x), nrow(x))
 #'
-#' # asset in the first col will outperform the asset in the second col.
+#' # asset in the first col will outperform the asset in the second col (DAX will
+#' # outperform SMI).
 #' views <- view_on_rank(x = x, rank = c(2, 1))
 #' views
 #'

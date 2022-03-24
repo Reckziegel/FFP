@@ -30,7 +30,7 @@ exp_decay(x, lambda)
 \arguments{
 \item{x}{An univariate or a multivariate distribution.}
 
-\item{lambda}{A number for the decay parameter.}
+\item{lambda}{A \code{double} for the decay parameter.}
 }
 \value{
 A numerical vector of class \code{ffp} with the new

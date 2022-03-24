@@ -1,3 +1,5 @@
+# library(ggplot2)
+# library(ffp)
 # p <- autoplot(exp_decay(EuStockMarkets, 0.001), color = TRUE) +
 #   labs(x= NULL, y = NULL) +
 #   scale_color_viridis_c(option = "C") +
@@ -7,10 +9,11 @@
 #
 # hexSticker::sticker(p,
 #                     package = "Fully Flexible Probabilities",
-#                     p_family = "gochi",
-#                     p_size=10, s_x=1, s_y=0.8, s_width=1.2, s_height=1.2,
-#                     h_color="steelblue",
+#                     p_family = "open_sans",
+#                     p_size = 10, s_x = 1, s_y = 0.8, s_width = 1, s_height = 1,
+#                     h_color = "steelblue",
 #                     h_fill = "white",
 #                     p_color = "black",
-#                     filename ="man/figures/ffp_sticker.png")
+#                     filename = "man/figures/ffp_sticker.png")
+
 

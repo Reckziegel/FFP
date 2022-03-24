@@ -32,7 +32,7 @@ approach offers an inexpensive way for scenario generation: it reprices
 the *probabilities* associated to each scenario, instead of the
 scenarios themselves. Once the new probabilities have been defined, the
 computations can be performed very quickly because the burden of
-scenario generation is left aside.
+scenario generation has been left aside.
 
 ## Installation
 
@@ -66,7 +66,7 @@ from the historical scenarios:
 
 <img src="man/figures/README-unnamed-chunk-4-1.png" width="70%" height="70%" style="display: block; margin: auto;" />
 
-## Portfolio Construction
+## Stress-Testing and Portfolio Construction
 
 The package also offers eight different constructors to make it easier
 to input views on the market for portfolio optimization (mean-variance,

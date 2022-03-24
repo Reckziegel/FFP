@@ -135,7 +135,7 @@ crisp.tbl_df <- function(x, lgl) {
 #' can be associated with a half-life of two-months (21 * 2).
 #'
 #' @param x An univariate or a multivariate distribution.
-#' @param lambda A number for the decay parameter.
+#' @param lambda A \code{double} for the decay parameter.
 #'
 #' @return A numerical vector of class \code{ffp} with the new
 #' probabilities distribution.

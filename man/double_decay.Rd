@@ -30,10 +30,10 @@ double_decay(x, slow, fast)
 \arguments{
 \item{x}{An univariate or a multivariate distribution.}
 
-\item{slow}{A number with the long half-life (slow decay) for the correlation
+\item{slow}{A \code{double} with the long half-life (slow decay) for the correlation
 matrix.}
 
-\item{fast}{A number with the short-life (high decay) for the volatility.}
+\item{fast}{A \code{double} with the short-life (high decay) for the volatility.}
 }
 \value{
 A numerical vector of class \code{ffp} with the new

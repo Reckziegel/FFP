@@ -1,4 +1,4 @@
-# ffp (development version)
+# ffp 0.2.1
 
 # ffp 0.2.1
 

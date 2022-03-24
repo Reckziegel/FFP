@@ -76,7 +76,8 @@
     <dl><dt>x</dt>
 <dd><p>An univariate or a multivariate distribution.</p></dd>
 <dt>rank</dt>
-<dd><p>A <code>double</code> with the asset indexes.</p></dd>
+<dd><p>A <code>integer</code> with the assets rank (from the worst to the best
+performer).</p></dd>
 </dl></div>
     <div id="value">
     <h2>Value</h2>
@@ -84,9 +85,9 @@
     </div>
     <div id="details">
     <h2>Details</h2>
-    <p>If <code>rank = c(2, 1)</code> it is implied that asset 1 will outperform asset 2.
-For vectors of bigger size the interpretation is the same: assets on the right will outperform
-assets on the left.</p>
+    <p>If <code>rank = c(2, 1)</code> it is implied that asset in the first column will outperform
+the asset in the second column. For vectors of bigger size the interpretation
+is the same: assets on the right will outperform assets on the left.</p>
     </div>
 
     <div id="ref-examples">
@@ -97,7 +98,8 @@ assets on the left.</p>
 <span class="r-in"><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/diff.html" class="external-link">diff</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">EuStockMarkets</span><span class="op">)</span><span class="op">)</span></span>
 <span class="r-in"><span class="va">prior</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span></span>
 <span class="r-in"></span>
-<span class="r-in"><span class="co"># asset in the first col will outperform the asset in the second col.</span></span>
+<span class="r-in"><span class="co"># asset in the first col will outperform the asset in the second col (DAX will</span></span>
+<span class="r-in"><span class="co"># outperform SMI).</span></span>
 <span class="r-in"><span class="va">views</span> <span class="op">&lt;-</span> <span class="fu">view_on_rank</span><span class="op">(</span>x <span class="op">=</span> <span class="va">x</span>, rank <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
 <span class="r-in"><span class="va">views</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;"># ffp view</span></span>

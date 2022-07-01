@@ -40,7 +40,7 @@ the market).
 }
 \details{
 When imposing views constraints there is no need to specify the non-negativity
-constraint, which is done automatically by \code{entropy_pooling}.
+constraint for probabilities, which is done automatically by \code{entropy_pooling}.
 
 For the arguments accepted in \code{...}, please see the documentation of
 \code{\link[stats]{nlminb}}, \code{\link[NlcOptim]{solnl}} and \code{\link[nloptr]{nloptr}}.

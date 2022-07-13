@@ -44,7 +44,7 @@ view_on_mean <- function(x, mean) {
 #' @rdname view_on_mean
 #' @export
 view_on_mean.default <- function(x, mean) {
-  stop("Method not implemented for class `", class(x), "` yet.", call. = FALSE)
+  rlang::abort("Method not implemented for class `", class(x), "` yet.")
 }
 
 #' @rdname view_on_mean
@@ -132,7 +132,7 @@ view_on_covariance <- function(x, mean, sigma) {
 #' @keywords internal
 #' @rdname view_on_covariance
 view_on_covariance.default <- function(x, mean, sigma) {
-  stop("Method not implemented for class `", class(x), "` yet.", call. = FALSE)
+  rlang::abort("Method not implemented for class `", class(x), "` yet.")
 }
 
 #' @rdname view_on_covariance
@@ -230,7 +230,7 @@ view_on_correlation <- function(x, cor) {
 #' @rdname view_on_correlation
 #' @export
 view_on_correlation.default <- function(x, cor) {
-  stop("Method not implemented for class `", class(x), "` yet.", call. = FALSE)
+  rlang::abort("Method not implemented for class `", class(x), "` yet.")
 }
 
 #' @rdname view_on_correlation
@@ -327,7 +327,7 @@ view_on_volatility <- function(x, vol) {
 #' @rdname view_on_volatility
 #' @export
 view_on_volatility.default <- function(x, vol) {
-  stop("Method not implemented for class `", class(x), "` yet.", call. = FALSE)
+  rlang::abort("Method not implemented for class `", class(x), "` yet.")
 }
 
 #' @rdname view_on_volatility
@@ -353,9 +353,6 @@ construct_view_on_volatility <- function(x, vol) {
 
   assertthat::assert_that(assertthat::are_equal(NCOL(x), vctrs::vec_size(vol)))
   vctrs::vec_assert(vol, double())
-
-  Aeq <- NULL
-  #beq <- NULL
 
   Aeq <- t(x) ^ 2
   beq <- colMeans(x) ^ 2 + vol ^ 2
@@ -413,7 +410,7 @@ view_on_rank <- function(x, rank) {
 #' @rdname view_on_rank
 #' @export
 view_on_rank.default <- function(x, rank) {
-  stop("Method not implemented for class `", class(x), "` yet.", call. = FALSE)
+  rlang::abort("Method not implemented for class `", class(x), "` yet.")
 }
 
 #' @rdname view_on_rank
@@ -584,7 +581,7 @@ view_on_copula <- function(x, simul, p) {
 #' @rdname view_on_copula
 #' @export
 view_on_copula.default <- function(x, simul, p) {
-  stop("Method not implemented for class `", class(x), "` yet.", call. = FALSE)
+  rlang::abort("Method not implemented for class `", class(x), "` yet.")
 }
 
 #' @rdname view_on_copula
@@ -615,10 +612,15 @@ construct_view_on_copula <- function(x, simul, p) {
   Aeq <- NULL
   beq <- NULL
 
+  # first moment
   Aeq <- rbind(Aeq, t(x))
   beq <- as.matrix(c(beq, rep(1 / 2, NCOL(x))))
 
-  # order 2
+  # second moment
+  Aeq <- rbind(Aeq, t(x) ^ 2)
+  beq <- as.matrix(c(beq, rep(1 / 3, NCOL(x))))
+
+  # cross moments
   for (k in 1:N) {
     for (l in k:N) {
       Aeq <- rbind(Aeq, t(x[ , k] * x[ , l]))
@@ -627,14 +629,14 @@ construct_view_on_copula <- function(x, simul, p) {
   }
 
   # order 3
-  for (k in 1:N) {
-    for (l in k:N) {
-      for (i in l:k) {
-        Aeq <- rbind(Aeq, t(x[ , k] * x[ , l] * x[ , i]))
-        beq <- rbind(beq, t(simul[ , k] * simul[ , l] * simul[ , i]) %*% p)
-      }
-    }
-  }
+  # for (k in 1:N) {
+  #   for (l in k:N) {
+  #     for (i in l:k) {
+  #       Aeq <- rbind(Aeq, t(x[ , k] * x[ , l] * x[ , i]))
+  #       beq <- rbind(beq, t(simul[ , k] * simul[ , l] * simul[ , i]) %*% p)
+  #     }
+  #   }
+  # }
 
   vctrs::new_list_of(
     x = list(Aeq = Aeq, beq = beq),
@@ -697,7 +699,7 @@ view_on_marginal_distribution <- function(x, simul, p) {
 #' @rdname view_on_marginal_distribution
 #' @export
 view_on_marginal_distribution.default <- function(x, simul, p) {
-  stop("Method not implemented for class `", class(x), "` yet.", call. = FALSE)
+  rlang::abort("Method not implemented for class `", class(x), "` yet.")
 }
 
 #' @rdname view_on_marginal_distribution
@@ -807,7 +809,7 @@ view_on_joint_distribution <- function(x, simul, p) {
 #' @rdname view_on_joint_distribution
 #' @export
 view_on_joint_distribution.default <- function(x, simul, p) {
-  stop("Method not implemented for class `", class(x), "` yet.", call. = FALSE)
+  rlang::abort("Method not implemented for class `", class(x), "` yet.")
 }
 
 #' @rdname view_on_joint_distribution
@@ -851,14 +853,14 @@ construct_view_on_joint_distribution <- function(x, simul, p) {
   }
 
   # order 3
-  for (k in 1:N) {
-    for (l in k:N) {
-      for (i in l:k) {
-        Aeq <- rbind(Aeq, t(x[ , k] * x[ , l] * x[ , i]))
-        beq <- rbind(beq, t(simul[ , k] * simul[ , l] * simul[ , i]) %*% p)
-      }
-    }
-  }
+  # for (k in 1:N) {
+  #   for (l in k:N) {
+  #     for (i in l:k) {
+  #       Aeq <- rbind(Aeq, t(x[ , k] * x[ , l] * x[ , i]))
+  #       beq <- rbind(beq, t(simul[ , k] * simul[ , l] * simul[ , i]) %*% p)
+  #     }
+  #   }
+  # }
 
   vctrs::new_list_of(
     x      = list(Aeq = Aeq, beq = beq),

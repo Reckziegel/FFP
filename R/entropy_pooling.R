@@ -6,7 +6,7 @@
 #' the market).
 #'
 #' When imposing views constraints there is no need to specify the non-negativity
-#' constraint, which is done automatically by `entropy_pooling`.
+#' constraint for probabilities, which is done automatically by `entropy_pooling`.
 #'
 #' For the arguments accepted in \code{...}, please see the documentation of
 #' \code{\link[stats]{nlminb}}, \code{\link[NlcOptim]{solnl}} and \code{\link[nloptr]{nloptr}}.
@@ -24,8 +24,9 @@
 entropy_pooling <- function(p, A = NULL, b = NULL, Aeq = NULL, beq = NULL, solver = c("nlminb", "solnl", "nloptr"), ...) {
 
   assertthat::assert_that(assertthat::is.string(solver))
+
   if (solver == "nlminb" & (!is.null(A) | !is.null(b))) {
-    stop("Inequalities can only be solved with `solnl` or `nloptr`.", call. = FALSE)
+    rlang::abort("Inequalities can only be solved with `solnl` or `nloptr`.")
   }
   solver <- rlang::arg_match(solver, c("nlminb", "solnl", "nloptr"))
 
@@ -66,26 +67,26 @@ entropy_pooling <- function(p, A = NULL, b = NULL, Aeq = NULL, beq = NULL, solve
     if (solver == "nlminb") {
 
       # objective and gradient
-      objective <- function(v, p, Aeq, beq){
-        x <- exp(log(p) - 1 - t(Aeq) %*% v)
-        x <- apply(cbind(x, 10 ^ -32), 1, max)
-        L <- t(x) %*% (log(x) - log(p) + t(Aeq) %*% v) - t(beq) %*% v
+      objective <- function(v, p, Aeq, beq, Aeq_, beq_){
+        x <- exp(log(p) - 1 - Aeq_ %*% v)
+        x[x < 10e-33] <- 10e-33
+        L <- crossprod(x, log(x) - log(p) + Aeq_ %*% v) - beq_ %*% v
         -L
       }
-      gradient <- function(v, p, Aeq, beq){
-        x <- exp(log(p) - 1 - t(Aeq) %*% v)
+      gradient <- function(v, p, Aeq, beq, Aeq_, beq_){
+        x <- exp(log(p) - 1 - Aeq_ %*% v)
         beq - Aeq %*% x
       }
 
-      p_ <- ep_nlminb(p = p, Aeq = Aeq, beq = beq, objective = objective, gradient = gradient, ...)
+      p_ <- ep_nlminb(p = p, Aeq = Aeq, beq = beq, Aeq_ = Aeq_, beq_ = beq_, objective = objective, gradient = gradient, ...)
 
-    # Solving equalities constraint with solnl
+      # Solving equalities constraint with solnl
     } else if (solver == "solnl") {
 
       nestedfunU_solnl <- function(v, p, Aeq_, beq_) {
         x  <- exp(log(p) - 1 - Aeq_ %*% v)
-        x  <- apply(cbind(x, 10 ^ -32), 1, max)
-        L  <- t(x) %*% (log(x) - log(p) + Aeq_ %*% v) - beq_ %*% v
+        x[x < 10e-33] <- 10e-33
+        L <- crossprod(x, log(x) - log(p) + Aeq_ %*% v) - beq_ %*% v
         -L
       }
 
@@ -94,24 +95,24 @@ entropy_pooling <- function(p, A = NULL, b = NULL, Aeq = NULL, beq = NULL, solve
         fn  = nestedfunU_solnl,
         ... = ...,
         p   = p, Aeq_ = Aeq_, beq_ = beq_,
-        tolX = 1e-10, tolFun = 1e-10, tolCon = 1e-10,maxIter = 10000
+        tolX = 1e-10, tolFun = 1e-10, tolCon = 1e-10, maxIter = 10000
       )
       v  <- ep_solnl$par
       p_ <- exp(log(p) - 1 - Aeq_ %*% v)
 
-    # Solving equalities contraint with nloptr
+      # Solving equalities contraint with nloptr
     } else {
 
       ep_nloptr <- nloptr::auglag(
         x0 = x0,
         fn = function(v) {
-          x <- exp(log(p) - 1 - t(Aeq) %*% v)
-          x <- apply(cbind(x, 10 ^ -32), 1, max)
-          L <- t(x) %*% (log(x) - log(p) + t(Aeq) %*% v) - t(beq) %*% v
+          x <- exp(log(p) - 1 - Aeq_ %*% v)
+          x[x < 10e-33] <- 10e-33
+          L <- crossprod(x, log(x) - log(p) + Aeq_ %*% v) - beq_ %*% v
           -L
         },
         gr = function(v) {
-          x <- exp(log(p) - 1 - t(Aeq) %*% v)
+          x <- exp(log(p) - 1 - Aeq_ %*% v)
           beq - Aeq %*% x
         },
         localsolver = "SLSQP", ...)
@@ -121,7 +122,7 @@ entropy_pooling <- function(p, A = NULL, b = NULL, Aeq = NULL, beq = NULL, solve
 
     }
 
-  # Inequalities can only be solved with `solnl` or `nloptr`
+    # Inequalities can only be solved with `solnl` or `nloptr`
   } else {
 
     InqMat <- -diag(1, K_ + K)
@@ -136,8 +137,8 @@ entropy_pooling <- function(p, A = NULL, b = NULL, Aeq = NULL, beq = NULL, solve
         l  <- lv[1:K_, , drop = FALSE]
         v  <- lv[(K_ + 1):length(lv), , drop = FALSE]
         x  <- exp(log(p) - 1 - A_ %*% l - Aeq_ %*% v)
-        x  <- apply(cbind(x, 1e-32), 1, max)
-        L  <- t(x) %*% (log(x) - log(p)) + t(l) %*% (.A %*% x - .b) + t(v) %*% (.Aeq %*% x - .beq)
+        x[x < 10e-33] <- 10e-33
+        L  <- crossprod(x, log(x) - log(p)) + crossprod(l, .A %*% x - .b) + crossprod(v, .Aeq %*% x - .beq)
         - L
       }
 
@@ -155,7 +156,7 @@ entropy_pooling <- function(p, A = NULL, b = NULL, Aeq = NULL, beq = NULL, solve
       v  <- lv[(K_ + 1):nrow(lv), , drop = FALSE]
       p_ <- exp(log(p) - 1 - A_ %*% l - Aeq_ %*% v)
 
-    # Solving inequalities with nloptr
+      # Solving inequalities with nloptr
     } else {
 
       ep_nloptr <- nloptr::slsqp(
@@ -165,8 +166,8 @@ entropy_pooling <- function(p, A = NULL, b = NULL, Aeq = NULL, beq = NULL, solve
           l  <- lv[1:K_ , , drop = FALSE]
           v  <- lv[(K_ + 1):length(lv) , , drop = FALSE]
           x  <- exp(log(p) - 1 - A_ %*% l - Aeq_ %*% v)
-          x  <- apply(cbind(x, 1e-32), 1, max)
-          L <- t(x) %*% (log(x) - log(p)) + t(l) %*% (A %*% x - b) + t(v) %*% (Aeq %*% x - beq)
+          x[x <= 10e-33] <- 10e-33
+          L <- crossprod(x, log(x) - log(p)) + crossprod(l, A %*% x - b) + crossprod(v, Aeq %*% x - beq)
           - L
         },
         ...)
@@ -186,7 +187,7 @@ entropy_pooling <- function(p, A = NULL, b = NULL, Aeq = NULL, beq = NULL, solve
     p_ <- p_ / sum(p_)
   }
 
-  as_ffp(as.double(p_))
+  new_ffp(as.double(p_))
 
 }
 
@@ -210,18 +211,19 @@ ep_solnl <- function(x0, fn, gr = NULL, ...,
 }
 
 #' @keywords internal
-ep_nlminb <- function(p, Aeq, beq, objective, gradient, ...) {
+ep_nlminb <- function(p, Aeq, beq, Aeq_, beq_, objective, gradient, ...) {
   v_dual <- stats::nlminb(
     start     = rep(0, NROW(Aeq)),
     objective = objective,
     gradient  = gradient,
     Aeq       = Aeq,
     beq       = beq,
+    Aeq_      = Aeq_,
+    beq_      = beq_,
     p         = p,
     ...       = ...)
   v <- v_dual$par
-  v <- v_dual$par
-  p_ <- exp(log(p) - 1 - t(Aeq) %*% v)
+  p_ <- exp(log(p) - 1 - Aeq_ %*% v)
   p_
 }
 

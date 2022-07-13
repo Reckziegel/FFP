@@ -58,43 +58,50 @@ Conditional Value-at-Risk CVaR) under flexible probabilities.</p>
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">empirical_stats</span><span class="op">(</span><span class="va">x</span>, <span class="va">p</span>, level <span class="op">=</span> <span class="fl">0.01</span><span class="op">)</span>
-
-<span class="co"># S3 method for default</span>
-<span class="fu">empirical_stats</span><span class="op">(</span><span class="va">x</span>, <span class="va">p</span>, level <span class="op">=</span> <span class="fl">0.01</span><span class="op">)</span>
-
-<span class="co"># S3 method for numeric</span>
-<span class="fu">empirical_stats</span><span class="op">(</span><span class="va">x</span>, <span class="va">p</span>, level <span class="op">=</span> <span class="fl">0.01</span><span class="op">)</span>
-
-<span class="co"># S3 method for matrix</span>
-<span class="fu">empirical_stats</span><span class="op">(</span><span class="va">x</span>, <span class="va">p</span>, level <span class="op">=</span> <span class="fl">0.01</span><span class="op">)</span>
-
-<span class="co"># S3 method for xts</span>
-<span class="fu">empirical_stats</span><span class="op">(</span><span class="va">x</span>, <span class="va">p</span>, level <span class="op">=</span> <span class="fl">0.01</span><span class="op">)</span>
-
-<span class="co"># S3 method for ts</span>
-<span class="fu">empirical_stats</span><span class="op">(</span><span class="va">x</span>, <span class="va">p</span>, level <span class="op">=</span> <span class="fl">0.01</span><span class="op">)</span>
-
-<span class="co"># S3 method for data.frame</span>
-<span class="fu">empirical_stats</span><span class="op">(</span><span class="va">x</span>, <span class="va">p</span>, level <span class="op">=</span> <span class="fl">0.01</span><span class="op">)</span>
-
-<span class="co"># S3 method for tbl_df</span>
-<span class="fu">empirical_stats</span><span class="op">(</span><span class="va">x</span>, <span class="va">p</span>, level <span class="op">=</span> <span class="fl">0.01</span><span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">empirical_stats</span><span class="op">(</span><span class="va">x</span>, <span class="va">p</span>, level <span class="op">=</span> <span class="fl">0.01</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for default</span></span>
+<span><span class="fu">empirical_stats</span><span class="op">(</span><span class="va">x</span>, <span class="va">p</span>, level <span class="op">=</span> <span class="fl">0.01</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for numeric</span></span>
+<span><span class="fu">empirical_stats</span><span class="op">(</span><span class="va">x</span>, <span class="va">p</span>, level <span class="op">=</span> <span class="fl">0.01</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for matrix</span></span>
+<span><span class="fu">empirical_stats</span><span class="op">(</span><span class="va">x</span>, <span class="va">p</span>, level <span class="op">=</span> <span class="fl">0.01</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for xts</span></span>
+<span><span class="fu">empirical_stats</span><span class="op">(</span><span class="va">x</span>, <span class="va">p</span>, level <span class="op">=</span> <span class="fl">0.01</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for ts</span></span>
+<span><span class="fu">empirical_stats</span><span class="op">(</span><span class="va">x</span>, <span class="va">p</span>, level <span class="op">=</span> <span class="fl">0.01</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for data.frame</span></span>
+<span><span class="fu">empirical_stats</span><span class="op">(</span><span class="va">x</span>, <span class="va">p</span>, level <span class="op">=</span> <span class="fl">0.01</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for tbl_df</span></span>
+<span><span class="fu">empirical_stats</span><span class="op">(</span><span class="va">x</span>, <span class="va">p</span>, level <span class="op">=</span> <span class="fl">0.01</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
     <h2>Arguments</h2>
     <dl><dt>x</dt>
 <dd><p>A time series defining the scenario-probability distribution.</p></dd>
+
+
 <dt>p</dt>
 <dd><p>An object of the <code>ffp</code> class.</p></dd>
+
+
 <dt>level</dt>
 <dd><p>A number with the desired probability level. The default is
 <code>level = 0.01</code>.</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>A tidy <code>tibble</code> with 3 columns:</p><ul><li><p>stat: a column with <code>Mu</code>, <code>Std</code>, <code>Skew</code>, <code>Kurt</code>, <code>VaR</code> and <code>CVaR</code>.</p></li>
+    
+
+<p>A tidy <code>tibble</code> with 3 columns:</p><ul><li><p>stat: a column with <code>Mu</code>, <code>Std</code>, <code>Skew</code>, <code>Kurt</code>, <code>VaR</code> and <code>CVaR</code>.</p></li>
 <li><p>name: the asset names.</p></li>
 <li><p>value: the computed value for each statistic.</p></li>
 </ul></div>
@@ -106,27 +113,27 @@ Conditional Value-at-Risk CVaR) under flexible probabilities.</p>
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span>, warn.conflicts <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span class="r-in"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="va">ret</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/diff.html" class="external-link">diff</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">EuStockMarkets</span><span class="op">)</span><span class="op">)</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># with equal weights (standard scenario)</span></span>
-<span class="r-in"><span class="va">ew</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">ret</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">ret</span><span class="op">)</span><span class="op">)</span></span>
-<span class="r-in"><span class="fu">empirical_stats</span><span class="op">(</span>x <span class="op">=</span> <span class="va">ret</span>, p <span class="op">=</span> <span class="fu"><a href="ffp.html">as_ffp</a></span><span class="op">(</span><span class="va">ew</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span class="r-in">  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">name</span>, y <span class="op">=</span> <span class="va">value</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span class="r-in">  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_bar.html" class="external-link">geom_col</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span class="r-in">  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html" class="external-link">facet_wrap</a></span><span class="op">(</span><span class="op">~</span><span class="va">stat</span>, scales <span class="op">=</span> <span class="st">"free"</span><span class="op">)</span> <span class="op">+</span></span>
-<span class="r-in">  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="cn">NULL</span>, y <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span>, warn.conflicts <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">ret</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/diff.html" class="external-link">diff</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">EuStockMarkets</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># with equal weights (standard scenario)</span></span></span>
+<span class="r-in"><span><span class="va">ew</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">ret</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">ret</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">empirical_stats</span><span class="op">(</span>x <span class="op">=</span> <span class="va">ret</span>, p <span class="op">=</span> <span class="fu"><a href="ffp.html">as_ffp</a></span><span class="op">(</span><span class="va">ew</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">name</span>, y <span class="op">=</span> <span class="va">value</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_bar.html" class="external-link">geom_col</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html" class="external-link">facet_wrap</a></span><span class="op">(</span><span class="op">~</span><span class="va">stat</span>, scales <span class="op">=</span> <span class="st">"free"</span><span class="op">)</span> <span class="op">+</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="cn">NULL</span>, y <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="empirical_stats-1.png" alt="" width="700" height="433"></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># with ffp</span></span>
-<span class="r-in"><span class="va">exp_smooth</span> <span class="op">&lt;-</span> <span class="fu"><a href="exp_decay.html">exp_decay</a></span><span class="op">(</span><span class="va">ret</span>, <span class="fl">0.015</span><span class="op">)</span></span>
-<span class="r-in"><span class="fu">empirical_stats</span><span class="op">(</span><span class="va">ret</span>, <span class="va">exp_smooth</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span class="r-in">  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">name</span>, y <span class="op">=</span> <span class="va">value</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span class="r-in">  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_bar.html" class="external-link">geom_col</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span class="r-in">  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html" class="external-link">facet_wrap</a></span><span class="op">(</span><span class="op">~</span><span class="va">stat</span>, scales <span class="op">=</span> <span class="st">"free"</span><span class="op">)</span> <span class="op">+</span></span>
-<span class="r-in">  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="cn">NULL</span>, y <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># with ffp</span></span></span>
+<span class="r-in"><span><span class="va">exp_smooth</span> <span class="op">&lt;-</span> <span class="fu"><a href="exp_decay.html">exp_decay</a></span><span class="op">(</span><span class="va">ret</span>, <span class="fl">0.015</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">empirical_stats</span><span class="op">(</span><span class="va">ret</span>, <span class="va">exp_smooth</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">name</span>, y <span class="op">=</span> <span class="va">value</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_bar.html" class="external-link">geom_col</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html" class="external-link">facet_wrap</a></span><span class="op">(</span><span class="op">~</span><span class="va">stat</span>, scales <span class="op">=</span> <span class="st">"free"</span><span class="op">)</span> <span class="op">+</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="cn">NULL</span>, y <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="empirical_stats-2.png" alt="" width="700" height="433"></span>
 </code></pre></div>
     </div>
@@ -142,7 +149,7 @@ Conditional Value-at-Risk CVaR) under flexible probabilities.</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.2.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.5.</p>
 </div>
 
       </footer></div>

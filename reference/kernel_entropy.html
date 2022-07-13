@@ -58,42 +58,49 @@ constrain the first two moments while imposing the minimal structure in the data
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">kernel_entropy</span><span class="op">(</span><span class="va">x</span>, <span class="va">mean</span>, sigma <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span>
-
-<span class="co"># S3 method for default</span>
-<span class="fu">kernel_entropy</span><span class="op">(</span><span class="va">x</span>, <span class="va">mean</span>, sigma <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span>
-
-<span class="co"># S3 method for numeric</span>
-<span class="fu">kernel_entropy</span><span class="op">(</span><span class="va">x</span>, <span class="va">mean</span>, sigma <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span>
-
-<span class="co"># S3 method for matrix</span>
-<span class="fu">kernel_entropy</span><span class="op">(</span><span class="va">x</span>, <span class="va">mean</span>, sigma <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span>
-
-<span class="co"># S3 method for ts</span>
-<span class="fu">kernel_entropy</span><span class="op">(</span><span class="va">x</span>, <span class="va">mean</span>, sigma <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span>
-
-<span class="co"># S3 method for xts</span>
-<span class="fu">kernel_entropy</span><span class="op">(</span><span class="va">x</span>, <span class="va">mean</span>, sigma <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span>
-
-<span class="co"># S3 method for tbl_df</span>
-<span class="fu">kernel_entropy</span><span class="op">(</span><span class="va">x</span>, <span class="va">mean</span>, sigma <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span>
-
-<span class="co"># S3 method for data.frame</span>
-<span class="fu">kernel_entropy</span><span class="op">(</span><span class="va">x</span>, <span class="va">mean</span>, sigma <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">kernel_entropy</span><span class="op">(</span><span class="va">x</span>, <span class="va">mean</span>, sigma <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for default</span></span>
+<span><span class="fu">kernel_entropy</span><span class="op">(</span><span class="va">x</span>, <span class="va">mean</span>, sigma <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for numeric</span></span>
+<span><span class="fu">kernel_entropy</span><span class="op">(</span><span class="va">x</span>, <span class="va">mean</span>, sigma <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for matrix</span></span>
+<span><span class="fu">kernel_entropy</span><span class="op">(</span><span class="va">x</span>, <span class="va">mean</span>, sigma <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for ts</span></span>
+<span><span class="fu">kernel_entropy</span><span class="op">(</span><span class="va">x</span>, <span class="va">mean</span>, sigma <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for xts</span></span>
+<span><span class="fu">kernel_entropy</span><span class="op">(</span><span class="va">x</span>, <span class="va">mean</span>, sigma <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for tbl_df</span></span>
+<span><span class="fu">kernel_entropy</span><span class="op">(</span><span class="va">x</span>, <span class="va">mean</span>, sigma <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for data.frame</span></span>
+<span><span class="fu">kernel_entropy</span><span class="op">(</span><span class="va">x</span>, <span class="va">mean</span>, sigma <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
     <h2>Arguments</h2>
     <dl><dt>x</dt>
 <dd><p>An univariate or a multivariate distribution.</p></dd>
+
+
 <dt>mean</dt>
 <dd><p>A numeric vector in which the kernel should be centered.</p></dd>
+
+
 <dt>sigma</dt>
 <dd><p>The uncertainty (volatility) around the mean. When <code>NULL</code>, only the mean is constrained.</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>A numerical vector of class <code>ffp</code> with the new
+    
+
+<p>A numerical vector of class <code>ffp</code> with the new
 probabilities distribution.</p>
     </div>
     <div id="see-also">
@@ -103,19 +110,19 @@ probabilities distribution.</p>
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="va">ret</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/diff.html" class="external-link">diff</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">EuStockMarkets</span><span class="op">[</span> , <span class="fl">1</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
-<span class="r-in"><span class="va">mean</span> <span class="op">&lt;-</span> <span class="op">-</span><span class="fl">0.01</span> <span class="co"># scenarios around -1%</span></span>
-<span class="r-in"><span class="va">sigma</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/cor.html" class="external-link">var</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/diff.html" class="external-link">diff</a></span><span class="op">(</span><span class="va">ret</span><span class="op">)</span><span class="op">)</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="va">ke</span> <span class="op">&lt;-</span> <span class="fu">kernel_entropy</span><span class="op">(</span><span class="va">ret</span>, <span class="va">mean</span>, <span class="va">sigma</span><span class="op">)</span></span>
-<span class="r-in"><span class="va">ke</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">ret</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/diff.html" class="external-link">diff</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">EuStockMarkets</span><span class="op">[</span> , <span class="fl">1</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">mean</span> <span class="op">&lt;-</span> <span class="op">-</span><span class="fl">0.01</span> <span class="co"># scenarios around -1%</span></span></span>
+<span class="r-in"><span><span class="va">sigma</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/cor.html" class="external-link">var</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/diff.html" class="external-link">diff</a></span><span class="op">(</span><span class="va">ret</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">ke</span> <span class="op">&lt;-</span> <span class="fu">kernel_entropy</span><span class="op">(</span><span class="va">ret</span>, <span class="va">mean</span>, <span class="va">sigma</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">ke</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;ffp[1859]&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 0.0009255605 0.000599916 0.0001537338 0.0004681907 0.000614085 ... 3.258238e-05</span>
-<span class="r-in"></span>
-<span class="r-in"><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html" class="external-link">autoplot</a></span><span class="op">(</span><span class="va">ke</span><span class="op">)</span> <span class="op">+</span></span>
-<span class="r-in">  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_viridis.html" class="external-link">scale_color_viridis_c</a></span><span class="op">(</span><span class="op">)</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html" class="external-link">autoplot</a></span><span class="op">(</span><span class="va">ke</span><span class="op">)</span> <span class="op">+</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_viridis.html" class="external-link">scale_color_viridis_c</a></span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="kernel_entropy-1.png" alt="" width="700" height="433"></span>
 </code></pre></div>
     </div>
@@ -131,7 +138,7 @@ probabilities distribution.</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.2.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.5.</p>
 </div>
 
       </footer></div>

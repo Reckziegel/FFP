@@ -62,42 +62,57 @@ the market).</p>
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">entropy_pooling</span><span class="op">(</span>
-  <span class="va">p</span>,
-  A <span class="op">=</span> <span class="cn">NULL</span>,
-  b <span class="op">=</span> <span class="cn">NULL</span>,
-  Aeq <span class="op">=</span> <span class="cn">NULL</span>,
-  beq <span class="op">=</span> <span class="cn">NULL</span>,
-  solver <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"nlminb"</span>, <span class="st">"solnl"</span>, <span class="st">"nloptr"</span><span class="op">)</span>,
-  <span class="va">...</span>
-<span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">entropy_pooling</span><span class="op">(</span></span>
+<span>  <span class="va">p</span>,</span>
+<span>  A <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  b <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  Aeq <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  beq <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  solver <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"nlminb"</span>, <span class="st">"solnl"</span>, <span class="st">"nloptr"</span><span class="op">)</span>,</span>
+<span>  <span class="va">...</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
     <h2>Arguments</h2>
     <dl><dt>p</dt>
 <dd><p>A vector of prior probabilities.</p></dd>
+
+
 <dt>A</dt>
 <dd><p>The linear inequality constraint (left-hand side).</p></dd>
+
+
 <dt>b</dt>
 <dd><p>The linear inequality constraint (right-hand side).</p></dd>
+
+
 <dt>Aeq</dt>
 <dd><p>The linear equality constraint (left-hand side).</p></dd>
+
+
 <dt>beq</dt>
 <dd><p>The linear equality constraint (right-hand side).</p></dd>
+
+
 <dt>solver</dt>
 <dd><p>A <code>character</code>. One of: "nlminb", "solnl" or "nloptr".</p></dd>
+
+
 <dt>...</dt>
 <dd><p>Further arguments passed to one of the solvers.</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>A vector of posterior probabilities.</p>
+    
+
+<p>A vector of posterior probabilities.</p>
     </div>
     <div id="details">
     <h2>Details</h2>
     <p>When imposing views constraints there is no need to specify the non-negativity
-constraint, which is done automatically by <code>entropy_pooling</code>.</p>
+constraint for probabilities, which is done automatically by <code>entropy_pooling</code>.</p>
 <p>For the arguments accepted in <code>...</code>, please see the documentation of
 <code><a href="https://rdrr.io/r/stats/nlminb.html" class="external-link">nlminb</a></code>, <code><a href="https://rdrr.io/pkg/NlcOptim/man/solnl.html" class="external-link">solnl</a></code> and <code><a href="https://rdrr.io/pkg/nloptr/man/nloptr.html" class="external-link">nloptr</a></code>.</p>
     </div>
@@ -114,7 +129,7 @@ constraint, which is done automatically by <code>entropy_pooling</code>.</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.2.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.5.</p>
 </div>
 
       </footer></div>

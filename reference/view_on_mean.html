@@ -56,63 +56,68 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">view_on_mean</span><span class="op">(</span><span class="va">x</span>, <span class="va">mean</span><span class="op">)</span>
-
-<span class="co"># S3 method for default</span>
-<span class="fu">view_on_mean</span><span class="op">(</span><span class="va">x</span>, <span class="va">mean</span><span class="op">)</span>
-
-<span class="co"># S3 method for matrix</span>
-<span class="fu">view_on_mean</span><span class="op">(</span><span class="va">x</span>, <span class="va">mean</span><span class="op">)</span>
-
-<span class="co"># S3 method for xts</span>
-<span class="fu">view_on_mean</span><span class="op">(</span><span class="va">x</span>, <span class="va">mean</span><span class="op">)</span>
-
-<span class="co"># S3 method for tbl_df</span>
-<span class="fu">view_on_mean</span><span class="op">(</span><span class="va">x</span>, <span class="va">mean</span><span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">view_on_mean</span><span class="op">(</span><span class="va">x</span>, <span class="va">mean</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for default</span></span>
+<span><span class="fu">view_on_mean</span><span class="op">(</span><span class="va">x</span>, <span class="va">mean</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for matrix</span></span>
+<span><span class="fu">view_on_mean</span><span class="op">(</span><span class="va">x</span>, <span class="va">mean</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for xts</span></span>
+<span><span class="fu">view_on_mean</span><span class="op">(</span><span class="va">x</span>, <span class="va">mean</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for tbl_df</span></span>
+<span><span class="fu">view_on_mean</span><span class="op">(</span><span class="va">x</span>, <span class="va">mean</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
     <h2>Arguments</h2>
     <dl><dt>x</dt>
 <dd><p>An univariate or a multivariate distribution.</p></dd>
+
+
 <dt>mean</dt>
 <dd><p>A <code>double</code> for the target location parameter of the series in <code>x</code>.</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>A <code>list</code> of the <code>view</code> class.</p>
+    
+
+<p>A <code>list</code> of the <code>view</code> class.</p>
     </div>
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># Invariant</span></span>
-<span class="r-in"><span class="va">ret</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/diff.html" class="external-link">diff</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">EuStockMarkets</span><span class="op">)</span><span class="op">)</span></span>
-<span class="r-in"><span class="va">n</span>   <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">ret</span><span class="op">)</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># Prior beliefs for expected returns (here is 2% for each asset)</span></span>
-<span class="r-in"><span class="va">mean</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0.02</span>, <span class="fl">4</span><span class="op">)</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># Prior probabilities (usually equal weight scheme)</span></span>
-<span class="r-in"><span class="va">prior</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">/</span> <span class="va">n</span>, <span class="va">n</span><span class="op">)</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># View</span></span>
-<span class="r-in"><span class="va">views</span> <span class="op">&lt;-</span> <span class="fu">view_on_mean</span><span class="op">(</span>x <span class="op">=</span> <span class="va">ret</span>, mean <span class="op">=</span> <span class="va">mean</span><span class="op">)</span></span>
-<span class="r-in"><span class="va">views</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Invariant</span></span></span>
+<span class="r-in"><span><span class="va">ret</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/diff.html" class="external-link">diff</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">EuStockMarkets</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">n</span>   <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">ret</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Prior beliefs for expected returns (here is 2% for each asset)</span></span></span>
+<span class="r-in"><span><span class="va">mean</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0.02</span>, <span class="fl">4</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Prior probabilities (usually equal weight scheme)</span></span></span>
+<span class="r-in"><span><span class="va">prior</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">/</span> <span class="va">n</span>, <span class="va">n</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># View</span></span></span>
+<span class="r-in"><span><span class="va">views</span> <span class="op">&lt;-</span> <span class="fu">view_on_mean</span><span class="op">(</span>x <span class="op">=</span> <span class="va">ret</span>, mean <span class="op">=</span> <span class="va">mean</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">views</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;"># ffp view</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Type:  <span style="font-weight: 100;">View On Mean</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Aeq :  Dim 4 x 1859 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> beq :  Dim 4 x 1 </span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># Optimization</span></span>
-<span class="r-in"><span class="va">ep</span> <span class="op">&lt;-</span> <span class="fu"><a href="entropy_pooling.html">entropy_pooling</a></span><span class="op">(</span>p <span class="op">=</span> <span class="va">prior</span>, Aeq <span class="op">=</span> <span class="va">views</span><span class="op">$</span><span class="va">Aeq</span>, beq <span class="op">=</span> <span class="va">views</span><span class="op">$</span><span class="va">beq</span>, solver <span class="op">=</span> <span class="st">"nlminb"</span><span class="op">)</span></span>
-<span class="r-in"><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html" class="external-link">autoplot</a></span><span class="op">(</span><span class="va">ep</span><span class="op">)</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Optimization</span></span></span>
+<span class="r-in"><span><span class="va">ep</span> <span class="op">&lt;-</span> <span class="fu"><a href="entropy_pooling.html">entropy_pooling</a></span><span class="op">(</span>p <span class="op">=</span> <span class="va">prior</span>, Aeq <span class="op">=</span> <span class="va">views</span><span class="op">$</span><span class="va">Aeq</span>, beq <span class="op">=</span> <span class="va">views</span><span class="op">$</span><span class="va">beq</span>, solver <span class="op">=</span> <span class="st">"nlminb"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html" class="external-link">autoplot</a></span><span class="op">(</span><span class="va">ep</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="view_on_mean-1.png" alt="" width="700" height="433"></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># Probabilities are twisted in such a way that the posterior</span></span>
-<span class="r-in"><span class="co"># `mu` match's exactly with previously stated beliefs</span></span>
-<span class="r-in"><span class="fu"><a href="ffp_moments.html">ffp_moments</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">ret</span>, p <span class="op">=</span> <span class="va">ep</span><span class="op">)</span><span class="op">$</span><span class="va">mu</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Probabilities are twisted in such a way that the posterior</span></span></span>
+<span class="r-in"><span><span class="co"># `mu` match's exactly with previously stated beliefs</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="ffp_moments.html">ffp_moments</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">ret</span>, p <span class="op">=</span> <span class="va">ep</span><span class="op">)</span><span class="op">$</span><span class="va">mu</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        DAX        SMI        CAC       FTSE </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 0.02000001 0.02000001 0.02000000 0.02000000 </span>
 </code></pre></div>
@@ -129,7 +134,7 @@
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.2.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.5.</p>
 </div>
 
       </footer></div>

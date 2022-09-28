@@ -1,6 +1,6 @@
 ## Release Summary
 
-This is a patch release (from 0.2.0 to 0.2.1)
+This is a patch release (from 0.2.1 to 0.2.2)
 
 ## Test environments
 * local R installation, R 4.1.3

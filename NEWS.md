@@ -1,3 +1,10 @@
+# ffp 0.2.2
+
+* Added `relative_entropy()` to compute the relative entropy between two distributions;
+* `entropy-pooling()` runs about to 30-60% faster (#19); 
+* `view_on_marginal_distribution()` restricts just the first two moments of the distribution;
+* Small changes in the documentation files.
+
 # ffp 0.2.1
 
 * Bug fix in `entropy_pooling()` when dealing with multiple inequalities constraints;
@@ -15,8 +22,6 @@
 ## Minor improvements and fixes
 
 * `bind_probs()` now returns the user call in the third column instead the old arbitrary `key` column (#13);
-
-# ffp (development version)
 
 # ffp 0.1.0
 

@@ -21,7 +21,7 @@ knitr::opts_chunk$set(
 
 <!-- As mentioned in __How does EP work__, entropy-pooling offers a template that enables portfolio and risk managers to process _views_ that can go far beyond normality.  -->
 
-This vignette provides a "jump-start" for users that want to quickly understand how to use entropy-pooling (EP) to construct *views* on the market distribution. The methodology fits well in a variety of scenarios: stress-testing, macro factors, non-linear views, and more. 
+This vignette provides a "jump-start" for users that want to quickly understand how to use entropy-pooling (EP) to construct *views* on the market distribution. The methodology fits well in a variety of scenarios: stress-testing, macro factors, non-linear payoffs, and more. 
 
 To demonstrate entropy-pooling's firepower, the current vignette uses some of the cases Meucci (2008)[^1] leaves for the reader in the appendix. In particular, the usage of the following functions are covered in depth:
 
@@ -32,7 +32,7 @@ To demonstrate entropy-pooling's firepower, the current vignette uses some of th
 - `view_on_marginal_distribution()`
 - `view_on_copula()`
 
-[^1]: Meucci, Attilio, Fully Flexible Views: Theory and Practice (August 8, 2008). Fully Flexible Views: Theory and Practice, Risk, Vol. 21, No. 10, pp. 97-102, October 2008, Available at SSRN: https://ssrn.com/abstract=1213325
+[^1]: Meucci, Attilio, Fully Flexible Views: Theory and Practice (August 8, 2008). Fully Flexible Views: Theory and Practice, Risk, Vol. 21, No. 10, pp. 97-102, October 2008, Available at SSRN: https://www.ssrn.com/abstract=1213325
 
 Along with the examples, the `EuStockMarkets` dataset - that comes with the installation of `R` - is used as a _proxy_ for "the market":
 
@@ -383,7 +383,7 @@ In which $x_j$ is a yet to be defined probability vector; $V_{j,k}$ is a matrix 
 
 When $j = z$, the panels $V_{j,k}$ and $\hat{V}_{z,k}$ have the same number of rows and the dimensions in both sides of the restrictions match. However, it's possible to set $z \ge j$ to simulate a larger panel for $\hat{V}_{z, k}$. Keep in mind though that, if $z \ne j$, two _prior_ probabilities will have to be specified: one for $p_j$ (the objective function) and one for $p_z$ (the _views_). 
 
-Continuing on the example, consider the margins of `x` can be approximated by a symmetric multivariate t-distribution. If this is the case, the estimation can be conducted by the amazing [ghyp](https://cran.r-project.org/web/packages/ghyp/index.html) package, that covers the entire family of [generalized hyperbolic distributions](https://en.wikipedia.org/wiki/Generalised_hyperbolic_distribution):
+Continuing on the example, consider the margins of `x` can be approximated by a symmetric multivariate t-distribution. If this is the case, the estimation can be conducted by the amazing [ghyp](www.cran.r-project.org/web/packages/ghyp/index.html) package, that covers the entire family of [generalized hyperbolic distributions](https://en.wikipedia.org/wiki/Generalised_hyperbolic_distribution):
 
 <!-- The optimization is assisted by the Expectation Maximization (EM) Algorithm that handle univariate as well as multivariate time series: -->
 
@@ -450,7 +450,7 @@ ens(ep)
 
 Rest on the investor to calibrate this statistic in order to get a desired confidence level[^6].
 
-[^6]: Meucci, Attilio, Effective Number of Scenarios in Fully Flexible Probabilities (January 30, 2012). GARP Risk Professional, pp. 32-35, February 2012, Available at SSRN: https://ssrn.com/abstract=1971808.
+[^6]: Meucci, Attilio, Effective Number of Scenarios in Fully Flexible Probabilities (January 30, 2012). GARP Risk Professional, pp. 32-35, February 2012, Available at SSRN: https://www.ssrn.com/abstract=1971808.
 
 ## Views on Copulas
 
@@ -468,7 +468,7 @@ $$ \sum_{j=1}^J x_j U_{j,k}U_{j,l}U_{j,i}  =  \sum_{j=1}^J p_j \hat{U}_{j,k}\hat
 
 In which, the first restriction matches the first moment of the uniform distribution; the second and third restrictions pair the cross-moments of the empirical copula, $U$, with the simulated copula, $\hat{U}$; $x_j$ is a yet to be discovered _posterior_ distribution; $p_z$ is a _prior_ probability; When $j = z$, the dimensions of $p_j$ and $p_z$ match.
 
-Among many of the available copulas, say the investor wants to model the dependence of the market as a [clayton copula](https://en.wikipedia.org/wiki/Copula_(probability_theory)) to ensure the lower [tail dependency](https://en.wikipedia.org/wiki/Tail_dependence) does not go unnoticed. The estimation is simple to implement with the package [copula](https://cran.r-project.org/web/packages/copula/index.html):
+Among many of the available copulas, say the investor wants to model the dependence of the market as a [clayton copula](https://en.wikipedia.org/wiki/Copula_(probability_theory)) to ensure the lower [tail dependency](https://en.wikipedia.org/wiki/Tail_dependence) does not go unnoticed. The estimation is simple to implement with the package [copula](www.cran.r-project.org/web/packages/copula/index.html):
 
 ```{r, warning=FALSE, message=FALSE}
 library(copula)

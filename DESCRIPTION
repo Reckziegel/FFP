@@ -1,7 +1,7 @@
 Type: Package
 Package: ffp
 Title: Fully Flexible Probabilities for Stress Testing and Portfolio Construction
-Version: 0.2.1.9000
+Version: 0.2.2
 Authors@R: 
     person(given = "Bernardo",
            family = "Reckziegel",

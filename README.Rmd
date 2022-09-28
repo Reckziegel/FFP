@@ -126,7 +126,6 @@ Once the new probabilities have been estimated, `bootstrap_scenarios()` can be u
 
 The main statistics of arbitrary scenarios can be computed with `empirical_stats()`.
 
-
 ## References
 
 - Attilio Meucci (2021). Historical Scenarios with Fully Flexible Probabilities (https://www.mathworks.com/matlabcentral/fileexchange/31360-historical-scenarios-with-fully-flexible-probabilities), MATLAB Central File Exchange. Retrieved June 11, 2021.

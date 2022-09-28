@@ -35,8 +35,7 @@ bootstrap_scenarios(x, p, n)
 A \code{tibble} with the number of rows equal to \code{n}.
 }
 \description{
-Resamples historical scenarios with flexible probabilities while keeping the
-empirical structure of the copulas intact.
+Resamples historical scenarios with flexible probabilities.
 }
 \details{
 The argument \code{x} is supposed to have the same size of \code{p}.

@@ -30,7 +30,7 @@
 #' p <- p / sum(p)
 #'
 #' is_ffp(p)
-#' ffp(p)
+#' as_ffp(p)
 ffp <- function(x = double(), ...) {
   vctrs::vec_cast(x, double())
   new_ffp(x, ...)

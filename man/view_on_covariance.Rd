@@ -40,8 +40,10 @@ ret <- diff(log(EuStockMarkets))
 
 # Expectations for location and dispersion parameters
 mean <- colMeans(ret) # No active expectations for returns
-covs <- matrix(0, ncol = 4, nrow = 4) # assuming all assets are uncorrelated
-                                      # very strong view!
+cor <- matrix(0, ncol = 4, nrow = 4) # diagonal covariance matrix
+diag(cor) <- 1                       # diagonal covariance matrix
+sds <- apply(ret, 2, sd)             # diagonal covariance matrix
+covs <- diag(sds) \%*\% cor \%*\% diag(sds) ## diagonal covariance matrix
 
 # prior probabilities (usually equal weight scheme)
 prior <- rep(1 / nrow(ret), nrow(ret))

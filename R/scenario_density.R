@@ -15,12 +15,12 @@
 #' @export
 #'
 #' @examples
-#' pnl <- diff(log(EuStockMarkets))[, 1]
-#' p <- exp_decay(pnl, 0.005)
+#' x <- diff(log(EuStockMarkets))[, 1]
+#' p <- exp_decay(x, 0.005)
 #'
-#' scenario_density(pnl, p, 500)
+#' scenario_density(x, p, 500)
 #'
-#' scenario_histogram(pnl, p, 500)
+#' scenario_histogram(x, p, 500)
 scenario_density <- function(x, p, n = 10000) {
 
   stopifnot(inherits(p, "ffp"))

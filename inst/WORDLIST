@@ -1,4 +1,3 @@
-AppVeyor
 Attilio
 CMD
 CVaR
@@ -9,10 +8,9 @@ GARP
 Lifecycle
 Litterman
 Meucci
-Meucci's
+RStudio
 SSRN
 Santis
-Scholes
 TRUE's
 VaR
 Vesval
@@ -20,7 +18,6 @@ Winkelmann
 doi
 dx
 econometrician
-exponentiating
 fileexchange
 ggplot
 github
@@ -28,7 +25,9 @@ http
 https
 mathworks
 matlabcentral
-mimmics
+nlminb
+nloptr
+solnl
 ssrn
 vctrs
 volatilities

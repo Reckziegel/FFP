@@ -1,7 +1,7 @@
 url: ~
 template:
-  params:
-    bootswatch: yeti
+  bootstrap: 5
+  bootswatch: litera
 
 navbar:
   title: "ffp"
@@ -10,6 +10,13 @@ navbar:
       href: index.html
     - text: "Function Reference"
       href: reference/index.html
+    - text: "Vignettes"
+      href: reference/index.html
+      menu:
+        - text: "How does EP Work"
+          href: articles/how-does-EP-work.html
+        - text: "Views"
+          href: articles/views.html
     - text: "News"
       href: news/index.html
 
@@ -44,6 +51,7 @@ reference:
       desc: Minimum Relative Entropy
       contents:
       - entropy_pooling
+      - relative_entropy
 
     - title: Utilities
       desc: Functions to manipulate data.

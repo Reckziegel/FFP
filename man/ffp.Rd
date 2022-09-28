@@ -49,5 +49,5 @@ p <- runif(5)
 p <- p / sum(p)
 
 is_ffp(p)
-ffp(p)
+as_ffp(p)
 }

@@ -1,7 +1,6 @@
 #' Flexible Probabilities Driven Bootstrap
 #'
-#' Resamples historical scenarios with flexible probabilities while keeping the
-#' empirical structure of the copulas intact.
+#' Resamples historical scenarios with flexible probabilities.
 #'
 #' The argument `x` is supposed to have the same size of `p`.
 #'

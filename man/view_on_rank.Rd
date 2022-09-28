@@ -32,7 +32,7 @@ Helper to construct views on relative performance of assets.
 }
 \details{
 If \code{rank = c(2, 1)} it is implied that asset in the first column will outperform
-the asset in the second column. For vectors of bigger size the interpretation
+the asset in the second column. For longer vectors the interpretation
 is the same: assets on the right will outperform assets on the left.
 }
 \examples{

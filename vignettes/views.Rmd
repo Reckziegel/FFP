@@ -1,0 +1,561 @@
+---
+title: "Views"
+author: "Bernardo Reckziegel"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Views}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+<!-- As mentioned in __How does EP work__, entropy-pooling offers a template that enables portfolio and risk managers to process _views_ that can go far beyond normality.  -->
+
+This vignette provides a "jump-start" for users that want to quickly understand how to use entropy-pooling (EP) to construct *views* on the market distribution. The methodology fits well in a variety of scenarios: stress-testing, macro factors, non-linear views, and more. 
+
+To demonstrate entropy-pooling's firepower, the current vignette uses some of the cases Meucci (2008)[^1] leaves for the reader in the appendix. In particular, the usage of the following functions are covered in depth:
+
+- `view_on_mean()`
+- `view_on_volatility()`
+- `view_on_correlation()`
+- `view_on_rank()`
+- `view_on_marginal_distribution()`
+- `view_on_copula()`
+
+[^1]: Meucci, Attilio, Fully Flexible Views: Theory and Practice (August 8, 2008). Fully Flexible Views: Theory and Practice, Risk, Vol. 21, No. 10, pp. 97-102, October 2008, Available at SSRN: https://ssrn.com/abstract=1213325
+
+Along with the examples, the `EuStockMarkets` dataset - that comes with the installation of `R` - is used as a _proxy_ for "the market":
+
+```{r setup}
+library(ffp)
+library(ggplot2)
+set.seed(321)
+
+# invariance / stationarity
+x <- diff(log(EuStockMarkets))
+
+dim(x)
+
+head(x)
+```
+
+<!-- The object `x` is a $1859 \times 4$ matrix with four European stock indices (`DAX`, `SMI`, `CAC` and `FTSE`) that are sampled from $1991$ to $1998$.  -->
+
+<!-- ```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.height=4, fig.width=7, fig.align='center'} -->
+<!-- library(ggplot2) -->
+<!-- tibble::as_tibble(x) |>  -->
+<!--   tidyr::pivot_longer(cols = dplyr::everything()) |>  -->
+<!--   ggplot(aes(x = value, fill = name, color = name)) +  -->
+<!--   geom_density(show.legend = FALSE) +  -->
+<!--   facet_wrap(~name) +  -->
+<!--   scale_color_viridis_d(end = 0.75, option = "C") +  -->
+<!--   scale_fill_viridis_d(end = 0.75, option = "C") +  -->
+<!--   scale_x_continuous(labels = scales::percent_format(), limits = c(-0.05, 0.05)) + -->
+<!--   scale_y_continuous(labels = scales::percent_format(scale = 1)) +  -->
+<!--   labs(title = "Marginal Distributions",  -->
+<!--     subtitle = "European Stock Indexes", -->
+<!--     x = NULL, y = NULL, color = NULL, fill = NULL) -->
+<!-- ``` -->
+
+## Views on Expected Returns
+
+Assume an investor believes the `FTSE` index return will be $20\%$ above average in the near future. In order to process this *view*, the investor needs to minimize the relative entropy:
+
+$$ \sum_{j=1}^J x_j(ln(x_j) - ln(p_j)) $$ 
+
+Subject to the restriction:
+
+$$ \ x_j V_{j, k} = \mu_{k} $$
+
+In which $x_{j}$ is a yet to be discovered _posterior_ probability; $V_{j,k}$ is a $1859 \times 1$ vector with the `FTSE` returns; and $\mu_{k}$ is a $1 \times 1$ scalar with the investor projected return for the `FTSE` index. In this case, the $k$ subscript represents the fourth column in `x`[^2].
+
+[^2]: The commands `x[ , 4]` or `x[ , "FTSE"]` yield the same results.
+
+*Views* on expected returns can be constructed with `view_on_mean`:
+
+```{r}
+# Returns 20% higher than average
+mu <- mean(x[ , "FTSE"]) * 1.2
+
+# ffp views constructor
+views <- view_on_mean(x = as.matrix(x[ , "FTSE"]), mean = mu)
+views
+```
+
+The `views` object is a `list` with two components, `Aeq` and `beq`, that are equivalent to the elements $V_{j,k}$ transposed and $\mu_{k}$, respectively.
+
+The investor also needs to formulate a vector of *prior* probabilities, $p_j$, which is usually - but not necessary - a equal-weight vector:
+
+```{r}
+# Prior probabilities
+p_j <- rep(1 / nrow(x), nrow(x)) 
+```
+
+Once the _prior_ and the _views_ are established, the optimization can take place with `entropy_pooling`:
+
+```{r}
+# Solve Minimum Relative Entropy (MRE)
+ep <- entropy_pooling(
+  p      = p_j, 
+  Aeq    = views$Aeq, 
+  beq    = views$beq, 
+  solver = "nlminb"
+)
+ep
+```
+
+What is the interpretation for `ep`? Among all the possible probability vectors, `ep` is the one that can satisfy the *views* in the "least" evasive way (in which the term "least evasive" is direct reference to the _prior_). Therefore, `ep` is the best candidate for a _posterior_ distribution. 
+
+<!-- The main advantage of using the _views_ constructed in the `ffp` package is that, as a user, you just have to pass the arguments thorough the `entropy_pooling` function. -->
+
+In real world, the investor can have many *views*. Extending the current example, say the investor has a new belief: the `CAC` index returns will be $10\%$ bellow average[^3]:
+
+[^3]: An ARIMA, GARCH or VAR model could be used as well. The focus is not on the best forecasting method, but how to input the _view_ once the forecast has already been made.
+
+```{r}
+mu <- c(
+  mean(x[ , "FTSE"]) * 1.2, # Return 20% higher than average
+  mean(x[ , "CAC"]) * 0.9   # Return 10% bellow average
+)
+
+# ffp views constructor
+views <- view_on_mean(x = as.matrix(x[ , c("FTSE", "CAC")]), mean = mu)
+views
+```
+
+In which the elements `Aeq` and `beq` now have $2$ rows each, one for every _view_. 
+
+The minimum relative entropy problem is solved in the exact same way:
+
+```{r}
+# Solve MRE
+ep <- entropy_pooling(
+  p      = p_j, 
+  Aeq    = views$Aeq, 
+  beq    = views$beq, 
+  solver = "nlminb"
+)
+ep
+```
+
+It's easier to analyse the output of `ep` visually. 
+
+```{r}
+class(ep)
+```
+
+To that end, the `autoplot` method is available for objects of the `ffp` class:
+
+```{r, fig.width=7, fig.align='center'}
+autoplot(ep) + 
+  scale_color_viridis_c(option = "C", end = 0.75) + 
+  labs(title    = "Posterior Probability Distribution", 
+       subtitle = "Views on Expected Returns", 
+       x        = NULL, 
+       y        = NULL)
+```
+
+The plot reinforces the intuition of $x_j$ - the _posterior_ probability - as a distribution that distorts the _prior_ in order to accommodate the _views_.
+
+It's easy to double-check the investor *views* by computing the ratio of the *conditional* vs. *unconditional* returns:
+
+```{r}
+conditional   <- ffp_moments(x, ep)$mu 
+unconditional <- colMeans(x)
+
+conditional / unconditional - 1
+```
+
+According to expectations, `CAC` outlook is now $10\%$ bellow average and `FTSE` expected return is $20\%$ above average. _Violà!_
+
+## Views on Volatility
+
+Say the investor is confident that markets will be followed by a period of lull and bonanza. Without additional insights about expected returns, the investor anticipates that market volatility for the `CAC` index will drop by $10\%$. 
+
+To impose _views_ on volatility, the investor needs to minimize the expression:
+
+$$ \sum_{j=1}^J x_j(ln(x_j) - ln(p_j)) $$
+Subject to the constraint: 
+
+$$ \sum_{j=1}^{J} x_j V_{j, k}^2 = \mu_{k}^2 + \sigma_{k}^2 $$
+
+In which, $x_j$ is a vector of yet to be defined _posterior_ probabilities; $V_{j,k}^2$ is a $1859 \times 1$ vector with `CAC` squared returns; $\mu_{k}^2$ and $\sigma_{k}^2$ are the `CAC` sample mean and variance; and $k$ is the column position of `CAC` in the panel $V$. 
+
+The `view_on_volatility` function can be used for this purpose: 
+
+```{r}
+# opinion
+vol_cond <- sd(x[ , "CAC"]) * 0.9
+
+# views
+views <- view_on_volatility(x = as.matrix(x[ , "CAC"]), vol = vol_cond)
+views
+```
+
+The `views` object holds a list with two components - `Aeq` and `beq` - that are equivalent to the elements $V_{j,k}^2$ transposed and $\mu_{k}^2 + \sigma_{k}^2$, respectively. 
+
+To solve the relative entropy use the `entropy_pooling` function:
+
+```{r}
+ep <- entropy_pooling(
+  p      = p_j, 
+  Aeq    = views$Aeq, 
+  beq    = views$beq, 
+  solver = "nlminb"
+)
+ep
+```
+
+Once again, the `ep` vector is what we call *posterior*: the probability vector that causes the "least" amount of distortion in the *prior*, but still obeys the constraints (*views*).
+
+<!-- Notice that the same commands are used to find a solution in different problems (expected returns and volatilities). That's exactly the objective of `view_on_*()` family of functions: to provide a template for entropy minimization! -->
+
+The *posterior* probabilities can be observed with the `autoplot` method:
+
+```{r, fig.width=7, fig.align='center'}
+autoplot(ep) + 
+  scale_color_viridis_c(option = "C", end = 0.75) + 
+  labs(title    = "Posterior Probability Distribution", 
+       subtitle = "View on Volatility", 
+       x        = NULL, 
+       y        = NULL)
+```
+
+To check if the _posterior_ probabilities are valid as a way to display the investor's _view_, compare the _conditional_ vs. _unconditional_ volatilities:  
+
+```{r}
+unconditional <- apply(x, 2, sd)
+conditional   <- sqrt(diag(ffp_moments(x, ep)$sigma))
+
+conditional / unconditional - 1
+```
+
+The _posterior_ volatility for the `CAC` index is reduced by $10\%$, in line with the investor's subjective judgment. However, by emphasizing tranquil periods more often, other assets are also affected, but in smaller magnitudes.
+
+## Views on Correlation
+
+Assume the investor believes the correlation between `FTSE` and `DAX` will increase by $30\%$, from $0.64$ to $0.83$. To construct *views* on the correlation matrix, the general expression has to be minimized:
+
+$$ \sum_{j=1}^J x_j(ln(x_j) - ln(p_j)) $$
+Subject to the constraints: 
+
+$$ \sum_{j=1}^{J} x_j V_{j, k} V_{j, l} = \mu_{k} \mu_{l} + \sigma_{k} \sigma_{l} C_{k,l} $$
+
+In which, the term $V_{j, k} V_{j, l}$ on the left hand-side of the restriction consists of cross-correlations among assets; the terms $\mu_{k} \mu_{l} + \sigma_{k} \sigma_{l} C_{k,l}$ carry the investor target correlation structure; and $x_j$ is a yet to be defined probability vector.
+
+To formulate this *view*, first compute the _unconditional_ correlation matrix. Second, add a "perturbation" in the corresponding element that is consistent with the perceived *view*:
+
+```{r}
+cor_view <- cor(x) # unconditional correlation matrix
+cor_view["FTSE", "DAX"] <- 0.83 # perturbation (investor belief)
+cor_view["DAX", "FTSE"] <- 0.83 # perturbation (investor belief)
+```
+
+Finally, pass the adjusted correlation matrix into the `view_on_correlation` function:
+
+```{r}
+views <- view_on_correlation(x = x, cor = cor_view)
+views
+```
+
+In which `Aeq` is equal to $V_{j, k} V_{j, l}$ transposed and `beq` is a $10 \times 1$ vector with $\mu_{k} \mu_{l} + \sigma_{k} \sigma_{l} C_{k,l}$.
+
+Notice that even though the investor has a *view* in just one parameter[^4] the constraint vector has $10$ rows, because every element of the lower/upper diagonal of the correlation matrix has to match.
+
+[^4]: `cor(ftse, dax) = 0.83`.
+
+Once again, the minimum entropy is solved by `entropy_pooling`:
+
+```{r}
+ep <- entropy_pooling(
+  p      = p_j, 
+  Aeq    = views$Aeq, 
+  beq    = views$beq, 
+  solver = "nlminb"
+)
+ep
+```
+
+And the `autoplot` method is available:
+
+<!-- so that the *posterior* probabilities can be inspected more easily: -->
+
+```{r, fig.width=7, fig.align='center'}
+autoplot(ep) + 
+  scale_color_viridis_c(option = "C", end = 0.75) + 
+  labs(title    = "Posterior Probability Distribution", 
+       subtitle = "View on Correlation", 
+       x        = NULL, 
+       y        = NULL)
+```
+
+To fact-check the investor _view_, compute the *posterior* correlation matrix:
+
+```{r}
+cov2cor(ffp_moments(x, p = ep)$sigma)
+```
+
+And notice that the linear association between `FTSE` and `DAX` is now $0.83$!
+
+## Views on Relative Performance
+
+Assume the investor believes the `DAX` index will outperform the `SMI` by some amount, but he doesn't know by how much. If the investor has only a mild *view* on the performance of assets, he may want to minimize the following expression:
+
+$$ \sum_{j=1}^J x_j(ln(x_j) - ln(p_j)) $$
+Subject to the constraint:
+
+$$ \sum_{j=1}^{J} x_j (V_{j, k} - V_{j, l}) \ge 0 $$
+In which, the $x_j$ is a yet to be determined probability vector; $V_{j, k}$ is a $1859 \times 1$ column vector with `DAX` returns and $V_{j, l}$ is a $1859 \times 1$ column vector with the `SMI` returns. In this case, the $k$ and $l$ subscripts refers to the column positions of `DAX` and `SMI` in the object `x`, respectively.
+
+_Views_ on relative performance can be imposed with `view_on_rank`:
+
+```{r}
+views <- view_on_rank(x = x, rank = c(2, 1))
+views
+```
+
+Assets that are expected to outperform enter in the `rank` argument with their column positions to the right: assets in the left underperform and assets in the right outperform. Because the investor believes that `DAX` $\geq$ `SMI` (the asset in the first column will outperform the asset in the second column), we fill `rank = c(2, 1)`[^5].
+
+[^5]: In the `x` object, `DAX` it's in the first column and the `SMI` it's in the second column.
+
+The optimization is, once again, guided by the `entropy_pooling` function:
+
+```{r}
+ep <- entropy_pooling(
+  p      = p_j, 
+  A      = views$A, 
+  b      = views$b, 
+  solver = "nloptr"
+)
+ep
+```
+
+Two important observations:
+
+- Inequalities constraint cannot be handled with the `nlminb` solver. Use `nloptr` or `solnl`, instead;
+- Inequalities constraint require the arguments `A` and `b` to be fulfilled rather than `Aeq` and `beq`.
+
+The _posterior_ probabilities are presented bellow:
+
+```{r, fig.width=7, fig.align='center'}
+autoplot(ep) + 
+  scale_color_viridis_c(option = "C", end = 0.75) + 
+  labs(title    = "Posterior Probability Distribution", 
+       subtitle = "View on Ranking/Momentum", 
+       x        = NULL, 
+       y        = NULL)
+```
+
+To fact-check the ongoing *view*, compare the *conditional* vs. *unconditional* returns:
+
+```{r}
+conditional   <- ffp_moments(x, ep)$mu  
+unconditional <- colMeans(x)
+
+conditional / unconditional - 1
+```
+
+Indeed, returns for `DAX` are adjusted upwards by $17\%$, while returns for `SMI` are revised downwards by $6.5\%$. Notice that returns for `CAC` and `FTSE` were also affected. This behavior could be tamed by combining the ranking condition with _views_ on expected returns. See the function `bind_views()` for an example. 
+
+## Views on Marginal Distribution
+
+Assume the investor has a _view_ on the entire marginal distribution. One way to add _views_ on marginal distributions is by matching the first moments exactly, up to a given order. Mathematically, the investor minimizes the relative entropy: 
+
+$$ \sum_{j=1}^J x_j(ln(x_j) - ln(p_j)) $$
+With, say, two equality constraints (one for $\mu$ and one for $\sigma^2$):
+
+$$ \sum_{j=1}^J x_j V_{j,k}  =  \sum_{j=z}^Z p_z \hat{V}_{z,k} $$
+$$ \sum_{j=1}^J x_j (V_{j,k})^2  =  \sum_{z=1}^Z p_z (\hat{V}_{z,k})^2 $$
+<!-- $$ \sum_{j=1}^J x_j (V_{j,k})^3  =  \sum_{z=1}^Z p_z (\hat{V}_{z,k})^3 $$ -->
+<!-- $$ \sum_{j=1}^J x_j (V_{j,k})^4  =  \sum_{z=1}^Z p_z (\hat{V}_{z,k})^4 $$ -->
+
+In which $x_j$ is a yet to be defined probability vector; $V_{j,k}$ is a matrix with the empirical marginal distributions; $p_z$ is vector of _prior_ probabilities; and $\hat{V}_{z,k}$ an exogenous panel with simulations that are consistent with the investor's _views_. 
+
+When $j = z$, the panels $V_{j,k}$ and $\hat{V}_{z,k}$ have the same number of rows and the dimensions in both sides of the restrictions match. However, it's possible to set $z \ge j$ to simulate a larger panel for $\hat{V}_{z, k}$. Keep in mind though that, if $z \ne j$, two _prior_ probabilities will have to be specified: one for $p_j$ (the objective function) and one for $p_z$ (the _views_). 
+
+Continuing on the example, consider the margins of `x` can be approximated by a symmetric multivariate t-distribution. If this is the case, the estimation can be conducted by the amazing [ghyp](https://cran.r-project.org/web/packages/ghyp/index.html) package, that covers the entire family of [generalized hyperbolic distributions](https://en.wikipedia.org/wiki/Generalised_hyperbolic_distribution):
+
+<!-- The optimization is assisted by the Expectation Maximization (EM) Algorithm that handle univariate as well as multivariate time series: -->
+
+```{r, message=FALSE, warning=FALSE}
+library(ghyp)
+
+# multivariate t distribution
+dist_fit <- fit.tmv(data = x, symmetric = TRUE, silent = TRUE)
+dist_fit
+```
+
+The investor then, can construct a large panel with statistical properties similar to the margins he envisions: 
+
+```{r}
+set.seed(123)
+# random numbers from `dist_fit`
+simul  <- rghyp(n = 100000, object = dist_fit)
+```
+
+Where the $100.000 \times 4$ matrix is used to match the _views_ with `view_on_marginal_distribution`: 
+
+```{r}
+p_z <- rep(1 / 100000, 100000)
+views <- view_on_marginal_distribution(
+  x     = x, 
+  simul = simul, 
+  p     = p_z
+)
+views
+```
+
+The objects `simul` and `p_z` corresponds to the terms $\hat{V}_{z,k}$ transposed and $p_z$, respectively. Note that $8$ restrictions are created, four for each moment of the marginal distribution (there are four assets in "the market").
+
+With the _prior_ and the _views_ at hand, the optimization can be quickly implemented:
+
+```{r}
+ep <- entropy_pooling(
+  p      = p_j, 
+  Aeq    = views$Aeq, 
+  beq    = views$beq, 
+  solver = "nloptr"
+)
+ep
+```
+
+As the visual inspection of the vector `ep`:
+
+```{r, fig.width=7, fig.align='center'}
+autoplot(ep) + 
+  scale_color_viridis_c(option = "C", end = 0.75) + 
+  labs(title    = "Posterior Probability Distribution", 
+       subtitle = "View on Marginal Distribution", 
+       x        = NULL, 
+       y        = NULL)
+```
+
+It's easy to extend the current example. For instance, the investor could "tweak" some of the fitted parameters for stress-testing (i.e. change the degrees of freedom, increase/decrease expected returns, etc) to verify the immediate impact on the P&L (VaR, CVaR, etc).
+
+Acknowledge that when the restrictions are to harsh, the scenarios will be heavily distorted to satisfy the _views_. In this case, one may need to compute the effective number of scenarios (ENS). This is very easy to do with `ens()`:
+
+```{r}
+ens(ep)
+```
+
+Rest on the investor to calibrate this statistic in order to get a desired confidence level[^6].
+
+[^6]: Meucci, Attilio, Effective Number of Scenarios in Fully Flexible Probabilities (January 30, 2012). GARP Risk Professional, pp. 32-35, February 2012, Available at SSRN: https://ssrn.com/abstract=1971808.
+
+## Views on Copulas
+
+Assume the investor would like to simulate a different dependence structure for the market. _Views_ that change the interdependence of assets can be implemented by minimizing the relative entropy: 
+
+$$ \sum_{j=1}^J x_j(ln(x_j) - ln(p_j)) $$
+Subject to the following restrictions: 
+
+$$ \sum_{j=1}^J x_i U_{j,k} = 0.5$$
+<!-- $$ \sum_{j=1}^J x_i U_{j,k}^2 = 0.33 $$ -->
+$$ \sum_{j=1}^J x_j U_{j,k}U_{j,l}  =  \sum_{z=1}^Z p_z \hat{U}_{z,k}\hat{U}_{z,l} $$
+
+
+$$ \sum_{j=1}^J x_j U_{j,k}U_{j,l}U_{j,i}  =  \sum_{j=1}^J p_j \hat{U}_{j,k}\hat{U}_{j,l}\hat{U}_{j,i} $$
+
+In which, the first restriction matches the first moment of the uniform distribution; the second and third restrictions pair the cross-moments of the empirical copula, $U$, with the simulated copula, $\hat{U}$; $x_j$ is a yet to be discovered _posterior_ distribution; $p_z$ is a _prior_ probability; When $j = z$, the dimensions of $p_j$ and $p_z$ match.
+
+Among many of the available copulas, say the investor wants to model the dependence of the market as a [clayton copula](https://en.wikipedia.org/wiki/Copula_(probability_theory)) to ensure the lower [tail dependency](https://en.wikipedia.org/wiki/Tail_dependence) does not go unnoticed. The estimation is simple to implement with the package [copula](https://cran.r-project.org/web/packages/copula/index.html):
+
+```{r, warning=FALSE, message=FALSE}
+library(copula)
+
+# copula (pseudo-observation)
+u <- pobs(x)
+
+# copula estimation
+cop <- fitCopula(
+  copula = claytonCopula(dim = ncol(x)), 
+  data   = u, 
+  method = "ml"
+)
+
+# simulation
+r_cop <- rCopula(
+  n      = 100000, 
+  copula = claytonCopula(param = cop@estimate, dim = 4)
+)
+```
+
+First, the copulas are computed component-wise by applying the marginal empirical distribution in every $k$ column of the dataset. Second, the pseudo-observations are used to fit a Clayton copula by the Maximum-Likelihood (ML) method. Finally, a large panel with dimension $100.000 \times 4$ is constructed to match a Clayton copula with $\hat \alpha = 1.06$, as in the object `cop`. 
+
+The _views_ on the market is constructed with the `view_on_copula`:
+
+```{r}
+views <- view_on_copula(x = u, simul = r_cop, p = p_z)
+views
+```
+
+Once again, the solution of the minimum relative entropy can be found in one line of code:
+
+```{r}
+ep <- entropy_pooling(
+  p      = p_j, 
+  Aeq    = views$Aeq, 
+  beq    = views$beq, 
+  solver = "nloptr"
+)
+ep
+```
+
+And the `autoplot` method is available for the objects of the `ffp` class: 
+
+```{r, fig.width=7, fig.align='center'}
+autoplot(ep) + 
+  scale_color_viridis_c(option = "C", end = 0.75) + 
+  labs(title    = "Posterior Probability Distribution", 
+       subtitle = "View on Copulas", 
+       x        = NULL, 
+       y        = NULL) 
+```
+
+To stretch the current example, assume the investor stresses the parameter $\hat \alpha = 1.06$[^9]. Higher $\alpha$ values are linked to extreme occurrences on the left tails of the distribution. Whence, consider the case where $\hat \alpha = 5$:
+
+[^9]: `cop@estimate`
+
+```{r}
+cop@estimate <- 5
+```
+
+Rerun the previous steps (simulation, _views_ and optimization):
+
+```{r}
+# simulation
+r_cop <- rCopula(
+  n      = 100000, 
+  copula = claytonCopula(param = cop@estimate, dim = 4)
+)
+
+# #views
+views <- view_on_copula(x = u, simul = r_cop, p = p_z)
+
+# relative entropy
+ep <- entropy_pooling(
+  p      = p_j, 
+  Aeq    = views$Aeq, 
+  beq    = views$beq, 
+  solver = "nloptr"
+)
+```
+
+To find the new _posterior_ probability vector the satisfy the stress-test condition:
+
+```{r, fig.width=7, fig.align='center'}
+autoplot(ep) + 
+  scale_color_viridis_c(option = "C", end = 0.75) + 
+  labs(title    = "Posterior Probability Distribution", 
+       subtitle = "View on Copulas", 
+       x        = NULL, 
+       y        = NULL) 
+```
+

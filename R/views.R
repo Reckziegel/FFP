@@ -20,7 +20,7 @@
 #' ret <- diff(log(EuStockMarkets))
 #' n   <- nrow(ret)
 #'
-#' # Prior beliefs for expected returns (here is 2% for each asset)
+#' # View on expected returns (here is 2% for each asset)
 #' mean <- rep(0.02, 4)
 #'
 #' # Prior probabilities (usually equal weight scheme)
@@ -106,8 +106,10 @@ construct_view_on_mean <- function(x, mean) {
 #'
 #' # Expectations for location and dispersion parameters
 #' mean <- colMeans(ret) # No active expectations for returns
-#' covs <- matrix(0, ncol = 4, nrow = 4) # assuming all assets are uncorrelated
-#'                                       # very strong view!
+#' cor <- matrix(0, ncol = 4, nrow = 4) # diagonal covariance matrix
+#' diag(cor) <- 1                       # diagonal covariance matrix
+#' sds <- apply(ret, 2, sd)             # diagonal covariance matrix
+#' covs <- diag(sds) %*% cor %*% diag(sds) ## diagonal covariance matrix
 #'
 #' # prior probabilities (usually equal weight scheme)
 #' prior <- rep(1 / nrow(ret), nrow(ret))
@@ -373,7 +375,7 @@ construct_view_on_volatility <- function(x, vol) {
 #' Helper to construct views on relative performance of assets.
 #'
 #' If `rank = c(2, 1)` it is implied that asset in the first column will outperform
-#' the asset in the second column. For vectors of bigger size the interpretation
+#' the asset in the second column. For longer vectors the interpretation
 #' is the same: assets on the right will outperform assets on the left.
 #'
 #' @param x An univariate or a multivariate distribution.
@@ -617,8 +619,8 @@ construct_view_on_copula <- function(x, simul, p) {
   beq <- as.matrix(c(beq, rep(1 / 2, NCOL(x))))
 
   # second moment
-  Aeq <- rbind(Aeq, t(x) ^ 2)
-  beq <- as.matrix(c(beq, rep(1 / 3, NCOL(x))))
+  #Aeq <- rbind(Aeq, t(x) ^ 2)
+  #beq <- as.matrix(c(beq, rep(1 / 3, NCOL(x))))
 
   # cross moments
   for (k in 1:N) {
@@ -628,15 +630,17 @@ construct_view_on_copula <- function(x, simul, p) {
     }
   }
 
-  # order 3
-  # for (k in 1:N) {
-  #   for (l in k:N) {
-  #     for (i in l:k) {
-  #       Aeq <- rbind(Aeq, t(x[ , k] * x[ , l] * x[ , i]))
-  #       beq <- rbind(beq, t(simul[ , k] * simul[ , l] * simul[ , i]) %*% p)
-  #     }
-  #   }
-  # }
+  if (N > 2) {
+    # order 3
+    for (k in 1:N) {
+      for (l in k:N) {
+        for (i in l:k) {
+          Aeq <- rbind(Aeq, t(x[ , k] * x[ , l] * x[ , i]))
+          beq <- rbind(beq, t(simul[ , k] * simul[ , l] * simul[ , i]) %*% p)
+        }
+      }
+    }
+  }
 
   vctrs::new_list_of(
     x = list(Aeq = Aeq, beq = beq),
@@ -738,12 +742,12 @@ construct_view_on_marginal_distribution <- function(x, simul, p) {
   beq <- rbind(beq, t(simul ^ 2) %*% p)
 
   # Skewness
-  Aeq <- rbind(Aeq, t(x) ^ 3)
-  beq <- rbind(beq, (t(simul) ^ 3) %*% p)
+  #Aeq <- rbind(Aeq, t(x) ^ 3)
+  #beq <- rbind(beq, (t(simul) ^ 3) %*% p)
 
   # Kurtosis
-  Aeq <- rbind(Aeq, t(x) ^ 4)
-  beq <- rbind(beq, (t(simul) ^ 4) %*% p)
+  #Aeq <- rbind(Aeq, t(x) ^ 4)
+  #beq <- rbind(beq, (t(simul) ^ 4) %*% p)
 
 
   vctrs::new_list_of(

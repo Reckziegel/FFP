@@ -9,7 +9,8 @@
 #' constraint for probabilities, which is done automatically by `entropy_pooling`.
 #'
 #' For the arguments accepted in \code{...}, please see the documentation of
-#' \code{\link[stats]{nlminb}}, \code{\link[NlcOptim]{solnl}} and \code{\link[nloptr]{nloptr}}.
+#' \code{\link[stats]{nlminb}}, \code{\link[NlcOptim]{solnl}}, \code{\link[nloptr]{nloptr}}
+#' and the examples bellow.
 #'
 #' @param p A vector of prior probabilities.
 #' @param A The linear inequality constraint (left-hand side).
@@ -21,6 +22,59 @@
 #'
 #' @return A vector of posterior probabilities.
 #' @export
+#'
+#' @examples
+#' # setup
+#' ret <- diff(log(EuStockMarkets))
+#' n   <- nrow(ret)
+#'
+#' # View on expected returns (here is 2% for each asset)
+#' mean <- rep(0.02, 4)
+#'
+#' # Prior probabilities (usually equal weight scheme)
+#' prior <- rep(1 / n, n)
+#'
+#' # View
+#' views <- view_on_mean(x = ret, mean = mean)
+#'
+#' # Optimization
+#' ep <- entropy_pooling(
+#'  p      = prior,
+#'  Aeq    = views$Aeq,
+#'  beq    = views$beq,
+#'  solver = "nlminb"
+#' )
+#' ep
+#'
+#' ### Using the ... argument to control the optimization parameters
+#'
+#' # nlminb
+#' ep <- entropy_pooling(
+#'  p      = prior,
+#'  Aeq    = views$Aeq,
+#'  beq    = views$beq,
+#'  solver = "nlminb",
+#'  control = list(
+#'      eval.max = 1000,
+#'      iter.max = 1000,
+#'      trace    = TRUE
+#'    )
+#' )
+#' ep
+#'
+#' # nloptr
+#' ep <- entropy_pooling(
+#'  p      = prior,
+#'  Aeq    = views$Aeq,
+#'  beq    = views$beq,
+#'  solver = "nloptr",
+#'  control = list(
+#'      xtol_rel = 1e-10,
+#'      maxeval  = 1000,
+#'      check_derivatives = TRUE
+#'    )
+#' )
+#' ep
 entropy_pooling <- function(p, A = NULL, b = NULL, Aeq = NULL, beq = NULL, solver = c("nlminb", "solnl", "nloptr"), ...) {
 
   assertthat::assert_that(assertthat::is.string(solver))

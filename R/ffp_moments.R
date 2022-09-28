@@ -30,7 +30,7 @@ ffp_moments <- function(x, p = NULL) {
 #' @rdname ffp_moments
 #' @export
 ffp_moments.default <- function(x, p = NULL) {
-  stop("`ffp_moments` doesn't know how to deal with the `", class(x)[[1L]], "` class yet.", call. = FALSE)
+  rlang::abort("`ffp_moments` doesn't know how to deal with the `", class(x)[[1L]], "` class yet.", call. = FALSE)
 }
 
 #' @rdname ffp_moments

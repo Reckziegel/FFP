@@ -2,7 +2,10 @@
 title: "Views"
 author: "Bernardo Reckziegel"
 date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
+output: 
+  rmarkdown::html_vignette:
+    toc: true
+    toc_depth: 2
 vignette: >
   %\VignetteIndexEntry{Views}
   %\VignetteEngine{knitr::rmarkdown}

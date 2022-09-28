@@ -13,6 +13,15 @@
     <loc>/LICENSE.html</loc>
   </url>
   <url>
+    <loc>/articles/how-does-EP-work.html</loc>
+  </url>
+  <url>
+    <loc>/articles/index.html</loc>
+  </url>
+  <url>
+    <loc>/articles/views.html</loc>
+  </url>
+  <url>
     <loc>/authors.html</loc>
   </url>
   <url>
@@ -89,6 +98,9 @@
   </url>
   <url>
     <loc>/reference/least_info_kernel.html</loc>
+  </url>
+  <url>
+    <loc>/reference/relative_entropy.html</loc>
   </url>
   <url>
     <loc>/reference/scenario_density.html</loc>

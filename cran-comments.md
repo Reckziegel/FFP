@@ -11,4 +11,6 @@ This is a patch release (from 0.2.1 to 0.2.2)
 
 0 errors | 0 warnings | 0 note
 
+* Second submission for the version 0.2.2. I've corrected the (possibly) invalid URLs.
+
 * I've used `\donttest{}` in `double_decay()` and `view_on_copula()` examples because they take more than 5 secs to run.

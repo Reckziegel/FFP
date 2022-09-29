@@ -1,3 +1,5 @@
+# ffp (development version)
+
 # ffp 0.2.2
 
 * Added `relative_entropy()` to compute the relative entropy between two distributions;

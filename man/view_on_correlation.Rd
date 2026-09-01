@@ -5,6 +5,8 @@
 \alias{view_on_correlation.default}
 \alias{view_on_correlation.matrix}
 \alias{view_on_correlation.xts}
+\alias{view_on_correlation.ts}
+\alias{view_on_correlation.mts}
 \alias{view_on_correlation.tbl_df}
 \title{Views on Correlation Structure}
 \usage{
@@ -15,6 +17,10 @@ view_on_correlation(x, cor)
 \method{view_on_correlation}{matrix}(x, cor)
 
 \method{view_on_correlation}{xts}(x, cor)
+
+\method{view_on_correlation}{ts}(x, cor)
+
+\method{view_on_correlation}{mts}(x, cor)
 
 \method{view_on_correlation}{tbl_df}(x, cor)
 }

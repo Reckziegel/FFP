@@ -5,6 +5,8 @@
 \alias{view_on_covariance.default}
 \alias{view_on_covariance.matrix}
 \alias{view_on_covariance.xts}
+\alias{view_on_covariance.ts}
+\alias{view_on_covariance.mts}
 \alias{view_on_covariance.tbl_df}
 \title{Views on Covariance Matrix}
 \usage{
@@ -15,6 +17,10 @@ view_on_covariance(x, mean, sigma)
 \method{view_on_covariance}{matrix}(x, mean, sigma)
 
 \method{view_on_covariance}{xts}(x, mean, sigma)
+
+\method{view_on_covariance}{ts}(x, mean, sigma)
+
+\method{view_on_covariance}{mts}(x, mean, sigma)
 
 \method{view_on_covariance}{tbl_df}(x, mean, sigma)
 }

@@ -43,6 +43,7 @@ make_kernel_normal <- function(x, mean, sigma) {
 #' @keywords internal
 make_kernel_entropy <- function(x, mean, sigma) {
   p <- least_info_kernel(x, mean, sigma)
+  p <- vctrs::vec_data(p)
   if (any(p == 0)) {
     p[p == 0] <- 1e-30
   }
@@ -139,10 +140,10 @@ make_empirical_stats <- function(x, p, level) {
     colnames(out) <- out_name
   }
 
-  tibble::as_tibble(out) %>%
-    dplyr::mutate(stat = c("Mu", "Std", "Skew", "Kurt", "VaR", "CVaR")) %>%
-    dplyr::mutate(stat = as.factor(.data$stat)) %>%
-    dplyr::select(.data$stat, dplyr::everything())
+  tibble::as_tibble(out) |>
+    dplyr::mutate(stat = c("Mu", "Std", "Skew", "Kurt", "VaR", "CVaR")) |>
+    dplyr::mutate(stat = as.factor(stat)) |>
+    dplyr::select(stat, dplyr::everything())
 
 }
 
@@ -151,7 +152,7 @@ make_empirical_stats <- function(x, p, level) {
 #' @keywords internal
 make_scenarios <- function(x, p, n) {
   # empirical cdf
-  empirical_cdf <- vctrs::vec_c(0, cumsum(p))
+  empirical_cdf <- vctrs::vec_c(0, cumsum(vctrs::vec_data(p)))
   # random matrix
   rand_uniform <- stats::runif(n)
   # scenarios

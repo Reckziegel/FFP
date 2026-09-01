@@ -27,9 +27,21 @@ test_that("nlminb, solnl and nloptr results converge for equality constrains", {
   expect_length(opt_nlminb, vctrs::vec_size(p))
   expect_length(opt_solnl, vctrs::vec_size(p))
   expect_length(opt_nloptr, vctrs::vec_size(p))
-  expect_true(all(dplyr::near(opt_nlminb, opt_solnl, tol = 0.00001)))
-  expect_true(all(dplyr::near(opt_solnl, opt_nloptr, tol = 0.00001)))
-  expect_true(all(dplyr::near(opt_nlminb, opt_nloptr, tol = 0.00001)))
+  expect_true(all(dplyr::near(
+    vctrs::vec_data(opt_nlminb),
+    vctrs::vec_data(opt_solnl),
+    tol = 0.00001))
+    )
+  expect_true(all(dplyr::near(
+    vctrs::vec_data(opt_solnl),
+    vctrs::vec_data(opt_nloptr),
+    tol = 0.00001))
+    )
+  expect_true(all(dplyr::near(
+    vctrs::vec_data(opt_nlminb),
+    vctrs::vec_data(opt_nloptr),
+    tol = 0.00001))
+    )
 })
 
 # Inequality Constraints
@@ -54,7 +66,15 @@ test_that("solnl and nloptr results converge for inequality constrains", {
   expect_length(opt_single_view_nloptr, vctrs::vec_size(prior))
   expect_length(opt_multiple_view_solnl, vctrs::vec_size(prior))
   expect_length(opt_multiple_view_nloptr, vctrs::vec_size(prior))
-  expect_true(all(dplyr::near(opt_single_view_solnl, opt_single_view_nloptr, tol = 0.0001)))
-  expect_true(all(dplyr::near(opt_multiple_view_solnl, opt_multiple_view_nloptr, tol = 0.0001)))
+  expect_true(all(dplyr::near(
+    vctrs::vec_data(opt_single_view_solnl),
+    vctrs::vec_data(opt_single_view_nloptr),
+    tol = 0.0001))
+    )
+  expect_true(all(dplyr::near(
+    vctrs::vec_data(opt_multiple_view_solnl),
+    vctrs::vec_data(opt_multiple_view_nloptr),
+    tol = 0.0001))
+    )
 })
 

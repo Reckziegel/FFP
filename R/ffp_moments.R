@@ -30,7 +30,10 @@ ffp_moments <- function(x, p = NULL) {
 #' @rdname ffp_moments
 #' @export
 ffp_moments.default <- function(x, p = NULL) {
-  rlang::abort("`ffp_moments` doesn't know how to deal with the `", class(x)[[1L]], "` class yet.", call. = FALSE)
+  cli::cli_abort(
+    c("x" = "{.fn ffp_moments} doesn't know how to deal with class {.cls {class(x)[[1L]]}}.",
+      "i" = "Supported classes: {.cls numeric}, {.cls matrix}, {.cls xts}, {.cls ts}, {.cls mts}")
+  )
 }
 
 #' @rdname ffp_moments
@@ -70,7 +73,8 @@ ffp_moments.tbl_df <- function(x, p = NULL) {
 #' @keywords internal
 ffp_moments_ <- function(x, p = NULL) {
 
-  mom <- stats::cov.wt(x = x, wt = p)
+  p <- vctrs::vec_data(p)
+  mom <- stats::cov.wt(x = x, wt = p, method = "ML")
 
   list(mu = mom$center, sigma = mom$cov)
 

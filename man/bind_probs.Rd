@@ -10,17 +10,25 @@ bind_probs(...)
 \item{...}{\code{ffp} objects to combine.}
 }
 \value{
-A tidy \code{tibble}.
+A tidy \code{tibble} with numeric probability values suitable for visualization
+and tabular analysis.
 
-The output adds two new columns:
+The output contains three columns:
 \itemize{
 \item \code{rowid} (an \code{integer}) with the row number of each realization;
-\item \code{key} (a \code{factor}) that keeps track of the \code{ffp} inputs as separated objects.
+\item \code{probs} (a \code{numeric} vector) with probability weights extracted from the \code{ffp} objects;
+\item \code{fn} (a \code{factor}) that keeps track of which \code{ffp} input each row comes from.
 }
 }
 \description{
 This function mimics \code{dplyr} \code{\link[dplyr]{bind}}. It's useful if you
 have different \code{ffp} objects and want to stack them in the \code{tidy} (long) format.
+}
+\details{
+The \code{probs} column is extracted as numeric data to enable direct use with ggplot2 and
+other tabular visualization and analysis tools. Once \code{ffp} objects are reshaped to tidy format,
+they cease to represent a single probability distribution and instead represent structured
+tabular data where the numeric probability values are ordinary columns.
 }
 \examples{
 library(ggplot2)
@@ -31,7 +39,7 @@ y <- exp_decay(EuStockMarkets, lambda = 0.002)
 
 bind_probs(x, y)
 
-bind_probs(x, y) \%>\%
+bind_probs(x, y) |>
   ggplot(aes(x = rowid, y = probs, color = fn)) +
   geom_line() +
   scale_color_viridis_d() +

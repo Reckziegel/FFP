@@ -59,7 +59,7 @@ ret <- diff(log(EuStockMarkets))
 
 # with equal weights (standard scenario)
 ew  <- rep(1 / nrow(ret), nrow(ret))
-empirical_stats(x = ret, p = as_ffp(ew)) \%>\%
+empirical_stats(x = ret, p = as_ffp(ew)) |>
   ggplot(aes(x = name, y = value)) +
   geom_col() +
   facet_wrap(~stat, scales = "free") +
@@ -67,7 +67,7 @@ empirical_stats(x = ret, p = as_ffp(ew)) \%>\%
 
 # with ffp
 exp_smooth <- exp_decay(ret, 0.015)
-empirical_stats(ret, exp_smooth) \%>\%
+empirical_stats(ret, exp_smooth) |>
   ggplot(aes(x = name, y = value)) +
   geom_col() +
   facet_wrap(~stat, scales = "free") +

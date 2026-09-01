@@ -1,0 +1,628 @@
+---
+title: "How does Entropy Pooling work?"
+resource_files:
+output: rmarkdown::html_vignette
+author: "Bernardo Reckziegel"
+Date: "`r Sys.Date()`"
+vignette: >
+  %\VignetteIndexEntry{How does Entropy Pooling work?}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+Entropy Pooling (EP) is a probability-updating framework for
+incorporating subjective views into an existing risk model.
+
+Its main advantage is flexibility. The prior distribution does not need
+to be Gaussian, and views can be expressed on linear or nonlinear
+functions of the underlying risk factors. In Meucci's formulation, the
+goal is to construct a posterior distribution that satisfies the views
+while introducing as little additional structure as possible relative to
+the reference model.
+
+The central idea is remarkably simple:
+
+> **Entropy Pooling does not change the scenarios. It changes how likely
+> each scenario is.**
+
+This idea is worth keeping in mind throughout the derivation. Most of
+the mathematics below is simply a way of finding the new scenario
+probabilities that satisfy the views while remaining as close as
+possible to the original probabilities.
+
+## From a prior model to weighted scenarios
+
+Suppose the risk model contains $N$ risk factors and is represented by
+$J$ historical or simulated scenarios.
+
+We collect these scenarios in the matrix
+
+$$X =
+\begin{bmatrix}
+X_1'\\
+X_2'\\
+\vdots\\
+X_J'
+\end{bmatrix},$$
+
+where $X_j$ denotes the $j$-th joint realization of the $N$ risk
+factors.
+
+Thus,
+
+$$X\in\mathbb{R}^{J\times N}.$$
+
+Each scenario is associated with a prior probability. Collecting these
+probabilities gives
+
+$$p=
+\begin{bmatrix}
+p_1\\
+\vdots\\
+p_J
+\end{bmatrix},
+\qquad
+p_j\geq0,
+\qquad
+\mathbf 1'p=1.$$
+
+For an equally weighted historical sample, for example, $p_j$ is
+
+$$p_j=\frac{1}{J}.$$
+
+More generally, the probabilities $p$ may already incorporate
+information such as time decay, conditioning variables, or another
+probability model.
+
+The pair
+
+$$(X,p)$$
+
+therefore represents the **prior** distribution.
+
+This is exactly the numerical representation used in Entropy Pooling: a
+panel of scenarios together with their associated probabilities.
+
+### A note on notation
+
+Throughout this vignette, we use $q$ for the posterior probabilities.
+Meucci denotes these probabilities by $\tilde p$; the change in notation
+is only intended to make the distinction between prior probabilities $p$
+and posterior probabilities $q$ easier to see.
+
+A useful mental picture is therefore
+
+$$\underbrace{(X,p)}_{\text{prior}}
+\quad\longrightarrow\quad
+\underbrace{(X,q)}_{\text{posterior}}.$$
+
+The matrix $X$ does not change. Only its probabilities do.
+
+## Expressing views
+
+Views do not need to refer directly to the individual risk factors in
+$X$. Instead, suppose that the investor is interested in $K$ quantities
+
+$$V=g(X),$$
+
+where
+
+$$g(X)=
+\left(
+g_1(X),\ldots,g_K(X)
+\right).$$
+
+The functions $g_k(\cdot)$ may be linear or nonlinear. This allows views
+to be expressed on quantities such as portfolio returns, spreads,
+volatility, rankings, medians, quantiles, or other characteristics of
+the distribution.
+
+For each scenario $X_j$, we evaluate the functions $g_k$. This produces
+a $J\times K$ matrix of view scenarios,
+
+$$V_{j,k}=g_k(X_j).$$
+
+The important point is that the views eventually become restrictions on
+the probabilities assigned to these scenarios.
+
+Consider a simple example. Suppose $r_j$ is the return of an asset in
+scenario $j$, and the investor believes that its expected return should
+equal some value $\mu_{\text{view}}$.
+
+Under the posterior probabilities $q$, this view becomes
+
+$$\sum_{j=1}^J q_j r_j
+=
+\mu_{\text{view}}.$$
+
+Nothing has happened to the returns $r_j$. Entropy Pooling changes the
+weights $q_j$ until their weighted average satisfies the view.
+
+A bullish inequality view could similarly be written as
+
+$$\sum_{j=1}^J q_j r_j
+\geq
+\mu_{\text{view}}.$$
+
+This ability to handle both equality and inequality constraints is one
+of the useful features of EP.
+
+## Writing the views compactly
+
+A collection of views can be represented compactly as
+
+$$Fq\leq f$$
+
+for inequality constraints, and
+
+$$Hq=h$$
+
+for equality constraints.
+
+Here:
+
+- $q$ is the $J\times1$ vector of posterior scenario probabilities;
+- each row of $F$ represents one inequality view, while $f$ contains the
+  corresponding bounds;
+- each row of $H$ represents one equality constraint, while $h$ contains
+  the corresponding target values.
+
+For convenience, the normalization condition
+
+$$\mathbf 1'q=1$$
+
+can also be included as one of the rows of $Hq=h$.
+
+There is no need to attach too much meaning to $F$, $f$, $H$, and $h$.
+They are simply a compact way of collecting all the investor's views
+into matrices and vectors.
+
+### Notation at a glance
+
+| Symbol | Meaning |
+|:-----------------------------------|:-----------------------------------|
+| $J$ | number of scenarios |
+| $N$ | number of risk factors |
+| $K$ | number of quantities on which views are expressed |
+| $X$ | $J\times N$ matrix of prior scenarios |
+| $X_j$ | $j$-th joint scenario |
+| $p$ | prior scenario probabilities |
+| $g(\cdot)$ | functions defining the quantities on which views are expressed |
+| $V=g(X)$ | values of those quantities across the scenarios |
+| $q$ | posterior scenario probabilities |
+| $Fq\leq f$ | inequality views |
+| $Hq=h$ | equality views, including probability normalization |
+| $\lambda,\nu$ | Lagrange multipliers used to solve the optimization problem |
+| $c$ | confidence assigned to the views |
+
+The symbols will become more intuitive once we see how they interact.
+
+## Which posterior should we choose?
+
+Once the views have been imposed, there will generally be many
+probability vectors $q$ that satisfy them.
+
+Entropy Pooling needs a principle for choosing among them.
+
+Meucci's answer is to choose the posterior distribution that satisfies
+the views while remaining as close as possible to the prior
+distribution. The measure of discrepancy used for this purpose is
+relative entropy, or the Kullback--Leibler divergence.
+
+In the discrete scenario representation, this is
+
+$$D_{\mathrm{KL}}(q\Vert p)
+=
+\sum_{j=1}^{J}
+q_j
+\left[
+\log(q_j)-\log(p_j)
+\right].$$
+
+The quantity is zero when
+
+$$q=p,$$
+
+and becomes positive as the posterior probabilities move away from the
+prior probabilities.
+
+The full-confidence Entropy Pooling problem can therefore be written as
+
+$$q^*
+=
+\arg\min_q
+D_{\mathrm{KL}}(q\Vert p)$$
+
+subject to
+
+$$Fq\leq f,
+\qquad
+Hq=h.$$
+
+This is perhaps the most important equation in the entire method.
+
+It says:
+
+> *Among all probability distributions that satisfy my views, choose the
+> one that distorts the prior probabilities as little as possible.*
+
+If the prior already satisfies the views, no adjustment is needed and
+
+$$q^*=p.$$
+
+If the views conflict with the prior, the probabilities are adjusted
+just enough to make the constraints hold.
+
+The scenarios themselves remain untouched.
+
+## What does Entropy Pooling actually do to the scenarios?
+
+It may help to visualize the mechanism before going further.
+
+Suppose three scenarios originally have probabilities
+
+$$p=
+\begin{bmatrix}
+0.30\\
+0.40\\
+0.30
+\end{bmatrix}.$$
+
+Imagine that the first scenario is unfavorable for a variable on which
+we have expressed a bullish view, while the third scenario is favorable.
+
+Entropy Pooling might produce something such as
+
+$$q^*=
+\begin{bmatrix}
+0.20\\
+0.35\\
+0.45
+\end{bmatrix}.$$
+
+The scenarios have not moved:
+
+$$X_1,\quad X_2,\quad X_3$$
+
+They are exactly the same observations as before.
+
+Instead, the bullish view has made the favorable scenarios more
+important and the unfavorable scenarios less important.
+
+This is why it is often helpful to think of EP as a **scenario
+reweighting procedure**. The actual optimization determines precisely
+how much each scenario needs to be adjusted.
+
+## Why solve a dual problem?
+
+At first sight, the optimization above might look computationally
+expensive.
+
+If the risk model contains $J=100{,}000$ scenarios, then the vector $q$
+contains $100{,}000$ unknown probabilities.
+
+Fortunately, the structure of the relative-entropy objective allows us
+to avoid solving directly for all of them.
+
+Consider the Lagrangian
+
+$$\mathcal L(q,\lambda,\nu)
+=
+q'
+\left[
+\log(q)-\log(p)
+\right]
++
+\lambda'(Fq-f)
++
+\nu'(Hq-h),$$
+
+where
+
+$$\lambda\geq0$$
+
+contains the Lagrange multipliers associated with inequality constraints
+and $\nu$ contains those associated with equality constraints.
+
+Taking the first-order condition with respect to $q$,
+
+$$\frac{\partial\mathcal L}
+{\partial q}
+=
+\log(q)-\log(p)
++
+\mathbf 1
++
+F'\lambda
++
+H'\nu
+=
+0.$$
+
+Therefore,
+
+$$q(\lambda,\nu)
+=
+\exp
+\left(
+\log(p)
+-\mathbf 1
+-F'\lambda
+-H'\nu
+\right)$$
+
+where the exponential is applied element by element.
+
+This expression already tells us something useful: the resulting
+probabilities are automatically positive.
+
+More importantly, $q$ is now an explicit function of the multipliers
+$\lambda$ and $\nu$. We can substitute this expression back into the
+Lagrangian and solve the **dual problem**
+
+$$(\lambda^*,\nu^*)
+=
+\arg\max_{\lambda\geq0,\nu}
+D(\lambda,\nu).$$
+
+The posterior probabilities are then recovered from
+
+$$q^*=q(\lambda^*,\nu^*) = \exp(\log(p)-\mathbf 1 -F'\lambda^*-H'\nu^*)$$
+
+This is the numerical trick that makes Entropy Pooling particularly
+attractive.
+
+The original problem has one unknown probability for every scenario. The
+dual problem instead has roughly one unknown multiplier for every
+constraint.
+
+If there are $100{,}000$ scenarios but only five views, solving for a
+handful of multipliers is much easier than directly optimizing over
+$100{,}000$ probabilities.
+
+## The conceptual picture
+
+We can now summarize the whole procedure in one diagram:
+
+$$\underbrace{(X,p)}_{\text{prior}}
+\quad
+\xrightarrow{
+\substack{
+\text{views on }g(X)\\
+Fq\leq f,\;Hq=h
+}
+}
+\quad
+\underbrace{(X,q^*)}_{\text{full-confidence posterior}}$$
+
+The prior risk model provides the scenarios $X$ and their original
+probabilities $p$. The investor provides views.
+
+Entropy Pooling finds the probability vector $q^*$ that satisfies those
+views while minimizing the divergence from $p$.
+
+So, in one line,
+
+$$\text{same scenarios, different probabilities}$$
+
+This interpretation is also important computationally. Suppose an
+expensive pricing model has already transformed each risk-factor
+scenario into a corresponding security-price or portfolio P&L scenario.
+
+Since EP changes only the probabilities, those securities do not need to
+be repriced. The same price or P&L scenarios can simply be analyzed
+using $q^*$ instead of $p$.
+
+## What does "confidence" mean?
+
+So far we have assumed that the investor has **full confidence** in the
+views. That is an important qualification.
+
+The optimization
+
+$$q^*
+=
+\arg\min_q D_{\mathrm{KL}}(q\Vert p)$$
+
+subject to the views produces a distribution for which those views hold
+completely.
+
+But an investor may think:
+
+> "I believe this view, but I am not willing to discard the information
+> contained in my original model entirely."
+
+Entropy Pooling handles this distinction separately.
+
+Let
+
+$$c\in[0,1]$$
+
+denote the confidence assigned to the views.
+
+The confidence-weighted posterior probabilities are
+
+$$p_c
+=
+(1-c)p+cq^*.$$
+
+This equation has a particularly intuitive interpretation.
+
+If
+
+$$c=0,$$
+
+then
+
+$$p_c=p.$$
+
+We have no confidence in the view, so nothing changes.
+
+At the other extreme, if
+
+$$c=1,$$
+
+then
+
+$$p_c=q^*.$$
+
+We have full confidence in the view and use the Entropy Pooling
+posterior without shrinking it back toward the prior.
+
+For intermediate values,
+
+$$0<c<1,$$
+
+the final distribution is a mixture of the prior model and the
+full-confidence posterior.
+
+For example, with
+
+$$c=0.60,$$
+
+we obtain
+
+$$p_c
+=
+0.40p+0.60q^*.$$
+
+The final model therefore gives 60% weight to the distribution implied
+by the views and retains 40% of the original prior model.
+
+This also clarifies an important distinction: **a view and the
+confidence in that view are not the same thing.**
+
+For example, one may have a view that future volatility will be high
+while simultaneously having low confidence that the view will
+materialize.
+
+The first statement determines the **content of the constraint**.
+
+The second determines **how strongly the resulting posterior should
+replace the prior**.
+
+The complete conceptual picture is therefore
+
+$$\underbrace{(X,p)}_{\text{prior}}
+\quad
+\xrightarrow{
+\text{views}
+}
+\quad
+\underbrace{(X,q^*)}_{\text{full-confidence posterior}}
+\quad
+\xrightarrow{
+\text{confidence }c
+}
+\quad
+\underbrace{(X,p_c)}_{\text{final posterior}}$$
+
+Or, in terms of probabilities alone,
+
+$$p
+\quad\longrightarrow\quad
+q^*
+\quad\longrightarrow\quad
+(1-c)p+cq^*.$$
+
+This separates the two questions that Entropy Pooling is answering:
+
+1.  **If the views are correct, what should the distribution look
+    like?**\
+    This is answered by the entropy-minimization problem and produces
+    $q^*$.
+
+2.  **How much do I trust those views?**\
+    This is answered by $c$, producing the final probabilities $p_c$.
+
+That distinction is conceptually simple, but it is one of the most
+useful features of the framework.
+
+## Why is Entropy Pooling useful?
+
+The main appeal of EP is not that it assumes a particularly convenient
+statistical distribution. Quite the opposite: its strength is that very
+little parametric structure is required.
+
+The prior may be non-normal, the views may involve nonlinear quantities,
+and the constraints may be equalities or inequalities.
+
+In numerical applications, the method can be thought of as performing
+three steps:
+
+$$\text{prior scenarios}
+\quad\rightarrow\quad
+\text{express views as constraints}
+\quad\rightarrow\quad
+\text{reweight scenarios}$$
+
+Once the new probabilities are available, any statistic that was
+previously computed with $p$ can instead be computed using the posterior
+weights.
+
+For a generic scenario-dependent quantity $z_j$, for example,
+
+$$\mathbb E_p[Z]
+=
+\sum_{j=1}^J p_jz_j$$
+
+becomes
+
+$$\mathbb E_{p_c}[Z]
+=
+\sum_{j=1}^J p_{c,j}z_j.$$
+
+The same idea extends naturally to portfolio returns, moments, risk
+measures, and optimization problems.
+
+Entropy Pooling therefore provides a bridge between two sources of
+information:
+
+$$\text{what the prior model says}
++
+\text{what the investor believes}$$
+
+without requiring either one to be discarded.
+
+## References
+
+Meucci, A. (2010). *Fully Flexible Views: Theory and Practice*. Risk,
+21(10), 97--102.
+
+<!-- In the `ffp` package, the numerical minimization of the relative entropy is implemented with `entropy_pooling()`. The function arguments differs from the notation in Meucci (2008)[^2] to keep consistency with the standard documentation in a wide range of available solvers. To that end, the table bellow shows that can be easy to migrate from one reading to another. -->
+
+<!-- [^2]: Meucci, Attilio, Fully Flexible Views: Theory and Practice (August 8, 2008). Fully Flexible Views: Theory and Practice, Risk, Vol. 21, No. 10, pp. 97-102, October 2008, Available at SSRN: https://ssrn.com/abstract=1213325. -->
+
+<!-- | Package | Paper |     Argument Type     | -->
+
+<!-- |:-------:|:-----:|:---------------------:| -->
+
+<!-- |  `Aeq`  | **H** |  Equality Constraint  | -->
+
+<!-- |  `beq`  | **h** |  Equality Constraint  | -->
+
+<!-- |   `A`   | **F** | Inequality Constraint | -->
+
+<!-- |   `b`   | **f** | Inequality Constraint | -->
+
+<!-- : Meucci (2008) vs. `ffp` Package -->
+
+<!-- <!-- Entropy-pooling is appealing and has found it's applications on portfolio construction[^3] [^4] and risk-management[^5].  -->
+
+<!-- For more details, please, see the `entropy_pooling()` documentation or the package vignettes on the top of this page. -->
+
+<!-- [^3]: Meucci, Attilio and Ardia, David and Colasante, Marcello, Portfolio Construction and Systematic Trading with Factor Entropy Pooling (May 8, 2014). Risk Magazine, Vol. 27, No. 5, pp. 56-61, 2014 , Available at SSRN: https://ssrn.com/abstract=1742559 or http://dx.doi.org/10.2139/ssrn.1742559. -->
+
+<!-- [^4]: Georgelis, Nikos and Mikael Nyberg. “A Scenario Based Allocation Model Using Entropy Pooling for Computing the Scenario Probabilities.” (2013). -->
+
+<!-- [^5]: Meucci, Attilio, Historical Scenarios with Fully Flexible Probabilities (October 23, 2010). GARP Risk Professional, pp. 47-51, December 2010, Available at SSRN: https://ssrn.com/abstract=1696802 or http://dx.doi.org/10.2139/ssrn.1696802. -->

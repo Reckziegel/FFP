@@ -1,8 +1,8 @@
-pandoc: '2.18'
-pkgdown: 2.0.6
+pandoc: 3.9.0.2
+pkgdown: 2.2.1
 pkgdown_sha: ~
 articles:
-  how-does-EP-work: how-does-EP-work.html
+  Entropy Pooling in practice: Entropy Pooling in practice.html
+  how-does-Entropy-Pooling-work: how-does-Entropy-Pooling-work.html
   views: views.html
-last_built: 2022-09-28T14:09Z
-
+last_built: 2026-08-12T16:50Z

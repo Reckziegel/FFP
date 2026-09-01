@@ -5,6 +5,8 @@
 \alias{view_on_rank.default}
 \alias{view_on_rank.matrix}
 \alias{view_on_rank.xts}
+\alias{view_on_rank.ts}
+\alias{view_on_rank.mts}
 \alias{view_on_rank.tbl_df}
 \title{Views on Relative Performance}
 \usage{
@@ -15,6 +17,10 @@ view_on_rank(x, rank)
 \method{view_on_rank}{matrix}(x, rank)
 
 \method{view_on_rank}{xts}(x, rank)
+
+\method{view_on_rank}{ts}(x, rank)
+
+\method{view_on_rank}{mts}(x, rank)
 
 \method{view_on_rank}{tbl_df}(x, rank)
 }

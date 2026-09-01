@@ -5,32 +5,75 @@
 \alias{plot.ffp}
 \title{Inspection of a \code{ffp} object with ggplot2}
 \usage{
-\method{autoplot}{ffp}(object, color = TRUE, ...)
+\method{autoplot}{ffp}(
+  object,
+  color = TRUE,
+  prior = NULL,
+  change = c("relative", "absolute", "log_ratio"),
+  n_highlight = 3L,
+  ...
+)
 
 \method{plot}{ffp}(object, ...)
 }
 \arguments{
-\item{object}{An objected of the \code{ffp} class.}
+\item{object}{An object of class \code{ffp}.}
 
-\item{color}{A \code{logical} flag indicating whether (or not) the \code{color} argument
-should be added to the \code{ggplot2} aesthetics.}
+\item{color}{A logical flag indicating whether probabilities should be
+colored using a probability gradient when \code{prior = NULL}.}
 
-\item{...}{Additional arguments to be passed to \code{autoplot}.}
+\item{prior}{An optional \code{ffp} object or numeric vector containing prior
+probabilities. If supplied, a prior-versus-posterior comparison is shown.}
+
+\item{change}{Character string indicating how probability changes should
+be represented. One of \code{"relative"}, \code{"absolute"}, or \code{"log_ratio"}.}
+
+\item{n_highlight}{Number of largest upward and downward probability
+shifts to identify in the comparison plot. Default is 3.}
+
+\item{...}{Additional arguments reserved for future use.}
 }
 \value{
-A \code{ggplot2} object.
+A \code{ggplot2} object when \code{prior = NULL}, or a \code{patchwork} object
+containing the comparison panels when \code{prior} is supplied.
 }
 \description{
-Extends the \code{autoplot} method for the \code{ffp} class.
+Extends the \code{autoplot} method for the \code{ffp} class. When \code{prior} is not
+supplied, the current probability distribution is displayed. When \code{prior}
+is supplied, the method compares prior and posterior probabilities and
+displays the probability shifts induced by entropy pooling.
 }
 \examples{
 library(ggplot2)
 
-x <- exp_decay(EuStockMarkets, 0.001)
-y <- exp_decay(EuStockMarkets, 0.01)
+# Flexible probabilities
+posterior <- exp_decay(EuStockMarkets, 0.001)
 
-autoplot(x) +
-  scale_color_viridis_c()
-autoplot(y) +
-  scale_color_viridis_c()
+# Distribution only
+autoplot(posterior)
+
+# Without color gradient
+autoplot(posterior, color = FALSE)
+
+\dontrun{
+# Prior versus posterior
+autoplot(
+  posterior,
+  prior = prior
+)
+
+# Absolute probability change
+autoplot(
+  posterior,
+  prior = prior,
+  change = "absolute"
+)
+
+# Log probability ratio
+autoplot(
+  posterior,
+  prior = prior,
+  change = "log_ratio"
+)
+}
 }

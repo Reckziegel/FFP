@@ -32,15 +32,13 @@ crisp <- function(x, lgl) {
 #' @rdname crisp
 #' @export
 crisp.default <- function(x, lgl) {
-  stop("Method not implemented for class `", class(x), "` yet.", call. = FALSE)
+  cli::cli_abort("Method not implemented for class {.cls {class(x)}} yet.")
 }
 
 #' @rdname crisp
 #' @export
 crisp.numeric <- function(x, lgl) {
-  assertthat::assert_that(
-    assertthat::are_equal(vctrs::vec_size(x), vctrs::vec_size(lgl))
-  )
+  assert_is_equal_size(x, lgl)
   vctrs::vec_assert(lgl, logical())
 
   p <- make_crisp(x, lgl)
@@ -52,9 +50,7 @@ crisp.numeric <- function(x, lgl) {
 #' @rdname crisp
 #' @export
 crisp.matrix <- function(x, lgl) {
-  assertthat::assert_that(
-    assertthat::are_equal(vctrs::vec_size(x), vctrs::vec_size(lgl))
-  )
+  assert_is_equal_size(x, lgl)
   vctrs::vec_assert(lgl, logical())
 
   p <- make_crisp(x, lgl)
@@ -66,9 +62,7 @@ crisp.matrix <- function(x, lgl) {
 #' @rdname crisp
 #' @export
 crisp.ts <- function(x, lgl) {
-  assertthat::assert_that(
-    assertthat::are_equal(vctrs::vec_size(x), vctrs::vec_size(lgl))
-  )
+  assert_is_equal_size(x, lgl)
   vctrs::vec_assert(lgl, logical())
 
   p <- make_crisp(x, lgl)
@@ -80,9 +74,7 @@ crisp.ts <- function(x, lgl) {
 #' @rdname crisp
 #' @export
 crisp.xts <- function(x, lgl) {
-  assertthat::assert_that(
-    assertthat::are_equal(vctrs::vec_size(x), vctrs::vec_size(lgl))
-  )
+  assert_is_equal_size(x, lgl)
   vctrs::vec_assert(lgl, logical())
 
   p <- make_crisp(x, lgl)
@@ -94,9 +86,7 @@ crisp.xts <- function(x, lgl) {
 #' @rdname crisp
 #' @export
 crisp.data.frame <- function(x, lgl) {
-  assertthat::assert_that(
-    assertthat::are_equal(vctrs::vec_size(x), vctrs::vec_size(lgl))
-  )
+  assert_is_equal_size(x, lgl)
   vctrs::vec_assert(lgl, logical())
 
   p <- make_crisp(x, lgl)
@@ -108,9 +98,7 @@ crisp.data.frame <- function(x, lgl) {
 #' @rdname crisp
 #' @export
 crisp.tbl_df <- function(x, lgl) {
-  assertthat::assert_that(
-    assertthat::are_equal(vctrs::vec_size(x), vctrs::vec_size(lgl))
-  )
+  assert_is_equal_size(x, lgl)
   vctrs::vec_assert(lgl, logical())
 
   p <- make_crisp(x, lgl)
@@ -166,7 +154,7 @@ exp_decay <- function(x, lambda) {
 #' @rdname exp_decay
 #' @export
 exp_decay.default <- function(x, lambda) {
-  stop("Method not implemented for class `", class(x), "` yet.", call. = FALSE)
+  cli::cli_abort("Method not implemented for class {.cls {class(x)}} yet.")
 }
 
 #' @rdname exp_decay
@@ -274,7 +262,7 @@ kernel_normal <- function(x, mean, sigma) {
 #' @rdname kernel_normal
 #' @export
 kernel_normal.default <- function(x, mean, sigma) {
-  stop("Method not implemented for class `", class(x), "` yet.", call. = FALSE)
+  cli::cli_abort("Method not implemented for class {.cls {class(x)}} yet.")
 }
 
 #' @rdname kernel_normal

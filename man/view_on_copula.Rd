@@ -5,6 +5,8 @@
 \alias{view_on_copula.default}
 \alias{view_on_copula.matrix}
 \alias{view_on_copula.xts}
+\alias{view_on_copula.ts}
+\alias{view_on_copula.mts}
 \alias{view_on_copula.tbl_df}
 \title{Views on Copulas}
 \usage{
@@ -15,6 +17,10 @@ view_on_copula(x, simul, p)
 \method{view_on_copula}{matrix}(x, simul, p)
 
 \method{view_on_copula}{xts}(x, simul, p)
+
+\method{view_on_copula}{ts}(x, simul, p)
+
+\method{view_on_copula}{mts}(x, simul, p)
 
 \method{view_on_copula}{tbl_df}(x, simul, p)
 }

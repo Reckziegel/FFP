@@ -14,9 +14,10 @@ License: MIT + file LICENSE
 URL: https://github.com/Reckziegel/FFP
 BugReports: https://github.com/Reckziegel/FFP/issues
 Depends: 
-    R (>= 2.10)
+    R (>= 4.1.0)
 Imports: 
     assertthat (>= 0.2.1),
+    cli (>= 3.0.0),
     dplyr (>= 1.0.10),
     forcats (>= 0.5.2),
     ggdist (>= 3.2.0),
@@ -35,7 +36,8 @@ Imports:
     vctrs (>= 0.4.1),
     nloptr (>= 2.0.3),
     crayon,
-    NlcOptim (>= 0.6)
+    NlcOptim (>= 0.6),
+    lpSolve (>= 5.6.23)
 Suggests: 
     copula,
     covr,
@@ -52,5 +54,5 @@ Encoding: UTF-8
 Language: en-US
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.1
 VignetteBuilder: knitr
+Config/roxygen2/version: 8.1.0

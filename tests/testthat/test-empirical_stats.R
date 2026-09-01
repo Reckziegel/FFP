@@ -132,14 +132,14 @@ test_that("`empirical_stats` works on tbl data", {
 })
 
 test_that("argument level impacts the VaR and CVaR", {
-  lvl_0.01 <- empirical_stats(ret_mtx[ , 1], p_mtx, 0.01) %>%
-    filter(stat == "VaR") %>%
+  lvl_0.01 <- empirical_stats(ret_mtx[ , 1], p_mtx, 0.01) |>
+    filter(stat == "VaR") |>
     pull(value)
-  lvl_0.05 <- empirical_stats(ret_mtx[ , 1], p_mtx, 0.05) %>%
-    filter(stat == "VaR") %>%
+  lvl_0.05 <- empirical_stats(ret_mtx[ , 1], p_mtx, 0.05) |>
+    filter(stat == "VaR") |>
     pull(value)
-  lvl_0.10 <- empirical_stats(ret_mtx[ , 1], p_mtx, 0.10) %>%
-    filter(stat == "VaR") %>%
+  lvl_0.10 <- empirical_stats(ret_mtx[ , 1], p_mtx, 0.10) |>
+    filter(stat == "VaR") |>
     pull(value)
 
   expect_true(lvl_0.01 > lvl_0.05)

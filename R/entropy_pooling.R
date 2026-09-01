@@ -80,7 +80,10 @@ entropy_pooling <- function(p, A = NULL, b = NULL, Aeq = NULL, beq = NULL, solve
   assertthat::assert_that(assertthat::is.string(solver))
 
   if (solver == "nlminb" & (!is.null(A) | !is.null(b))) {
-    rlang::abort("Inequalities can only be solved with `solnl` or `nloptr`.")
+    cli::cli_abort(
+      c("x" = "Inequalities can only be solved with {.fn solnl} or {.fn nloptr}.",
+        "i" = "Use {.code solver = \"solnl\"} or {.code solver = \"nloptr\"} for inequality constraints.")
+    )
   }
   solver <- rlang::arg_match(solver, c("nlminb", "solnl", "nloptr"))
 
@@ -96,7 +99,7 @@ entropy_pooling <- function(p, A = NULL, b = NULL, Aeq = NULL, beq = NULL, solve
   if (is.vector(beq)) {
     beq <- matrix(beq, nrow = vctrs::vec_size(beq))
   }
-  if (!vctrs::vec_size(b)) {
+  if (!vctrs::vec_size(A)) {
     A <- matrix(NA_real_, nrow = 0, ncol = 0)
   }
 

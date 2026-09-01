@@ -7,19 +7,30 @@
 ens(p)
 }
 \arguments{
-\item{p}{An object of the \code{ffp} class.}
+\item{p}{An object of class \code{ffp}.}
 }
 \value{
 A single \code{double}.
 }
 \description{
-Shows how many scenarios are effectively been considered when using flexible
-probabilities.
+Computes the effective number of scenarios implied by a flexible probability
+distribution.
+}
+\details{
+The effective number of scenarios is defined as the exponential of the
+Shannon entropy:
+
+\deqn{
+ENS = \exp\left(-\sum_t p_t \log p_t\right).
+}
+
+Probabilities equal to zero make no contribution to the entropy, following
+the convention \eqn{0 \log(0) = 0}.
 }
 \examples{
-set.seed(123)
-p <- exp_decay(stats::rnorm(100), 0.01)
+p <- as_ffp(rep(0.01, 100))
+ens(p)
 
-# ens is smaller than 100
+p <- as_ffp(c(0.5, 0.5, 0))
 ens(p)
 }

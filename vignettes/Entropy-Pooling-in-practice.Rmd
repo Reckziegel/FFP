@@ -1,0 +1,1037 @@
+---
+title: "Entropy Pooling in practice"
+author: "Bernardo Reckziegel"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_vignette:
+    toc: false
+    toc_depth: 2
+vignette: >
+  %\VignetteIndexEntry{Entropy Pooling in practice}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  message = FALSE,
+  warning = FALSE
+)
+```
+
+This vignette is a practical guide to using Entropy Pooling (EP) with `ffp`.
+
+The companion vignette **How does Entropy Pooling work?** explains the ideas behind the method. Here, the emphasis is different: we focus on the workflow a user will typically follow in R, how the main `view_on_*()` functions fit together, how to combine views, and how to check whether the resulting posterior distribution behaves as intended.
+
+The key idea is simple:
+
+> **Start with scenarios and prior probabilities, express views, solve for posterior probabilities, and then use those probabilities in the rest of the analysis.**
+
+In symbols,
+
+$$(X,p)
+\quad\longrightarrow\quad
+\text{views}
+\quad\longrightarrow\quad
+(X,q^*)$$
+
+where $X$ contains the scenarios, $p$ contains the prior probabilities, and $q^*$ contains the full-confidence posterior probabilities produced by Entropy Pooling.
+
+Throughout the vignette we use the `EuStockMarkets` dataset as a small proxy for "the market".
+
+```{r setup}
+library(ffp)
+library(ggplot2)
+
+set.seed(321)
+
+# Invariants / stationary scenarios
+x <- diff(log(EuStockMarkets))
+
+# Equal-weight prior
+prior <- rep(1 / nrow(x), nrow(x))
+
+dim(x)
+head(x)
+```
+
+The object `x` contains `r nrow(x)` historical scenarios for four European stock indices: `DAX`, `SMI`, `CAC`, and `FTSE`. The vector `prior` assigns the same probability to every scenario.
+
+# Quick start
+
+Suppose the investor believes that the expected return of the `FTSE` will be 20% above its historical average.
+
+The entire workflow can be written in a few lines.
+
+```{r quick-start}
+# 1. Define the target
+target_mean <- mean(x[, "FTSE"]) * 1.20
+
+# 2. Translate the view into Entropy Pooling constraints
+views <- view_on_mean(
+  x = as.matrix(x[, "FTSE"]),
+  mean = target_mean
+)
+
+# 3. Find the posterior probabilities
+posterior <- entropy_pooling(
+  p = prior,
+  Aeq = views$Aeq,
+  beq = views$beq,
+  solver = "nlminb"
+)
+
+# 4. Inspect the result
+posterior
+```
+
+The result of `entropy_pooling()` is an `ffp` object containing one posterior probability for each historical scenario.
+
+```{r quick-start-check}
+# Prior FTSE mean
+mean(x[, "FTSE"])
+
+# Posterior FTSE mean
+ffp_moments(x, posterior)$mu["FTSE"]
+
+# Target
+target_mean
+```
+
+The posterior probabilities satisfy the view, while changing the prior probabilities as little as possible in relative-entropy terms.
+
+A useful visual inspection is available through `autoplot()`.
+
+```{r quick-start-plot, fig.width=7, fig.align='center'}
+autoplot(posterior) 
+```
+
+This is the basic `ffp` workflow:
+
+$$\text{scenarios}
+\rightarrow
+\text{prior}
+\rightarrow
+\text{view}
+\rightarrow
+\texttt{entropy_pooling()}
+\rightarrow
+\text{posterior}$$
+
+The different `view_on_*()` functions change the way the view is constructed, but the general procedure remains the same.
+
+# The `ffp` workflow
+
+Most applications can be organized into six steps.
+
+1.  **Define the scenarios:** these may be historical observations, Monte Carlo simulations, or another scenario representation.
+
+2.  **Define the prior probabilities:** equal weights are a natural starting point, but the prior may itself come from another flexible-probability method.
+
+3.  **Express one or more views:** use the appropriate `view_on_*()` constructor.
+
+4.  **Combine views when necessary:** use `bind_views()` when more than one type of view is present.
+
+5.  **Solve Entropy Pooling:** pass the constraints to `entropy_pooling()`.
+
+6.  **Check and use the posterior:** inspect the resulting probabilities and recompute moments, risk statistics, or resample scenarios.
+
+This means that, in practice, most scripts will have the same shape:
+
+```{r workflow-template, eval=FALSE}
+# Scenarios
+x <- ...
+
+# Prior probabilities
+prior <- ...
+
+# Views
+view_1 <- view_on_mean(...)
+view_2 <- view_on_volatility(...)
+...
+
+# Combine views
+views <- bind_views(view_1, view_2)
+
+# Entropy Pooling
+posterior <- entropy_pooling(
+  p = prior,
+  Aeq = views$Aeq,
+  beq = views$beq,
+  A = views$A,
+  b = views$b,
+  solver = ...
+)
+
+# Diagnostics
+ffp_moments(x, posterior)
+relative_entropy(prior, posterior)
+ens(posterior)
+
+# Use posterior probabilities
+empirical_stats(x, posterior)
+```
+
+# Anatomy of a view
+
+The `view_on_*()` functions do **not** run Entropy Pooling themselves.
+
+Their job is to translate an investor statement into the linear constraints that `entropy_pooling()` needs.
+
+Conceptually,
+
+``` text
+Investor statement
+       |
+       v
+  view_on_*()
+       |
+       +---- equality constraints ----> Aeq, beq
+       |
+       +---- inequality constraints --> A, b
+       |
+       v
+ entropy_pooling()
+       |
+       v
+posterior probabilities
+```
+
+For example,
+
+```{r anatomy-mean}
+views <- view_on_mean(
+  x = as.matrix(x[, "FTSE"]),
+  mean = mean(x[, "FTSE"]) * 1.20
+)
+
+views
+```
+
+A view on expected return produces equality constraints, so the object contains `Aeq` and `beq`.
+
+You normally do **not** need to construct these matrices manually. The constructors do that translation for you.
+
+The distinction becomes important when a view is expressed as an inequality. A ranking view, for example, produces `A` and `b` instead.
+
+```{r anatomy-rank}
+rank_view <- view_on_rank(
+  x = x,
+  rank = c(2, 1)
+)
+
+rank_view
+```
+
+The user-facing task is therefore to choose the appropriate view constructor. The matrices are the internal representation passed to the optimizer.
+
+# Which view should I use?
+
+The package provides eight view constructors.
+
+| If your belief is about...        | Function                          |
+|:----------------------------------|:----------------------------------|
+| Expected returns or means         | `view_on_mean()`                  |
+| Volatility                        | `view_on_volatility()`            |
+| The variance-covariance matrix    | `view_on_covariance()`            |
+| Correlation                       | `view_on_correlation()`           |
+| Relative performance or ranking   | `view_on_rank()`                  |
+| Marginal distribution targets     | `view_on_marginal_distribution()` |
+| Dependence / copula targets       | `view_on_copula()`                |
+| A joint-distribution target panel | `view_on_joint_distribution()`    |
+
+A useful practical distinction is between **common parameter views** and **advanced distributional views**.
+
+The first group includes views on means, volatilities, covariances, correlations, and rankings. They usually correspond directly to an investor statement such as:
+
+> "FTSE expected return should be higher."
+
+or
+
+> "DAX should outperform SMI."
+
+The second group starts from a simulated target distribution or copula and converts features of that target into Entropy Pooling constraints.
+
+# Equality and inequality views: choosing a solver
+
+`entropy_pooling()` accepts equality constraints through `Aeq` and `beq`, and inequality constraints through `A` and `b`.
+
+A useful rule of thumb is:
+
+| Type of view | Constraints | Solver |
+|:-----------------------|:-----------------------|:-----------------------|
+| Equality views only | `Aeq`, `beq` | `"nlminb"` is a simple default |
+| Inequality views | `A`, `b` | `"nloptr"` or `"solnl"` |
+| Mixed equality and inequality views | both sets | `"nloptr"` or `"solnl"` |
+
+For example, views on means and volatilities are equality constraints and can be handled with `nlminb`.
+
+Ranking views are inequality constraints and therefore require a solver that supports them.
+
+# Combining multiple views
+
+Real applications rarely involve only one belief.
+
+Suppose the investor believes simultaneously that:
+
+- `FTSE` expected return will be 20% above its historical average;
+- `CAC` volatility will be 10% below its historical level.
+
+Each belief can be constructed independently.
+
+```{r combining-views}
+view_mean <- view_on_mean(
+  x = as.matrix(x[, "FTSE"]),
+  mean = mean(x[, "FTSE"]) * 1.20
+)
+
+view_volatility <- view_on_volatility(
+  x = as.matrix(x[, "CAC"]),
+  vol = sd(x[, "CAC"]) * 0.90
+)
+
+views_combined <- bind_views(
+  view_mean,
+  view_volatility
+)
+
+views_combined
+```
+
+`bind_views()` collects the constraints into a single object that can be passed directly to `entropy_pooling()`.
+
+```{r combining-views-ep}
+posterior_combined <- entropy_pooling(
+  p = prior,
+  Aeq = views_combined$Aeq,
+  beq = views_combined$beq,
+  A = views_combined$A,
+  b = views_combined$b,
+  solver = "nlminb"
+)
+```
+
+Now check the two statements separately.
+
+```{r combining-views-check}
+posterior_moments <- ffp_moments(x, posterior_combined)
+
+# FTSE mean
+c(
+  prior = mean(x[, "FTSE"]),
+  posterior = posterior_moments$mu["FTSE"],
+  target = mean(x[, "FTSE"]) * 1.20
+)
+
+# CAC volatility
+c(
+  prior = sd(x[, "CAC"]),
+  posterior = sqrt(posterior_moments$sigma["CAC", "CAC"]),
+  target = sd(x[, "CAC"]) * 0.90
+)
+```
+
+The important idea is:
+
+> **Each `view_on_*()` function expresses one type of belief. `bind_views()` lets several beliefs describe the same market scenario.**
+
+Views may also mix equality and inequality constraints. For example, add the belief that `DAX` should outperform `SMI`.
+
+```{r mixed-views}
+view_rank <- view_on_rank(
+  x = x,
+  rank = c(2, 1)
+)
+
+views_mixed <- bind_views(
+  view_mean,
+  view_volatility,
+  view_rank
+)
+
+posterior_mixed <- entropy_pooling(
+  p = prior,
+  Aeq = views_mixed$Aeq,
+  beq = views_mixed$beq,
+  A = views_mixed$A,
+  b = views_mixed$b,
+  solver = "nloptr"
+)
+```
+
+Because the combined object now contains an inequality constraint, `nloptr` is used.
+
+# Adding confidence
+
+The posterior returned by `entropy_pooling()` is a **full-confidence posterior**: it assumes that the imposed views should hold completely.
+
+In practice, the investor may want to express a view while retaining some weight on the original prior model.
+
+Let
+
+$$c\in[0,1]$$
+
+denote confidence in the views.
+
+The confidence-weighted posterior is
+
+$$p_c = (1-c)p + cq^*,$$
+
+where $p$ is the prior and $q^*$ is the full-confidence Entropy Pooling posterior.
+
+For example, with 60% confidence:
+
+```{r confidence}
+confidence <- 0.60
+
+posterior_60 <- as_ffp(
+  (1 - confidence) * prior +
+    confidence * as.double(posterior_combined)
+)
+
+posterior_60
+```
+
+At the two extremes,
+
+- `confidence = 0` reproduces the prior;
+- `confidence = 1` reproduces the full-confidence posterior.
+
+This separates two different questions:
+
+1.  **What does the view say?**\
+    The `view_on_*()` constructor answers this.
+
+2.  **How strongly do I trust the view?**\
+    The confidence parameter answers this.
+
+Because confidence pooling moves the probabilities back toward the prior, the final moments will generally lie between the prior and full-confidence posterior values.
+
+```{r confidence-check}
+c(
+  prior = mean(x[, "FTSE"]),
+  confidence_60 = ffp_moments(x, posterior_60)$mu["FTSE"],
+  full_confidence = ffp_moments(x, posterior_combined)$mu["FTSE"]
+)
+```
+
+# Checking the posterior
+
+Entropy Pooling should not be treated as a black box. After solving the optimization problem, it is useful to ask a few basic questions.
+
+## Did the posterior satisfy the view?
+
+For views on means and covariance-related quantities, `ffp_moments()` is often the first diagnostic.
+
+```{r diagnostic-moments}
+ffp_moments(x, posterior_combined)
+```
+
+For a correlation view, for example, a posterior correlation matrix can be obtained with
+
+```{r diagnostic-correlation, eval=FALSE}
+cov2cor(ffp_moments(x, posterior)$sigma)
+```
+
+## How far did the posterior move from the prior?
+
+`relative_entropy()` measures the divergence between the two probability distributions.
+
+```{r diagnostic-relative-entropy}
+relative_entropy(
+  prior = prior,
+  posterior = posterior_combined
+)
+```
+
+A larger value means that satisfying the views required a larger probability distortion.
+
+## Did the posterior concentrate too much probability?
+
+The Effective Number of Scenarios (ENS) is a useful way to detect excessive probability concentration.
+
+```{r diagnostic-ens}
+c(
+  prior = ens(as_ffp(prior)),
+  posterior = ens(posterior_combined)
+)
+```
+
+A sharp reduction in ENS means that the posterior is relying heavily on a smaller subset of the historical scenarios.
+
+This is especially important when views are aggressive or difficult to reconcile with the prior data.
+
+## What changed in the empirical distribution?
+
+`empirical_stats()` computes mean, standard deviation, skewness, kurtosis, VaR, and CVaR under flexible probabilities.
+
+```{r diagnostic-stats}
+# Prior statistics
+empirical_stats(
+  x = x,
+  p = as_ffp(prior)
+)
+
+# Posterior statistics
+empirical_stats(
+  x = x,
+  p = posterior_combined
+)
+```
+
+A practical diagnostic checklist is therefore:
+
+| Question                                         | Function             |
+|:-------------------------------------------------|:---------------------|
+| Did the target moments move as intended?         | `ffp_moments()`      |
+| How large was the distortion from the prior?     | `relative_entropy()` |
+| Did probability become too concentrated?         | `ens()`              |
+| What happened to distributional risk statistics? | `empirical_stats()`  |
+| What do the probabilities look like?             | `autoplot()`         |
+
+# Common views
+
+The following sections show the most common constructors individually. The Entropy Pooling objective is always the same; only the constraints generated by each constructor change.
+
+## View on expected returns
+
+A target expected return for variable $k$ can be written as
+
+$$\sum_{j=1}^{J} q_j V_{j,k} = \mu_k.$$
+
+Suppose the investor expects `FTSE` return to be 20% above its historical mean and `CAC` return to be 10% below its historical mean.
+
+```{r mean-view}
+target_means <- c(
+  mean(x[, "FTSE"]) * 1.20,
+  mean(x[, "CAC"]) * 0.90
+)
+
+views <- view_on_mean(
+  x = as.matrix(x[, c("FTSE", "CAC")]),
+  mean = target_means
+)
+
+posterior_mean <- entropy_pooling(
+  p = prior,
+  Aeq = views$Aeq,
+  beq = views$beq,
+  solver = "nlminb"
+)
+
+ffp_moments(x, posterior_mean)$mu
+```
+
+Because the scenarios are jointly observed, reweighting them to change `FTSE` and `CAC` can also affect the other indices.
+
+## View on volatility
+
+A volatility view changes the weighting of scenarios so that the posterior second moment is consistent with the target volatility.
+
+Suppose the investor expects `CAC` volatility to be 10% below its historical level.
+
+```{r volatility-view}
+target_vol <- sd(x[, "CAC"]) * 0.90
+
+views <- view_on_volatility(
+  x = as.matrix(x[, "CAC"]),
+  vol = target_vol
+)
+
+posterior_volatility <- entropy_pooling(
+  p = prior,
+  Aeq = views$Aeq,
+  beq = views$beq,
+  solver = "nlminb"
+)
+
+c(
+  prior = sd(x[, "CAC"]),
+  posterior = sqrt(ffp_moments(x, posterior_volatility)$sigma["CAC", "CAC"]),
+  target = target_vol
+)
+```
+
+The weights of tranquil scenarios tend to increase relative to more volatile ones. Because the indices are jointly observed, the posterior distributions of other assets may also move.
+
+## View on covariance
+
+If the investor already has a target variance-covariance matrix, `view_on_covariance()` is more direct than specifying volatility and correlation views separately.
+
+The function requires both a target mean vector and a target covariance matrix.
+
+As an illustration, suppose the investor wants to keep historical marginal volatilities but remove cross-asset covariances.
+
+```{r covariance-view}
+target_mean <- colMeans(x)
+
+target_cov <- diag(diag(cov(x)))
+dimnames(target_cov) <- list(colnames(x), colnames(x))
+
+views <- view_on_covariance(
+  x = x,
+  mean = target_mean,
+  sigma = target_cov
+)
+
+posterior_covariance <- entropy_pooling(
+  p = prior,
+  Aeq = views$Aeq,
+  beq = views$beq,
+  solver = "nlminb"
+)
+
+# Target covariance matrix
+target_cov
+
+# Posterior covariance matrix
+ffp_moments(x, posterior_covariance)$sigma
+```
+
+This constructor is useful when a covariance estimate comes from another model and should be imposed directly on the scenario probabilities.
+
+## View on correlation
+
+Suppose the investor believes that the correlation between `FTSE` and `DAX` will increase from its historical level to 0.83.
+
+Start from the historical correlation matrix and modify the desired entries.
+
+```{r correlation-view}
+target_cor <- cor(x)
+
+target_cor["FTSE", "DAX"] <- 0.83
+target_cor["DAX", "FTSE"] <- 0.83
+
+views <- view_on_correlation(
+  x = x,
+  cor = target_cor
+)
+
+posterior_correlation <- entropy_pooling(
+  p = prior,
+  Aeq = views$Aeq,
+  beq = views$beq,
+  solver = "nlminb"
+)
+
+cov2cor(
+  ffp_moments(x, posterior_correlation)$sigma
+)
+```
+
+The relevant object in the constraint is a scenario **cross-product**, $V_{j,k}V_{j,l}$. Its posterior expectation determines the second cross-moment and, together with the means and volatilities, the covariance and correlation structure.
+
+## View on relative performance
+
+Ranking views are useful when the investor has directional information but does not want to specify an exact expected-return target.
+
+Suppose the investor believes `DAX` should outperform `SMI`.
+
+The statement can be written as
+
+$$\mathbb E_q[\text{DAX} - \text{SMI}] \geq 0.$$
+
+With `x`, `DAX` is the first column and `SMI` is the second. `view_on_rank()` expects the ranking from the worst to the best performer, so
+
+```{r ranking-view}
+views <- view_on_rank(
+  x = x,
+  rank = c(2, 1)
+)
+
+views
+```
+
+The view is an inequality, so use a compatible solver.
+
+```{r ranking-view-ep}
+posterior_rank <- entropy_pooling(
+  p = prior,
+  A = views$A,
+  b = views$b,
+  solver = "nloptr"
+)
+
+ffp_moments(x, posterior_rank)$mu[c("DAX", "SMI")]
+```
+
+A useful feature of a ranking view is that the investor does not need to specify *by how much* one asset should outperform another.
+
+At the same time, ranking constraints may shift other expected returns as a consequence of scenario dependence. When this is undesirable, combine the ranking view with additional mean views using `bind_views()`.
+
+# Advanced distributional views
+
+The next constructors are most useful when the investor can describe a desired distribution through a simulated target panel.
+
+The workflow remains the same:
+
+$$\text{target simulation}
+\rightarrow
+\texttt{view_on_*()}
+\rightarrow
+\texttt{entropy_pooling()}.$$
+
+An important implementation detail is worth making explicit: these constructors encode the target through a finite set of moment constraints. They should therefore be interpreted as matching the distributional features represented by those constraints rather than literally replacing every aspect of the empirical distribution.
+
+## View on marginal distributions
+
+`view_on_marginal_distribution()` takes:
+
+- the empirical scenario matrix `x`;
+- a simulated target panel `simul`;
+- probabilities associated with the simulated target.
+
+In the current implementation, the constructor matches the first two raw moments of each marginal distribution.
+
+A simple example can be constructed by creating target marginals with slightly different locations and dispersions.
+
+```{r marginal-view}
+set.seed(123)
+
+n_sim <- 100000
+
+target_mu <- colMeans(x)
+target_sd <- apply(x, 2, sd)
+
+# Example stress:
+# higher FTSE mean and lower CAC volatility
+target_mu["FTSE"] <- target_mu["FTSE"] * 1.20
+target_sd["CAC"] <- target_sd["CAC"] * 0.90
+
+simul_marginal <- sapply(
+  seq_along(target_mu),
+  function(k) {
+    rnorm(
+      n_sim,
+      mean = target_mu[k],
+      sd = target_sd[k]
+    )
+  }
+)
+
+colnames(simul_marginal) <- colnames(x)
+
+simul_prior <- rep(1 / n_sim, n_sim)
+
+views <- view_on_marginal_distribution(
+  x = x,
+  simul = simul_marginal,
+  p = simul_prior
+)
+
+posterior_marginal <- entropy_pooling(
+  p = prior,
+  Aeq = views$Aeq,
+  beq = views$beq,
+  solver = "nlminb"
+)
+
+views
+```
+
+Compare the target and posterior moments.
+
+```{r marginal-view-check}
+# Target location
+colMeans(simul_marginal)
+
+# Posterior location
+ffp_moments(x, posterior_marginal)$mu
+
+# Target marginal standard deviations
+apply(simul_marginal, 2, sd)
+
+# Posterior marginal standard deviations
+sqrt(diag(ffp_moments(x, posterior_marginal)$sigma))
+```
+
+The simulation is therefore a convenient interface for specifying the marginal moment targets.
+
+If a richer parametric model is available, the same logic applies: simulate from the desired target model and pass that panel to the constructor.
+
+## View on copulas
+
+A copula view focuses on dependence rather than the marginal distributions themselves.
+
+Suppose the investor wants to stress lower-tail dependence with a Clayton copula. The `copula` package can be used to estimate and simulate the target dependence structure.
+
+Because this example requires an additional package and a relatively large simulation, it is shown as an optional block.
+
+```{r copula-view, eval=FALSE}
+library(copula)
+
+# Empirical pseudo-observations
+u <- pobs(x)
+
+# Estimate a Clayton copula
+cop <- fitCopula(
+  copula = claytonCopula(dim = ncol(x)),
+  data = u,
+  method = "ml"
+)
+
+# Simulate the target copula
+n_sim <- 100000
+
+simul_copula <- rCopula(
+  n = n_sim,
+  copula = claytonCopula(
+    param = cop@estimate,
+    dim = ncol(x)
+  )
+)
+
+simul_prior <- rep(1 / n_sim, n_sim)
+
+views <- view_on_copula(
+  x = u,
+  simul = simul_copula,
+  p = simul_prior
+)
+
+posterior_copula <- entropy_pooling(
+  p = prior,
+  Aeq = views$Aeq,
+  beq = views$beq,
+  solver = "nloptr"
+)
+```
+
+The constructor uses moments of the empirical and simulated copulas to translate the desired dependence structure into equality constraints. In the current implementation, these include the marginal uniform first moments and cross-moments through the implemented orders.
+
+Stress testing becomes straightforward once the model is fitted. For example, a larger Clayton parameter can be used to represent stronger lower-tail dependence.
+
+```{r copula-stress, eval=FALSE}
+stressed_alpha <- 5
+
+simul_copula_stress <- rCopula(
+  n = n_sim,
+  copula = claytonCopula(
+    param = stressed_alpha,
+    dim = ncol(x)
+  )
+)
+
+views_stress <- view_on_copula(
+  x = u,
+  simul = simul_copula_stress,
+  p = simul_prior
+)
+
+posterior_copula_stress <- entropy_pooling(
+  p = prior,
+  Aeq = views_stress$Aeq,
+  beq = views_stress$beq,
+  solver = "nloptr"
+)
+
+autoplot(posterior_copula_stress)
+```
+
+The original historical scenarios remain unchanged; only their probabilities are adjusted to reflect the stressed dependence structure.
+
+## View on a joint distribution
+
+`view_on_joint_distribution()` uses a simulated multivariate target panel.
+
+In the current implementation, the target is represented through first-order moments and second-order cross-moments.
+
+To keep the example simple, use a bootstrap sample as the target panel.
+
+```{r joint-view}
+set.seed(1)
+
+n_target <- nrow(x)
+
+simul_joint <- bootstrap_scenarios(
+  x = x,
+  p = as_ffp(prior),
+  n = n_target
+)
+
+simul_joint <- as.matrix(simul_joint)
+joint_prior <- rep(1 / nrow(simul_joint), nrow(simul_joint))
+
+views <- view_on_joint_distribution(
+  x = x,
+  simul = simul_joint,
+  p = joint_prior
+)
+
+posterior_joint <- entropy_pooling(
+  p = prior,
+  Aeq = views$Aeq,
+  beq = views$beq,
+  solver = "nlminb"
+)
+
+views
+```
+
+The target and posterior first moments should be close.
+
+```{r joint-view-check}
+colMeans(simul_joint)
+
+ffp_moments(
+  x = x,
+  p = posterior_joint
+)$mu
+```
+
+Likewise, the second-order structure is encoded through the cross-moment constraints.
+
+In practice, `simul_joint` could come from a forecasting model, a Monte Carlo engine, a regime model, or another distribution that represents the investor's desired market state.
+
+# Using the posterior
+
+Finding the posterior probabilities is usually not the end of the analysis.
+
+The posterior can be used directly to compute risk statistics, evaluate portfolios, or generate a new scenario sample.
+
+## Risk statistics
+
+```{r using-posterior-stats}
+empirical_stats(
+  x = x,
+  p = posterior_combined
+)
+```
+
+The same historical scenarios are being evaluated, but under the posterior probability measure.
+
+## Resampling posterior scenarios
+
+`bootstrap_scenarios()` resamples the empirical scenarios according to flexible probabilities.
+
+```{r using-posterior-bootstrap}
+set.seed(123)
+
+simulated_posterior <- bootstrap_scenarios(
+  x = x,
+  p = posterior_combined,
+  n = 10000L
+)
+
+head(simulated_posterior)
+```
+
+This is useful when a downstream procedure expects an ordinary scenario sample rather than an explicit probability vector.
+
+The complete practical workflow can therefore be viewed as
+
+$$\text{historical / simulated scenarios}
+\rightarrow
+\text{prior probabilities}
+\rightarrow
+\text{views}
+\rightarrow
+\text{posterior probabilities}
+\rightarrow
+\text{risk or portfolio decision}$$
+
+# Function cheat sheet
+
+| Task                                    | Function                          |
+|:--------------------------------------|:--------------------------------|
+| Expected-return view                    | `view_on_mean()`                  |
+| Volatility view                         | `view_on_volatility()`            |
+| Covariance view                         | `view_on_covariance()`            |
+| Correlation view                        | `view_on_correlation()`           |
+| Relative-performance view               | `view_on_rank()`                  |
+| Marginal target                         | `view_on_marginal_distribution()` |
+| Copula target                           | `view_on_copula()`                |
+| Joint target panel                      | `view_on_joint_distribution()`    |
+| Combine several views                   | `bind_views()`                    |
+| Solve Entropy Pooling                   | `entropy_pooling()`               |
+| Weighted mean and covariance            | `ffp_moments()`                   |
+| Relative entropy                        | `relative_entropy()`              |
+| Effective Number of Scenarios           | `ens()`                           |
+| Empirical distribution statistics       | `empirical_stats()`               |
+| Resample flexible-probability scenarios | `bootstrap_scenarios()`           |
+| Convert a numeric vector to `ffp`       | `as_ffp()`                        |
+| Plot flexible probabilities             | `autoplot()`                      |
+
+# A compact end-to-end example
+
+The following example puts the main ideas together.
+
+The investor believes that:
+
+- `FTSE` expected return should be 20% above its historical average;
+- `CAC` volatility should be 10% below its historical level;
+- `DAX` should outperform `SMI`.
+
+```{r end-to-end}
+# 1. Prior
+prior <- rep(1 / nrow(x), nrow(x))
+
+# 2. Individual views
+view_mean <- view_on_mean(
+  x = as.matrix(x[, "FTSE"]),
+  mean = mean(x[, "FTSE"]) * 1.20
+)
+
+view_vol <- view_on_volatility(
+  x = as.matrix(x[, "CAC"]),
+  vol = sd(x[, "CAC"]) * 0.90
+)
+
+view_rank <- view_on_rank(
+  x = x,
+  rank = c(2, 1)
+)
+
+# 3. Combine
+views <- bind_views(
+  view_mean,
+  view_vol,
+  view_rank
+)
+
+# 4. Entropy Pooling
+posterior <- entropy_pooling(
+  p = prior,
+  Aeq = views$Aeq,
+  beq = views$beq,
+  A = views$A,
+  b = views$b,
+  solver = "nloptr"
+)
+
+# 5. Diagnostics
+ffp_moments(x, posterior)
+relative_entropy(prior, posterior)
+ens(posterior)
+
+# 6. Risk statistics
+empirical_stats(x, posterior)
+```
+
+If the investor has only partial confidence in the combined scenario:
+
+```{r end-to-end-confidence}
+confidence <- 0.60
+
+posterior_confidence <- combine_ffp(
+  prior = as_ffp(prior), 
+  posterior = posterior, 
+  weights = c(confidence, 1 - confidence)
+)
+
+posterior_confidence
+
+autoplot(posterior_confidence)
+```
+
+That is the practical core of Entropy Pooling with `ffp`:
+
+> **Construct the prior, express the views, solve for posterior probabilities, diagnose the result, and then use the posterior in the analysis that follows.**
+
+# References
+
+Meucci, A. (2008). *Fully Flexible Views: Theory and Practice*. Risk, 21(10), 97--102.
+
+For the theoretical motivation and the derivation of the Entropy Pooling optimization, see the companion vignette **How does Entropy Pooling work?**

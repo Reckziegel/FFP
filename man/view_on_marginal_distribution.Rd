@@ -5,6 +5,8 @@
 \alias{view_on_marginal_distribution.default}
 \alias{view_on_marginal_distribution.matrix}
 \alias{view_on_marginal_distribution.xts}
+\alias{view_on_marginal_distribution.ts}
+\alias{view_on_marginal_distribution.mts}
 \alias{view_on_marginal_distribution.tbl_df}
 \title{Views on Marginal Distribution}
 \usage{
@@ -15,6 +17,10 @@ view_on_marginal_distribution(x, simul, p)
 \method{view_on_marginal_distribution}{matrix}(x, simul, p)
 
 \method{view_on_marginal_distribution}{xts}(x, simul, p)
+
+\method{view_on_marginal_distribution}{ts}(x, simul, p)
+
+\method{view_on_marginal_distribution}{mts}(x, simul, p)
 
 \method{view_on_marginal_distribution}{tbl_df}(x, simul, p)
 }

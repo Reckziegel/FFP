@@ -44,7 +44,10 @@ view_on_mean <- function(x, mean) {
 #' @rdname view_on_mean
 #' @export
 view_on_mean.default <- function(x, mean) {
-  rlang::abort("Method not implemented for class `", class(x), "` yet.")
+  cli::cli_abort(
+    c("x" = "Method not implemented for class {.cls {class(x)}}.",
+      "i" = "Supported classes: {.cls matrix}, {.cls xts}, {.cls ts}, {.cls mts}, {.cls tbl_df}")
+  )
 }
 
 #' @rdname view_on_mean
@@ -56,6 +59,18 @@ view_on_mean.matrix <- function(x, mean) {
 #' @rdname view_on_mean
 #' @export
 view_on_mean.xts <- function(x, mean) {
+  construct_view_on_mean(as.matrix(x), mean)
+}
+
+#' @rdname view_on_mean
+#' @export
+view_on_mean.ts <- function(x, mean) {
+  construct_view_on_mean(as.matrix(x), mean)
+}
+
+#' @rdname view_on_mean
+#' @export
+view_on_mean.mts <- function(x, mean) {
   construct_view_on_mean(as.matrix(x), mean)
 }
 
@@ -73,7 +88,7 @@ construct_view_on_mean <- function(x, mean) {
 
   # ...constrain the first moments...
   Aeq <- t(x)
-  beq <- mean
+  beq <- matrix(mean, ncol = 1)
 
   vctrs::new_list_of(
     x      = list(Aeq = Aeq, beq = beq),
@@ -133,8 +148,12 @@ view_on_covariance <- function(x, mean, sigma) {
 
 #' @keywords internal
 #' @rdname view_on_covariance
+#' @exportS3Method
 view_on_covariance.default <- function(x, mean, sigma) {
-  rlang::abort("Method not implemented for class `", class(x), "` yet.")
+  cli::cli_abort(
+    c("x" = "Method not implemented for class {.cls {class(x)}}.",
+      "i" = "Supported classes: {.cls matrix}, {.cls xts}, {.cls ts}, {.cls mts}, {.cls tbl_df}")
+  )
 }
 
 #' @rdname view_on_covariance
@@ -146,6 +165,18 @@ view_on_covariance.matrix <- function(x, mean, sigma) {
 #' @rdname view_on_covariance
 #' @export
 view_on_covariance.xts <- function(x, mean, sigma) {
+  construct_view_on_covariance(as.matrix(x), mean, sigma)
+}
+
+#' @rdname view_on_covariance
+#' @export
+view_on_covariance.ts <- function(x, mean, sigma) {
+  construct_view_on_covariance(as.matrix(x), mean, sigma)
+}
+
+#' @rdname view_on_covariance
+#' @export
+view_on_covariance.mts <- function(x, mean, sigma) {
   construct_view_on_covariance(as.matrix(x), mean, sigma)
 }
 
@@ -232,7 +263,10 @@ view_on_correlation <- function(x, cor) {
 #' @rdname view_on_correlation
 #' @export
 view_on_correlation.default <- function(x, cor) {
-  rlang::abort("Method not implemented for class `", class(x), "` yet.")
+  cli::cli_abort(
+    c("x" = "Method not implemented for class {.cls {class(x)}}.",
+      "i" = "Supported classes: {.cls matrix}, {.cls xts}, {.cls ts}, {.cls mts}, {.cls tbl_df}")
+  )
 }
 
 #' @rdname view_on_correlation
@@ -244,6 +278,18 @@ view_on_correlation.matrix <- function(x, cor) {
 #' @rdname view_on_correlation
 #' @export
 view_on_correlation.xts <- function(x, cor) {
+  construct_view_on_correlation(as.matrix(x), cor)
+}
+
+#' @rdname view_on_correlation
+#' @export
+view_on_correlation.ts <- function(x, cor) {
+  construct_view_on_correlation(as.matrix(x), cor)
+}
+
+#' @rdname view_on_correlation
+#' @export
+view_on_correlation.mts <- function(x, cor) {
   construct_view_on_correlation(as.matrix(x), cor)
 }
 
@@ -329,7 +375,10 @@ view_on_volatility <- function(x, vol) {
 #' @rdname view_on_volatility
 #' @export
 view_on_volatility.default <- function(x, vol) {
-  rlang::abort("Method not implemented for class `", class(x), "` yet.")
+  cli::cli_abort(
+    c("x" = "Method not implemented for class {.cls {class(x)}}.",
+      "i" = "Supported classes: {.cls matrix}, {.cls xts}, {.cls ts}, {.cls mts}, {.cls tbl_df}")
+  )
 }
 
 #' @rdname view_on_volatility
@@ -346,6 +395,18 @@ view_on_volatility.xts <- function(x, vol) {
 
 #' @rdname view_on_volatility
 #' @export
+view_on_volatility.ts <- function(x, vol) {
+  construct_view_on_volatility(as.matrix(x), vol)
+}
+
+#' @rdname view_on_volatility
+#' @export
+view_on_volatility.mts <- function(x, vol) {
+  construct_view_on_volatility(as.matrix(x), vol)
+}
+
+#' @rdname view_on_volatility
+#' @export
 view_on_volatility.tbl_df <- function(x, vol) {
   construct_view_on_volatility(tbl_to_mtx(x), vol)
 }
@@ -357,7 +418,7 @@ construct_view_on_volatility <- function(x, vol) {
   vctrs::vec_assert(vol, double())
 
   Aeq <- t(x) ^ 2
-  beq <- colMeans(x) ^ 2 + vol ^ 2
+  beq <- matrix(colMeans(x) ^ 2 + vol ^ 2, ncol = 1)
 
   vctrs::new_list_of(
     x      = list(Aeq = Aeq, beq = beq),
@@ -412,7 +473,10 @@ view_on_rank <- function(x, rank) {
 #' @rdname view_on_rank
 #' @export
 view_on_rank.default <- function(x, rank) {
-  rlang::abort("Method not implemented for class `", class(x), "` yet.")
+  cli::cli_abort(
+    c("x" = "Method not implemented for class {.cls {class(x)}}.",
+      "i" = "Supported classes: {.cls matrix}, {.cls xts}, {.cls ts}, {.cls mts}, {.cls tbl_df}")
+  )
 }
 
 #' @rdname view_on_rank
@@ -424,6 +488,18 @@ view_on_rank.matrix <- function(x, rank) {
 #' @rdname view_on_rank
 #' @export
 view_on_rank.xts <- function(x, rank) {
+  construct_view_on_rank(x = as.matrix(x), rank = rank)
+}
+
+#' @rdname view_on_rank
+#' @export
+view_on_rank.ts <- function(x, rank) {
+  construct_view_on_rank(x = as.matrix(x), rank = rank)
+}
+
+#' @rdname view_on_rank
+#' @export
+view_on_rank.mts <- function(x, rank) {
   construct_view_on_rank(x = as.matrix(x), rank = rank)
 }
 
@@ -583,7 +659,10 @@ view_on_copula <- function(x, simul, p) {
 #' @rdname view_on_copula
 #' @export
 view_on_copula.default <- function(x, simul, p) {
-  rlang::abort("Method not implemented for class `", class(x), "` yet.")
+  cli::cli_abort(
+    c("x" = "Method not implemented for class {.cls {class(x)}}.",
+      "i" = "Supported classes: {.cls matrix}, {.cls xts}, {.cls ts}, {.cls mts}, {.cls tbl_df}")
+  )
 }
 
 #' @rdname view_on_copula
@@ -595,6 +674,18 @@ view_on_copula.matrix <- function(x, simul, p) {
 #' @rdname view_on_copula
 #' @export
 view_on_copula.xts <- function(x, simul, p) {
+  construct_view_on_copula(x = as.matrix(x), simul = check_input(simul), p = as_ffp(p))
+}
+
+#' @rdname view_on_copula
+#' @export
+view_on_copula.ts <- function(x, simul, p) {
+  construct_view_on_copula(x = as.matrix(x), simul = check_input(simul), p = as_ffp(p))
+}
+
+#' @rdname view_on_copula
+#' @export
+view_on_copula.mts <- function(x, simul, p) {
   construct_view_on_copula(x = as.matrix(x), simul = check_input(simul), p = as_ffp(p))
 }
 
@@ -703,7 +794,10 @@ view_on_marginal_distribution <- function(x, simul, p) {
 #' @rdname view_on_marginal_distribution
 #' @export
 view_on_marginal_distribution.default <- function(x, simul, p) {
-  rlang::abort("Method not implemented for class `", class(x), "` yet.")
+  cli::cli_abort(
+    c("x" = "Method not implemented for class {.cls {class(x)}}.",
+      "i" = "Supported classes: {.cls matrix}, {.cls xts}, {.cls ts}, {.cls mts}, {.cls tbl_df}")
+  )
 }
 
 #' @rdname view_on_marginal_distribution
@@ -715,6 +809,18 @@ view_on_marginal_distribution.matrix <- function(x, simul, p) {
 #' @rdname view_on_marginal_distribution
 #' @export
 view_on_marginal_distribution.xts <- function(x, simul, p) {
+  construct_view_on_marginal_distribution(x = as.matrix(x), simul = check_input(simul), p = as_ffp(p))
+}
+
+#' @rdname view_on_marginal_distribution
+#' @export
+view_on_marginal_distribution.ts <- function(x, simul, p) {
+  construct_view_on_marginal_distribution(x = as.matrix(x), simul = check_input(simul), p = as_ffp(p))
+}
+
+#' @rdname view_on_marginal_distribution
+#' @export
+view_on_marginal_distribution.mts <- function(x, simul, p) {
   construct_view_on_marginal_distribution(x = as.matrix(x), simul = check_input(simul), p = as_ffp(p))
 }
 
@@ -813,7 +919,10 @@ view_on_joint_distribution <- function(x, simul, p) {
 #' @rdname view_on_joint_distribution
 #' @export
 view_on_joint_distribution.default <- function(x, simul, p) {
-  rlang::abort("Method not implemented for class `", class(x), "` yet.")
+  cli::cli_abort(
+    c("x" = "Method not implemented for class {.cls {class(x)}}.",
+      "i" = "Supported classes: {.cls matrix}, {.cls xts}, {.cls ts}, {.cls mts}, {.cls tbl_df}")
+  )
 }
 
 #' @rdname view_on_joint_distribution
@@ -825,6 +934,18 @@ view_on_joint_distribution.matrix <- function(x, simul, p) {
 #' @rdname view_on_joint_distribution
 #' @export
 view_on_joint_distribution.xts <- function(x, simul, p) {
+  construct_view_on_joint_distribution(x = as.matrix(x), simul = check_input(simul), p = as_ffp(p))
+}
+
+#' @rdname view_on_joint_distribution
+#' @export
+view_on_joint_distribution.ts <- function(x, simul, p) {
+  construct_view_on_joint_distribution(x = as.matrix(x), simul = check_input(simul), p = as_ffp(p))
+}
+
+#' @rdname view_on_joint_distribution
+#' @export
+view_on_joint_distribution.mts <- function(x, simul, p) {
   construct_view_on_joint_distribution(x = as.matrix(x), simul = check_input(simul), p = as_ffp(p))
 }
 
@@ -933,22 +1054,3 @@ bind_views <- function(...) {
 
 }
 
-# Printing methods --------------------------------------------------------
-
-#' @importFrom vctrs obj_print_header
-#' @export
-obj_print_header.ffp_views <- function(x, ...) {
-  cat(crayon::cyan("# ffp view"))
-  #cat("\n")
-}
-
-#' @importFrom vctrs obj_print_data
-#' @export
-obj_print_data.ffp_views <- function(x, ...) {
-  cat("\n")
-  cat("Type: ", crayon::blurred(stringr::str_to_title(stringr::str_replace_all(attributes(x)$type, "_", " "))))
-  cat("\n")
-  nms <- names(x)
-  purrr::walk2(.x = x, .y = nms, .f = ~ cat(.y, ": ", "Dim", NROW(.x), "x", NCOL(.x), "\n"))
-  #cat("\n")
-}

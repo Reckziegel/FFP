@@ -5,6 +5,8 @@
 \alias{view_on_volatility.default}
 \alias{view_on_volatility.matrix}
 \alias{view_on_volatility.xts}
+\alias{view_on_volatility.ts}
+\alias{view_on_volatility.mts}
 \alias{view_on_volatility.tbl_df}
 \title{Views on Volatility}
 \usage{
@@ -15,6 +17,10 @@ view_on_volatility(x, vol)
 \method{view_on_volatility}{matrix}(x, vol)
 
 \method{view_on_volatility}{xts}(x, vol)
+
+\method{view_on_volatility}{ts}(x, vol)
+
+\method{view_on_volatility}{mts}(x, vol)
 
 \method{view_on_volatility}{tbl_df}(x, vol)
 }

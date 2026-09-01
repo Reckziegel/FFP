@@ -5,6 +5,8 @@
 \alias{view_on_mean.default}
 \alias{view_on_mean.matrix}
 \alias{view_on_mean.xts}
+\alias{view_on_mean.ts}
+\alias{view_on_mean.mts}
 \alias{view_on_mean.tbl_df}
 \title{Views on Expected Returns}
 \usage{
@@ -15,6 +17,10 @@ view_on_mean(x, mean)
 \method{view_on_mean}{matrix}(x, mean)
 
 \method{view_on_mean}{xts}(x, mean)
+
+\method{view_on_mean}{ts}(x, mean)
+
+\method{view_on_mean}{mts}(x, mean)
 
 \method{view_on_mean}{tbl_df}(x, mean)
 }

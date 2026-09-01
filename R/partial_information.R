@@ -35,21 +35,14 @@ kernel_entropy <- function(x, mean, sigma = NULL) {
 #' @rdname kernel_entropy
 #' @export
 kernel_entropy.default <- function(x, mean, sigma = NULL) {
-  stop("Method not implemented for class `", class(x), "` yet.", call. = FALSE)
+  cli::cli_abort("Method not implemented for class {.cls {class(x)}} yet.")
 }
 
 #' @rdname kernel_entropy
 #' @export
 kernel_entropy.numeric <- function(x, mean, sigma = NULL) {
-  vctrs::vec_assert(mean, double(), 1)
-  if (!is.null(sigma)) {
-    vctrs::vec_assert(sigma, double(), 1)
-  }
   x <- as.matrix(x)
-  p <- make_kernel_entropy(x, mean, sigma)
-
-  ffp(p, fn = "kernel_entropy", user_call = match.call())
-
+  kernel_entropy.matrix(x, mean, sigma)
 }
 
 #' @rdname kernel_entropy
@@ -62,98 +55,44 @@ kernel_entropy.matrix <- function(x, mean, sigma = NULL) {
     }
   } else {
     assertthat::are_equal(NCOL(x), vctrs::vec_size(mean))
-    assert_is_equal_size(mean, sigma)
+    if (!is.null(sigma)) {
+      assertthat::are_equal(NCOL(x), vctrs::vec_size(sigma))
+    }
     if (is.vector(mean)) mean <- as.matrix(mean)
+    if (is.vector(sigma)) sigma <- as.matrix(sigma)
   }
 
   p <- make_kernel_entropy(x, mean, sigma)
 
   ffp(p, fn = "kernel_entropy", user_call = match.call())
-
 }
 
 #' @rdname kernel_entropy
 #' @export
 kernel_entropy.ts <- function(x, mean, sigma = NULL) {
-  if (NCOL(x) == 1) {
-    vctrs::vec_assert(mean, double(), 1)
-    if (!is.null(sigma)) {
-      vctrs::vec_assert(sigma, double(), 1)
-    }
-  } else {
-    assertthat::are_equal(NCOL(x), vctrs::vec_size(mean))
-    assert_is_equal_size(mean, sigma)
-    if (is.vector(mean)) mean <- as.matrix(mean)
-  }
-
   x <- as.matrix(x)
-  p <- make_kernel_entropy(x, mean, sigma)
-
-  ffp(p, fn = "kernel_entropy", user_call = match.call())
-
+  kernel_entropy.matrix(x, mean, sigma)
 }
 
 #' @rdname kernel_entropy
 #' @export
 kernel_entropy.xts <- function(x, mean, sigma = NULL) {
-  if (NCOL(x) == 1) {
-    vctrs::vec_assert(mean, double(), 1)
-    if (!is.null(sigma)) {
-      vctrs::vec_assert(sigma, double(), 1)
-    }
-  } else {
-    assertthat::are_equal(NCOL(x), vctrs::vec_size(mean))
-    assert_is_equal_size(mean, sigma)
-    if (is.vector(mean)) mean <- as.matrix(mean)
-  }
-
   x <- as.matrix(x)
-  p <- make_kernel_entropy(x, mean, sigma)
-
-  ffp(p, fn = "kernel_entropy", user_call = match.call())
-
+  kernel_entropy.matrix(x, mean, sigma)
 }
 
 #' @rdname kernel_entropy
 #' @export
 kernel_entropy.tbl_df <- function(x, mean, sigma = NULL) {
-  if (NCOL(x) == 1) {
-    vctrs::vec_assert(mean, double(), 1)
-    if (!is.null(sigma)) {
-      vctrs::vec_assert(sigma, double(), 1)
-    }
-  } else {
-    assertthat::are_equal(NCOL(x), vctrs::vec_size(mean))
-    assert_is_equal_size(mean, sigma)
-    if (is.vector(mean)) mean <- as.matrix(mean)
-  }
-
   x <- as.matrix(x[purrr::map_lgl(x, is.numeric)])
-  p <- make_kernel_entropy(x, mean, sigma)
-
-  ffp(p, fn = "kernel_entropy", user_call = match.call())
-
+  kernel_entropy.matrix(x, mean, sigma)
 }
 
 #' @rdname kernel_entropy
 #' @export
 kernel_entropy.data.frame <- function(x, mean, sigma = NULL) {
-  if (NCOL(x) == 1) {
-    vctrs::vec_assert(mean, double(), 1)
-    if (!is.null(sigma)) {
-      vctrs::vec_assert(sigma, double(), 1)
-    }
-  } else {
-    assertthat::are_equal(NCOL(x), vctrs::vec_size(mean))
-    assert_is_equal_size(mean, sigma)
-    if (is.vector(mean)) mean <- as.matrix(mean)
-  }
-
   x <- as.matrix(x[purrr::map_lgl(x, is.numeric)])
-  p <- make_kernel_entropy(x, mean, sigma)
-
-  ffp(p, fn = "kernel_entropy", user_call = match.call())
-
+  kernel_entropy.matrix(x, mean, sigma)
 }
 
 
@@ -202,7 +141,7 @@ double_decay <- function(x, slow, fast) {
 #' @rdname double_decay
 #' @export
 double_decay.default <- function(x, slow, fast) {
-  stop("Method not implemented for class `", class(x), "` yet.", call. = FALSE)
+  cli::cli_abort("Method not implemented for class {.cls {class(x)}} yet.")
 }
 
 #' @rdname double_decay

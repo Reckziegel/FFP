@@ -20,11 +20,17 @@
 relative_entropy <- function(prior, posterior) {
 
   if (vctrs::vec_size(prior) != vctrs::vec_size(posterior)) {
-    rlang::abort("The `prior` and `posterior` probabilities must have the same length.")
+    cli::cli_abort(
+      c("x" = "The {.arg prior} and {.arg posterior} must have the same length.",
+        "i" = "Provided lengths: prior = {vctrs::vec_size(prior)}, posterior = {vctrs::vec_size(posterior)}")
+    )
   }
 
   prior     <- as_ffp(prior)
   posterior <- as_ffp(posterior)
+
+  prior     <- vctrs::vec_data(prior)
+  posterior <- vctrs::vec_data(posterior)
 
   sum(posterior * (log(posterior) - log(prior)))
 

@@ -13,6 +13,7 @@
 \alias{obj_print_data.ffp}
 \alias{vec_math.ffp}
 \alias{vec_arith.ffp}
+\alias{vec_arith.numeric.ffp}
 \title{Internal vctrs methods}
 \usage{
 new_ffp(x = double(), ...)
@@ -36,6 +37,8 @@ new_ffp(x = double(), ...)
 \method{vec_math}{ffp}(.fn, .x, ...)
 
 \method{vec_arith}{ffp}(op, x, y, ...)
+
+\method{vec_arith.numeric}{ffp}(op, x, y, ...)
 }
 \arguments{
 \item{x}{A numeric vector.}

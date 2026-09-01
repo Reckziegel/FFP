@@ -6,6 +6,7 @@
 \alias{as_ffp}
 \alias{as_ffp.default}
 \alias{as_ffp.integer}
+\alias{as_ffp.ffp}
 \title{Manipulate the \code{ffp} Class}
 \usage{
 ffp(x = double(), ...)
@@ -17,31 +18,41 @@ as_ffp(x)
 \method{as_ffp}{default}(x)
 
 \method{as_ffp}{integer}(x)
+
+\method{as_ffp}{ffp}(x)
 }
 \arguments{
 \item{x}{\itemize{
-\item For \code{ffp()}: A numeric vector.
+\item For \code{ffp()}: A numeric vector representing a probability
+distribution. Values must be non-negative and sum to 1
+(with tolerance 0.001).
 \item For \code{is_ffp()}: An object to be tested.
 \item For \code{as_ffp()}: An object to convert to \code{ffp}.
 }}
 
-\item{...}{Additional attributes to be passed to \code{ffp}.}
+\item{...}{Additional attributes passed to \code{new_ffp()}.}
 }
 \value{
 \itemize{
-\item \code{ffp()} and \code{as_ffp()} return an S3 vector of class \code{ffp}
-(built upon \code{double}'s);
-\item \code{is_ffp()} returns a \code{logical} object.
+\item \code{ffp()} and \code{as_ffp()} return an S3 vector of class \code{ffp}.
+\item \code{is_ffp()} returns a logical value.
 }
 }
 \description{
-Helpers and Constructors from \code{ffp}.
+Helpers and constructors for flexible probabilities.
 }
 \details{
-The \code{ffp} class is designed to interact with doubles,
-but the output of \code{c(ffp, double)} or \code{c(double, ffp)} will always return
-a \code{double} (not an \code{ffp} object), since there is no way to guarantee the
-interaction between a numeric vector and a probability will also be a probability.
+An \code{ffp} object represents a complete probability distribution. Values must
+be non-negative and sum to one.
+
+Operations that cannot guarantee preservation of the probability invariant
+either return a plain \code{double} or are explicitly rejected.
+
+Validation levels:
+\itemize{
+\item \code{ffp()}: practical validation with tolerance \code{0.001}.
+\item \code{as_ffp()}: strict validation using approximately machine precision.
+}
 }
 \examples{
 set.seed(123)

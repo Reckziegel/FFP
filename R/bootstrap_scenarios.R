@@ -25,28 +25,23 @@ bootstrap_scenarios <- function(x, p, n) {
 #' @rdname bootstrap_scenarios
 #' @export
 bootstrap_scenarios.numeric <- function(x, p, n) {
-  vctrs::vec_assert(n, double(), 1)
-  stopifnot(inherits(p, "ffp"))
-  assertthat::assert_that(
-    assertthat::are_equal(vctrs::vec_size(x), vctrs::vec_size(p))
-  )
+  assert_is_positive_integer(n)
+  if (!inherits(p, "ffp")) cli::cli_abort("Argument {.arg p} must be of class {.cls ffp}")
+  assert_is_equal_size(x, p)
 
   x <- as.matrix(x)
   out <- make_scenarios(x, p, n)
 
-  tibble::tibble(V1 = as.double(out), .name_repair = "minimal")
+  tibble::tibble(V1 = vctrs::vec_data(out), .name_repair = "minimal")
 }
 
 #' @rdname bootstrap_scenarios
 #' @export
 bootstrap_scenarios.matrix <- function(x, p, n) {
-  vctrs::vec_assert(n, double(), 1)
-  stopifnot(inherits(p, "ffp"))
-  assertthat::assert_that(
-    assertthat::are_equal(vctrs::vec_size(x), vctrs::vec_size(p))
-  )
+  assert_is_positive_integer(n)
+  if (!inherits(p, "ffp")) cli::cli_abort("Argument {.arg p} must be of class {.cls ffp}")
+  assert_is_equal_size(x, p)
   x <- as.matrix(x)
-
 
   out <- make_scenarios(x, p, n)
   if (is.null(colnames(x))) {
@@ -55,17 +50,14 @@ bootstrap_scenarios.matrix <- function(x, p, n) {
     colnames(out) <- colnames(x)
   }
   tibble::as_tibble(out, name_repair = "minimal")
-
 }
 
 #' @rdname bootstrap_scenarios
 #' @export
 bootstrap_scenarios.ts <- function(x, p, n) {
-  vctrs::vec_assert(n, double(), 1)
-  stopifnot(inherits(p, "ffp"))
-  assertthat::assert_that(
-    assertthat::are_equal(vctrs::vec_size(x), vctrs::vec_size(p))
-  )
+  assert_is_positive_integer(n)
+  if (!inherits(p, "ffp")) cli::cli_abort("Argument {.arg p} must be of class {.cls ffp}")
+  assert_is_equal_size(x, p)
 
   x <- as.matrix(x)
 
@@ -82,11 +74,9 @@ bootstrap_scenarios.ts <- function(x, p, n) {
 #' @rdname bootstrap_scenarios
 #' @export
 bootstrap_scenarios.xts <- function(x, p, n) {
-  vctrs::vec_assert(n, double(), 1)
-  stopifnot(inherits(p, "ffp"))
-  assertthat::assert_that(
-    assertthat::are_equal(vctrs::vec_size(x), vctrs::vec_size(p))
-  )
+  assert_is_positive_integer(n)
+  if (!inherits(p, "ffp")) cli::cli_abort("Argument {.arg p} must be of class {.cls ffp}")
+  assert_is_equal_size(x, p)
 
   x <- matrix(x, nrow = NROW(x), ncol = NCOL(x))
 
@@ -103,11 +93,9 @@ bootstrap_scenarios.xts <- function(x, p, n) {
 #' @rdname bootstrap_scenarios
 #' @export
 bootstrap_scenarios.tbl <- function(x, p, n) {
-  vctrs::vec_assert(n, double(), 1)
-  stopifnot(inherits(p, "ffp"))
-  assertthat::assert_that(
-    assertthat::are_equal(vctrs::vec_size(x), vctrs::vec_size(p))
-  )
+  assert_is_positive_integer(n)
+  if (!inherits(p, "ffp")) cli::cli_abort("Argument {.arg p} must be of class {.cls ffp}")
+  assert_is_equal_size(x, p)
 
   x <- as.matrix(x[purrr::map_lgl(x, is.numeric)])
 
@@ -124,14 +112,9 @@ bootstrap_scenarios.tbl <- function(x, p, n) {
 #' @rdname bootstrap_scenarios
 #' @export
 bootstrap_scenarios.data.frame <- function(x, p, n) {
-  vctrs::vec_assert(n, double(), 1)
-  stopifnot(inherits(p, "ffp"))
-  assertthat::assert_that(
-    assertthat::are_equal(vctrs::vec_size(x), vctrs::vec_size(p))
-  )
-  assertthat::assert_that(
-    assertthat::are_equal(vctrs::vec_size(x), vctrs::vec_size(p))
-  )
+  assert_is_positive_integer(n)
+  if (!inherits(p, "ffp")) cli::cli_abort("Argument {.arg p} must be of class {.cls ffp}")
+  assert_is_equal_size(x, p)
 
   x <- as.matrix(x[purrr::map_lgl(x, is.numeric)])
 

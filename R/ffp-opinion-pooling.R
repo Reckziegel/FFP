@@ -26,10 +26,8 @@ new_ffp_opinion_pool <- function(
 }
 
 
-validate_ffp_opinion_pool <- function(
-    x,
-    call = rlang::caller_env()
-) {
+validate_ffp_opinion_pool <- function(x, call = rlang::caller_env()) {
+
   if (!inherits(x, "ffp_opinion_pool")) {
     ffp_abort(
       "The object must inherit from {.cls ffp_opinion_pool}.",
@@ -38,15 +36,8 @@ validate_ffp_opinion_pool <- function(
     )
   }
 
-  validate_ffp_fit(
-    x$fit,
-    call = call
-  )
-
-  validate_opinion_pool_scenario_count(
-    n_scenarios = x$n_scenarios,
-    call = call
-  )
+  validate_ffp_fit(x$fit, call = call)
+  validate_opinion_pool_scenario_count(n_scenarios = x$n_scenarios, call = call)
 
   if (x$n_scenarios != x$fit$n_scenarios) {
     ffp_abort(
@@ -56,31 +47,10 @@ validate_ffp_opinion_pool <- function(
     )
   }
 
-  validate_opinion_pool_confidence(
-    confidence = x$confidence,
-    call = call
-  )
-
-  validate_opinion_pool_probability_vector(
-    x = x$prior,
-    n_scenarios = x$n_scenarios,
-    arg = "prior",
-    call = call
-  )
-
-  validate_opinion_pool_probability_vector(
-    x = x$full_confidence_posterior,
-    n_scenarios = x$n_scenarios,
-    arg = "full_confidence_posterior",
-    call = call
-  )
-
-  validate_opinion_pool_probability_vector(
-    x = x$posterior,
-    n_scenarios = x$n_scenarios,
-    arg = "posterior",
-    call = call
-  )
+  validate_opinion_pool_confidence(confidence = x$confidence, call = call)
+  validate_opinion_pool_probability_vector(x = x$prior, n_scenarios = x$n_scenarios, arg = "prior", call = call)
+  validate_opinion_pool_probability_vector(x = x$posterior, n_scenarios = x$n_scenarios, arg = "posterior", call = call)
+  validate_opinion_pool_probability_vector(x = x$full_confidence_posterior, n_scenarios = x$n_scenarios, arg = "full_confidence_posterior", call = call)
 
   if (!identical(x$prior, x$fit$prior)) {
     ffp_abort(
@@ -101,11 +71,7 @@ validate_ffp_opinion_pool <- function(
     )
   }
 
-  expected_posterior <- opinion_pool_probabilities(
-    prior = x$prior,
-    full_confidence_posterior = x$full_confidence_posterior,
-    confidence = x$confidence
-  )
+  expected_posterior <- opinion_pool_probabilities(prior = x$prior, full_confidence_posterior = x$full_confidence_posterior, confidence = x$confidence)
 
   if (!identical(x$posterior, expected_posterior)) {
     ffp_abort(
@@ -122,15 +88,9 @@ validate_ffp_opinion_pool <- function(
 }
 
 
-validate_opinion_pool_confidence <- function(
-    confidence,
-    call = rlang::caller_env()
-) {
-  valid <- is.numeric(confidence) &&
-    is.null(dim(confidence)) &&
-    length(confidence) == 1L &&
-    !is.na(confidence) &&
-    is.finite(confidence)
+validate_opinion_pool_confidence <- function(confidence, call = rlang::caller_env()) {
+
+  valid <- is.numeric(confidence) && is.null(dim(confidence)) && length(confidence) == 1L && !is.na(confidence) && is.finite(confidence)
 
   if (!valid) {
     ffp_abort(
@@ -138,10 +98,7 @@ validate_opinion_pool_confidence <- function(
         "{.arg confidence} must be a single finite number between 0 and 1.",
         "i" = "Use decimal confidence, such as 0.75 for 75 percent."
       ),
-      class = c(
-        "ffp_error_invalid_confidence",
-        "ffp_error_invalid_opinion_pool"
-      ),
+      class = c("ffp_error_invalid_confidence", "ffp_error_invalid_opinion_pool"),
       call = call
     )
   }
@@ -152,10 +109,7 @@ validate_opinion_pool_confidence <- function(
         "{.arg confidence} must be between 0 and 1.",
         "i" = "Use 0 for no confidence and 1 for full confidence."
       ),
-      class = c(
-        "ffp_error_invalid_confidence",
-        "ffp_error_invalid_opinion_pool"
-      ),
+      class = c("ffp_error_invalid_confidence", "ffp_error_invalid_opinion_pool"),
       call = call
     )
   }
@@ -164,16 +118,8 @@ validate_opinion_pool_confidence <- function(
 }
 
 
-validate_opinion_pool_scenario_count <- function(
-    n_scenarios,
-    call = rlang::caller_env()
-) {
-  valid <- is.numeric(n_scenarios) &&
-    length(n_scenarios) == 1L &&
-    !is.na(n_scenarios) &&
-    is.finite(n_scenarios) &&
-    n_scenarios >= 1 &&
-    n_scenarios == floor(n_scenarios)
+validate_opinion_pool_scenario_count <- function(n_scenarios, call = rlang::caller_env()) {
+  valid <- is.numeric(n_scenarios) && length(n_scenarios) == 1L && !is.na(n_scenarios) && is.finite(n_scenarios) && n_scenarios >= 1 && n_scenarios == floor(n_scenarios)
 
   if (!valid) {
     ffp_abort(
@@ -187,28 +133,15 @@ validate_opinion_pool_scenario_count <- function(
 }
 
 
-validate_opinion_pool_probability_vector <- function(
-    x,
-    n_scenarios,
-    arg,
-    call = rlang::caller_env()
-) {
-  valid <- is.numeric(x) &&
-    is.null(dim(x)) &&
-    length(x) == n_scenarios &&
-    !anyNA(x) &&
-    all(is.finite(x)) &&
-    all(x >= 0)
+validate_opinion_pool_probability_vector <- function(x, n_scenarios, arg, call = rlang::caller_env()) {
+
+  valid <- is.numeric(x) && is.null(dim(x)) && length(x) == n_scenarios && !anyNA(x) && all(is.finite(x)) && all(x >= 0)
 
   if (!valid) {
     ffp_abort(
       c(
         paste0("`", arg, "` is not a valid probability vector."),
-        "x" = paste0(
-          "Expected ",
-          n_scenarios,
-          " finite, non-negative probability value(s)."
-        )
+        "x" = paste0("Expected ", n_scenarios, " finite, non-negative probability value(s).")
       ),
       class = "ffp_error_invalid_opinion_pool",
       call = call
@@ -217,10 +150,7 @@ validate_opinion_pool_probability_vector <- function(
 
   probability_sum <- sum(x)
 
-  if (
-    !is.finite(probability_sum) ||
-    abs(probability_sum - 1) > 1e-8
-  ) {
+  if (!is.finite(probability_sum) || abs(probability_sum - 1) > 1e-8) {
     ffp_abort(
       paste0("`", arg, "` must sum to one."),
       class = "ffp_error_invalid_opinion_pool",
@@ -232,15 +162,8 @@ validate_opinion_pool_probability_vector <- function(
 }
 
 
-opinion_pool_probabilities <- function(
-    prior,
-    full_confidence_posterior,
-    confidence
-) {
-  if (
-    confidence == 0 ||
-    identical(prior, full_confidence_posterior)
-  ) {
+opinion_pool_probabilities <- function(prior, full_confidence_posterior, confidence) {
+  if (confidence == 0 || identical(prior, full_confidence_posterior)) {
     return(prior)
   }
 
@@ -248,8 +171,7 @@ opinion_pool_probabilities <- function(
     return(full_confidence_posterior)
   }
 
-  (1 - confidence) * prior +
-    confidence * full_confidence_posterior
+  (1 - confidence) * prior + confidence * full_confidence_posterior
 }
 
 
@@ -342,16 +264,11 @@ opinion_pool_probabilities <- function(
 #' @seealso [ffp_fit()]
 #'
 #' @export
-ffp_opinion_pooling <- function(
-    fit,
-    confidence
-) {
+ffp_opinion_pooling <- function(fit, confidence) {
+
   call <- rlang::caller_env()
 
-  validate_ffp_fit(
-    fit,
-    call = call
-  )
+  validate_ffp_fit(fit, call = call)
 
   if (missing(confidence)) {
     ffp_abort(
@@ -359,28 +276,15 @@ ffp_opinion_pooling <- function(
         "{.fn ffp_opinion_pooling} requires {.arg confidence}.",
         "i" = "Supply one global confidence level between 0 and 1."
       ),
-      class = c(
-        "ffp_error_invalid_confidence",
-        "ffp_error_invalid_opinion_pool"
-      ),
+      class = c("ffp_error_invalid_confidence", "ffp_error_invalid_opinion_pool"),
       call = call
     )
   }
 
-  validate_opinion_pool_confidence(
-    confidence = confidence,
-    call = call
-  )
+  validate_opinion_pool_confidence(confidence = confidence, call = call)
 
-  confidence <- unname(
-    as.double(confidence)
-  )
-
-  posterior <- opinion_pool_probabilities(
-    prior = fit$prior,
-    full_confidence_posterior = fit$posterior,
-    confidence = confidence
-  )
+  confidence <- unname(as.double(confidence))
+  posterior  <- opinion_pool_probabilities(prior = fit$prior, full_confidence_posterior = fit$posterior, confidence = confidence)
 
   new_ffp_opinion_pool(
     prior = fit$prior,
@@ -396,15 +300,7 @@ ffp_opinion_pooling <- function(
 # Printing ----------------------------------------------------------------
 
 format_opinion_pool_confidence <- function(confidence) {
-  paste0(
-    format(
-      100 * confidence,
-      digits = 6,
-      trim = TRUE,
-      scientific = FALSE
-    ),
-    "%"
-  )
+  paste0(format(100 * confidence, digits = 6, trim = TRUE, scientific = FALSE), "%")
 }
 
 
@@ -415,12 +311,7 @@ print.ffp_opinion_pool <- function(x, ...) {
 
   cat("<ffp_opinion_pool>\n")
   cat("Scenarios:   ", x$n_scenarios, "\n", sep = "")
-  cat(
-    "Confidence:  ",
-    format_opinion_pool_confidence(x$confidence),
-    "\n",
-    sep = ""
-  )
+  cat("Confidence:  ", format_opinion_pool_confidence(x$confidence), "\n", sep = "")
 
   invisible(x)
 }

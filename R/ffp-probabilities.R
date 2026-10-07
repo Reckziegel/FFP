@@ -151,9 +151,7 @@ ffp_probability_index <- function(fit) {
   index <- fit$model$metadata$index
 
   if (is.null(index)) {
-    return(
-      rep(NA_real_, fit$n_scenarios)
-    )
+    return(rep(NA_real_, fit$n_scenarios))
   }
 
   index

@@ -9,7 +9,7 @@
 An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 1083 rows and 9 columns.
 }
 \usage{
-db_tbl
+data(db_tbl)
 }
 \description{
 Dataset used in Historical Scenarios with Fully Flexible Probabilities

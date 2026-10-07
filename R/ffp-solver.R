@@ -85,10 +85,7 @@ entropy_solver_control <- function(
 }
 
 
-validate_entropy_solver_control <- function(
-    control,
-    call = rlang::caller_env()
-) {
+validate_entropy_solver_control <- function(control, call = rlang::caller_env()) {
   required <- c(
     "max_iterations",
     "relative_tolerance",
@@ -105,22 +102,13 @@ validate_entropy_solver_control <- function(
     )
   }
 
-  integer_fields <- c(
-    "max_iterations",
-    "refinement_iterations"
-  )
+  integer_fields <- c("max_iterations", "refinement_iterations")
 
   valid_integers <- vapply(
     integer_fields,
     function(name) {
       value <- control[[name]]
-
-      is.numeric(value) &&
-        length(value) == 1L &&
-        !is.na(value) &&
-        is.finite(value) &&
-        value >= 1 &&
-        value == floor(value)
+      is.numeric(value) && length(value) == 1L && !is.na(value) && is.finite(value) && value >= 1 && value == floor(value)
     },
     logical(1)
   )
@@ -133,22 +121,13 @@ validate_entropy_solver_control <- function(
     )
   }
 
-  tolerance_fields <- c(
-    "relative_tolerance",
-    "gradient_tolerance",
-    "constraint_tolerance"
-  )
+  tolerance_fields <- c("relative_tolerance", "gradient_tolerance", "constraint_tolerance")
 
   valid_tolerances <- vapply(
     tolerance_fields,
     function(name) {
       value <- control[[name]]
-
-      is.numeric(value) &&
-        length(value) == 1L &&
-        !is.na(value) &&
-        is.finite(value) &&
-        value > 0
+      is.numeric(value) && length(value) == 1L && !is.na(value) && is.finite(value) && value > 0
     },
     logical(1)
   )
@@ -201,10 +180,7 @@ new_ffp_solver_result <- function(
 }
 
 
-validate_ffp_solver_result <- function(
-    x,
-    call = rlang::caller_env()
-) {
+validate_ffp_solver_result <- function(x, call = rlang::caller_env()) {
   if (!inherits(x, "ffp_solver_result")) {
     ffp_abort(
       "The object must inherit from {.cls ffp_solver_result}.",
@@ -213,12 +189,7 @@ validate_ffp_solver_result <- function(
     )
   }
 
-  valid_posterior <- is.numeric(x$posterior) &&
-    is.null(dim(x$posterior)) &&
-    length(x$posterior) >= 1L &&
-    !anyNA(x$posterior) &&
-    all(is.finite(x$posterior)) &&
-    all(x$posterior >= 0)
+  valid_posterior <- is.numeric(x$posterior) && is.null(dim(x$posterior)) && length(x$posterior) >= 1L && !anyNA(x$posterior) && all(is.finite(x$posterior)) && all(x$posterior >= 0)
 
   if (!valid_posterior) {
     ffp_abort(
@@ -228,10 +199,7 @@ validate_ffp_solver_result <- function(
     )
   }
 
-  valid_objective <- is.numeric(x$objective) &&
-    length(x$objective) == 1L &&
-    !is.na(x$objective) &&
-    is.finite(x$objective)
+  valid_objective <- is.numeric(x$objective) && length(x$objective) == 1L && !is.na(x$objective) && is.finite(x$objective)
 
   if (!valid_objective) {
     ffp_abort(
@@ -241,9 +209,7 @@ validate_ffp_solver_result <- function(
     )
   }
 
-  valid_converged <- is.logical(x$converged) &&
-    length(x$converged) == 1L &&
-    !is.na(x$converged)
+  valid_converged <- is.logical(x$converged) && length(x$converged) == 1L && !is.na(x$converged)
 
   if (!valid_converged) {
     ffp_abort(
@@ -253,21 +219,13 @@ validate_ffp_solver_result <- function(
     )
   }
 
-  character_fields <- c(
-    "status",
-    "backend",
-    "method"
-  )
+  character_fields <- c("status", "backend", "method")
 
   valid_character <- vapply(
     character_fields,
     function(name) {
       value <- x[[name]]
-
-      is.character(value) &&
-        length(value) == 1L &&
-        !is.na(value) &&
-        nzchar(value)
+      is.character(value) && length(value) == 1L && !is.na(value) && nzchar(value)
     },
     logical(1)
   )
@@ -290,11 +248,7 @@ validate_ffp_solver_result <- function(
 
   valid_control <- tryCatch(
     {
-      validate_entropy_solver_control(
-        control = x$control,
-        call = call
-      )
-
+      validate_entropy_solver_control(control = x$control, call = call)
       TRUE
     },
     error = function(cnd) {
@@ -316,18 +270,10 @@ validate_ffp_solver_result <- function(
 # Relative entropy --------------------------------------------------------
 
 entropy_kl_divergence <- function(posterior, prior) {
-  valid <- is.numeric(posterior) &&
-    is.numeric(prior) &&
-    is.null(dim(posterior)) &&
-    is.null(dim(prior)) &&
-    length(posterior) == length(prior) &&
-    length(posterior) >= 1L &&
-    !anyNA(posterior) &&
-    !anyNA(prior) &&
-    all(is.finite(posterior)) &&
-    all(is.finite(prior)) &&
-    all(posterior >= 0) &&
-    all(prior >= 0)
+  valid <- is.numeric(posterior) && is.numeric(prior) && is.null(dim(posterior)) &&
+    is.null(dim(prior)) && length(posterior) == length(prior) && length(posterior) >= 1L &&
+    !anyNA(posterior) && !anyNA(prior) && all(is.finite(posterior)) && all(is.finite(prior)) &&
+    all(posterior >= 0) && all(prior >= 0)
 
   if (!valid) {
     return(NaN)
@@ -350,19 +296,10 @@ entropy_kl_divergence <- function(posterior, prior) {
 
 # Posterior diagnostics ---------------------------------------------------
 
-entropy_solution_residuals <- function(
-    problem,
-    posterior
-) {
-  equality_residuals <- drop(
-    problem$a_eq %*% posterior -
-      problem$b_eq
-  )
+entropy_solution_residuals <- function(problem, posterior) {
 
-  inequality_residuals <- drop(
-    problem$a_ineq %*% posterior -
-      problem$b_ineq
-  )
+  equality_residuals <- drop(problem$a_eq %*% posterior - problem$b_eq)
+  inequality_residuals <- drop(problem$a_ineq %*% posterior - problem$b_ineq)
 
   max_equality_residual <- if (length(equality_residuals) == 0L) {
     0
@@ -373,12 +310,7 @@ entropy_solution_residuals <- function(
   max_inequality_violation <- if (length(inequality_residuals) == 0L) {
     0
   } else {
-    max(
-      pmax(
-        inequality_residuals,
-        0
-      )
-    )
+    max(pmax(inequality_residuals, 0))
   }
 
   list(
@@ -391,11 +323,7 @@ entropy_solution_residuals <- function(
 }
 
 
-entropy_solution_is_valid <- function(
-    problem,
-    posterior,
-    tolerance
-) {
+entropy_solution_is_valid <- function(problem, posterior, tolerance) {
   valid_probabilities <- is.numeric(posterior) &&
     is.null(dim(posterior)) &&
     length(posterior) == problem$n_scenarios &&
@@ -406,10 +334,7 @@ entropy_solution_is_valid <- function(
     return(FALSE)
   }
 
-  residuals <- entropy_solution_residuals(
-    problem = problem,
-    posterior = posterior
-  )
+  residuals <- entropy_solution_residuals(problem = problem, posterior = posterior)
 
   residuals$min_probability >= -tolerance &&
     residuals$normalization_residual <= tolerance &&
@@ -418,19 +343,8 @@ entropy_solution_is_valid <- function(
 }
 
 
-validate_entropy_solution <- function(
-    problem,
-    posterior,
-    tolerance,
-    call = rlang::caller_env()
-) {
-  if (
-    !is.numeric(posterior) ||
-    !is.null(dim(posterior)) ||
-    length(posterior) != problem$n_scenarios ||
-    anyNA(posterior) ||
-    any(!is.finite(posterior))
-  ) {
+validate_entropy_solution <- function(problem, posterior, tolerance, call = rlang::caller_env()) {
+  if (!is.numeric(posterior) || !is.null(dim(posterior)) || length(posterior) != problem$n_scenarios || anyNA(posterior) || any(!is.finite(posterior))) {
     ffp_abort(
       "The solver returned an invalid posterior probability vector.",
       class = "ffp_error_invalid_posterior",
@@ -438,10 +352,7 @@ validate_entropy_solution <- function(
     )
   }
 
-  residuals <- entropy_solution_residuals(
-    problem = problem,
-    posterior = posterior
-  )
+  residuals <- entropy_solution_residuals(problem = problem, posterior = posterior)
 
   if (residuals$min_probability < -tolerance) {
     ffp_abort(
@@ -525,10 +436,8 @@ entropy_view_equality_rows <- function(problem) {
 }
 
 
-split_entropy_dual_parameters <- function(
-    parameters,
-    problem
-) {
+split_entropy_dual_parameters <- function(parameters, problem) {
+
   n_inequalities <- nrow(problem$a_ineq)
   n_equalities <- entropy_view_equality_count(problem)
 
@@ -543,74 +452,36 @@ split_entropy_dual_parameters <- function(
   } else {
     start <- n_inequalities + 1L
 
-    parameters[
-      seq.int(
-        start,
-        length.out = n_equalities
-      )
-    ]
+    parameters[seq.int(start, length.out = n_equalities)]
   }
 
-  list(
-    lambda = lambda,
-    nu = nu
-  )
+  list(lambda = lambda, nu = nu)
 }
 
 
-entropy_dual_state <- function(
-    parameters,
-    problem
-) {
-  dual <- split_entropy_dual_parameters(
-    parameters = parameters,
-    problem = problem
-  )
+entropy_dual_state <- function(parameters, problem) {
 
-  linear_predictor <- numeric(
-    problem$n_scenarios
-  )
+  dual <- split_entropy_dual_parameters(parameters = parameters, problem = problem)
+
+  linear_predictor <- numeric(problem$n_scenarios)
 
   if (length(dual$lambda) > 0L) {
-    linear_predictor <- linear_predictor +
-      drop(
-        crossprod(
-          problem$a_ineq,
-          dual$lambda
-        )
-      )
+    linear_predictor <- linear_predictor + drop(crossprod(problem$a_ineq, dual$lambda))
   }
 
   equality_rows <- entropy_view_equality_rows(problem)
 
   if (length(dual$nu) > 0L) {
-    linear_predictor <- linear_predictor +
-      drop(
-        crossprod(
-          problem$a_eq[equality_rows, , drop = FALSE],
-          dual$nu
-        )
-      )
+    linear_predictor <- linear_predictor + drop(crossprod(problem$a_eq[equality_rows, , drop = FALSE], dual$nu))
   }
 
   positive_prior <- problem$prior > 0
 
-  log_weights <- log(
-    problem$prior[positive_prior]
-  ) - linear_predictor[positive_prior]
-
+  log_weights <- log(problem$prior[positive_prior]) - linear_predictor[positive_prior]
   shift <- max(log_weights)
-
-  scaled_weights <- exp(
-    log_weights - shift
-  )
-
-  posterior <- numeric(
-    problem$n_scenarios
-  )
-
-  posterior[positive_prior] <- scaled_weights /
-    sum(scaled_weights)
+  scaled_weights <- exp(log_weights - shift)
+  posterior <- numeric(problem$n_scenarios)
+  posterior[positive_prior] <- scaled_weights / sum(scaled_weights)
 
   list(
     posterior = posterior,
@@ -623,70 +494,38 @@ entropy_dual_state <- function(
 
 # Dual objective ----------------------------------------------------------
 
-entropy_dual_posterior <- function(
-    parameters,
-    problem
-) {
-  entropy_dual_state(
-    parameters = parameters,
-    problem = problem
-  )$posterior
+entropy_dual_posterior <- function(parameters, problem) {
+  entropy_dual_state(parameters = parameters, problem = problem)$posterior
 }
 
 
-entropy_negative_dual <- function(
-    parameters,
-    problem
-) {
-  state <- entropy_dual_state(
-    parameters = parameters,
-    problem = problem
-  )
-
+entropy_negative_dual <- function(parameters, problem) {
+  state <- entropy_dual_state(parameters = parameters, problem = problem)
   equality_rows <- entropy_view_equality_rows(problem)
-
   inequality_term <- if (length(state$lambda) == 0L) {
     0
   } else {
-    sum(
-      state$lambda *
-        problem$b_ineq
-    )
+    sum(state$lambda * problem$b_ineq)
   }
 
   equality_term <- if (length(state$nu) == 0L) {
     0
   } else {
-    sum(
-      state$nu *
-        problem$b_eq[equality_rows]
-    )
+    sum(state$nu * problem$b_eq[equality_rows])
   }
 
-  state$log_normalizer +
-    inequality_term +
-    equality_term
+  state$log_normalizer + inequality_term + equality_term
 }
 
 
-entropy_negative_dual_gradient <- function(
-    parameters,
-    problem
-) {
-  state <- entropy_dual_state(
-    parameters = parameters,
-    problem = problem
-  )
-
+entropy_negative_dual_gradient <- function(parameters, problem) {
+  state <- entropy_dual_state(parameters = parameters, problem = problem)
   posterior <- state$posterior
 
   inequality_gradient <- if (nrow(problem$a_ineq) == 0L) {
     numeric()
   } else {
-    problem$b_ineq -
-      drop(
-        problem$a_ineq %*% posterior
-      )
+    problem$b_ineq - drop(problem$a_ineq %*% posterior)
   }
 
   equality_rows <- entropy_view_equality_rows(problem)
@@ -694,176 +533,80 @@ entropy_negative_dual_gradient <- function(
   equality_gradient <- if (length(equality_rows) == 0L) {
     numeric()
   } else {
-    problem$b_eq[equality_rows] -
-      drop(
-        problem$a_eq[
-          equality_rows,
-          ,
-          drop = FALSE
-        ] %*% posterior
-      )
+    problem$b_eq[equality_rows] - drop(problem$a_eq[equality_rows, , drop = FALSE] %*% posterior)
   }
 
-  c(
-    inequality_gradient,
-    equality_gradient
-  )
+  c(inequality_gradient, equality_gradient)
 }
 
 
 # Equality refinement -----------------------------------------------------
 
-entropy_weighted_covariance <- function(
-    constraints,
-    posterior
-) {
-  means <- drop(
-    constraints %*% posterior
-  )
+entropy_weighted_covariance <- function(constraints, posterior) {
+  means <- drop(constraints %*% posterior)
 
-  centered <- sweep(
-    constraints,
-    MARGIN = 1L,
-    STATS = means,
-    FUN = "-"
-  )
-
-  weighted <- sweep(
-    centered,
-    MARGIN = 2L,
-    STATS = sqrt(posterior),
-    FUN = "*"
-  )
+  centered <- sweep(constraints, MARGIN = 1L, STATS = means, FUN = "-")
+  weighted <- sweep(centered, MARGIN = 2L, STATS = sqrt(posterior), FUN = "*")
 
   weighted %*% t(weighted)
 }
 
 
-solve_psd_system <- function(
-    matrix,
-    rhs,
-    tolerance = 1e-12
-) {
-  decomposition <- eigen(
-    matrix,
-    symmetric = TRUE
-  )
-
-  scale <- max(
-    abs(decomposition$values),
-    1
-  )
-
-  keep <- decomposition$values >
-    tolerance * scale
+solve_psd_system <- function(matrix, rhs, tolerance = 1e-12) {
+  decomposition <- eigen(matrix, symmetric = TRUE)
+  scale <- max(abs(decomposition$values), 1)
+  keep <- decomposition$values > tolerance * scale
 
   if (!any(keep)) {
-    return(
-      rep(
-        0,
-        length(rhs)
-      )
-    )
+    return(rep(0, length(rhs)))
   }
 
   vectors <- decomposition$vectors[, keep, drop = FALSE]
   values <- decomposition$values[keep]
 
-  drop(
-    vectors %*%
-      (
-        crossprod(vectors, rhs) /
-          values
-      )
-  )
+  drop(vectors %*% (crossprod(vectors, rhs) / values))
 }
 
 
-refine_entropy_equalities <- function(
-    parameters,
-    problem,
-    control
-) {
+refine_entropy_equalities <- function(parameters, problem, control) {
   n_inequalities <- nrow(problem$a_ineq)
   equality_rows <- entropy_view_equality_rows(problem)
 
-  if (
-    n_inequalities > 0L ||
-    length(equality_rows) == 0L
-  ) {
+  if (n_inequalities > 0L || length(equality_rows) == 0L) {
     return(parameters)
   }
 
-  constraints <- problem$a_eq[
-    equality_rows,
-    ,
-    drop = FALSE
-  ]
-
-  target <- problem$b_eq[equality_rows]
-
+  constraints <- problem$a_eq[equality_rows, , drop = FALSE]
+  target  <- problem$b_eq[equality_rows]
   current <- parameters
 
   for (iteration in seq_len(control$refinement_iterations)) {
-    state <- entropy_dual_state(
-      parameters = current,
-      problem = problem
-    )
-
+    state <- entropy_dual_state(parameters = current, problem = problem)
     posterior <- state$posterior
+    gradient  <- target - drop(constraints %*% posterior)
 
-    gradient <- target -
-      drop(
-        constraints %*% posterior
-      )
-
-    if (
-      max(abs(gradient)) <=
-      control$constraint_tolerance / 10
-    ) {
+    if (max(abs(gradient)) <= control$constraint_tolerance / 10) {
       break
     }
 
-    hessian <- entropy_weighted_covariance(
-      constraints = constraints,
-      posterior = posterior
-    )
+    hessian <- entropy_weighted_covariance(constraints = constraints, posterior = posterior)
+    step    <- solve_psd_system(matrix = hessian, rhs = gradient)
 
-    step <- solve_psd_system(
-      matrix = hessian,
-      rhs = gradient
-    )
-
-    if (
-      anyNA(step) ||
-      any(!is.finite(step)) ||
-      max(abs(step)) == 0
-    ) {
+    if (anyNA(step) || any(!is.finite(step)) || max(abs(step)) == 0) {
       break
     }
 
-    current_objective <- entropy_negative_dual(
-      parameters = current,
-      problem = problem
-    )
+    current_objective <- entropy_negative_dual(parameters = current, problem = problem)
 
     step_size <- 1
-    accepted <- FALSE
+    accepted  <- FALSE
 
     for (line_search in seq_len(30L)) {
-      candidate <- current -
-        step_size * step
+      candidate <- current - step_size * step
+      candidate_objective <- entropy_negative_dual(parameters = candidate, problem = problem)
 
-      candidate_objective <- entropy_negative_dual(
-        parameters = candidate,
-        problem = problem
-      )
-
-      if (
-        is.finite(candidate_objective) &&
-        candidate_objective <= current_objective
-      ) {
-        current <- candidate
+      if (is.finite(candidate_objective) && candidate_objective <= current_objective) {
+        current  <- candidate
         accepted <- TRUE
         break
       }
@@ -882,18 +625,11 @@ refine_entropy_equalities <- function(
 
 # Optimizer ---------------------------------------------------------------
 
-run_entropy_dual_optimizer <- function(
-    problem,
-    control,
-    call = rlang::caller_env()
-) {
+run_entropy_dual_optimizer <- function(problem, control, call = rlang::caller_env()) {
   n_inequalities <- nrow(problem$a_ineq)
-  n_equalities <- entropy_view_equality_count(problem)
+  n_equalities   <- entropy_view_equality_count(problem)
 
-  initial <- rep(
-    0,
-    n_inequalities + n_equalities
-  )
+  initial <- rep(0, n_inequalities + n_equalities)
 
   if (length(initial) == 0L) {
     ffp_abort(
@@ -907,14 +643,11 @@ run_entropy_dual_optimizer <- function(
     optimizer <- tryCatch(
       stats::optim(
         par = initial,
-        fn = entropy_negative_dual,
-        gr = entropy_negative_dual_gradient,
+        fn  = entropy_negative_dual,
+        gr  = entropy_negative_dual_gradient,
         problem = problem,
-        method = "BFGS",
-        control = list(
-          maxit = as.integer(control$max_iterations),
-          reltol = control$relative_tolerance
-        )
+        method  = "BFGS",
+        control = list(maxit = as.integer(control$max_iterations), reltol = control$relative_tolerance)
       ),
       error = function(cnd) {
         ffp_abort(
@@ -928,30 +661,13 @@ run_entropy_dual_optimizer <- function(
       }
     )
 
-    optimizer$par <- refine_entropy_equalities(
-      parameters = optimizer$par,
-      problem = problem,
-      control = control
-    )
+    optimizer$par <- refine_entropy_equalities(parameters = optimizer$par, problem = problem, control = control)
 
-    return(
-      list(
-        optimizer = optimizer,
-        method = "BFGS"
-      )
-    )
+    return(list(optimizer = optimizer, method = "BFGS"))
   }
 
-  lower <- c(
-    rep(0, n_inequalities),
-    rep(-Inf, n_equalities)
-  )
-
-  factr <- max(
-    control$relative_tolerance /
-      .Machine$double.eps,
-    1
-  )
+  lower <- c(rep(0, n_inequalities), rep(-Inf, n_equalities))
+  factr <- max(control$relative_tolerance / .Machine$double.eps, 1)
 
   optimizer <- tryCatch(
     stats::optim(
@@ -961,11 +677,7 @@ run_entropy_dual_optimizer <- function(
       problem = problem,
       method = "L-BFGS-B",
       lower = lower,
-      control = list(
-        maxit = as.integer(control$max_iterations),
-        factr = factr,
-        pgtol = control$gradient_tolerance
-      )
+      control = list(maxit = as.integer(control$max_iterations), factr = factr, pgtol = control$gradient_tolerance)
     ),
     error = function(cnd) {
       ffp_abort(
@@ -979,43 +691,20 @@ run_entropy_dual_optimizer <- function(
     }
   )
 
-  list(
-    optimizer = optimizer,
-    method = "L-BFGS-B"
-  )
+  list(optimizer = optimizer, method = "L-BFGS-B")
 }
 
 
 # Solver ------------------------------------------------------------------
 
-solve_entropy_problem <- function(
-    problem,
-    control = entropy_solver_control(),
-    call = rlang::caller_env()
-) {
-  validate_ffp_entropy_problem(
-    problem,
-    call = call
-  )
-
-  validate_entropy_solver_control(
-    control,
-    call = call
-  )
+solve_entropy_problem <- function(problem, control = entropy_solver_control(), call = rlang::caller_env()) {
+  validate_ffp_entropy_problem(problem, call = call)
+  validate_entropy_solver_control(control, call = call)
 
   tolerance <- control$constraint_tolerance
 
-  if (
-    entropy_solution_is_valid(
-      problem = problem,
-      posterior = problem$prior,
-      tolerance = tolerance
-    )
-  ) {
-    residuals <- entropy_solution_residuals(
-      problem = problem,
-      posterior = problem$prior
-    )
+  if (entropy_solution_is_valid(problem = problem, posterior = problem$prior, tolerance = tolerance)) {
+    residuals <- entropy_solution_residuals(problem = problem, posterior = problem$prior)
 
     return(
       new_ffp_solver_result(
@@ -1033,31 +722,15 @@ solve_entropy_problem <- function(
     )
   }
 
-  optimized <- run_entropy_dual_optimizer(
-    problem = problem,
-    control = control,
-    call = call
-  )
-
+  optimized <- run_entropy_dual_optimizer(problem = problem, control = control, call = call)
   optimizer <- optimized$optimizer
 
   if (optimizer$convergence != 0L) {
-    classification <- diagnose_entropy_problem(
-      problem = problem,
-      call = call
-    )
-
+    classification <- diagnose_entropy_problem(problem = problem, call = call)
     optimizer_message <- optimizer$message
 
-    if (
-      is.null(optimizer_message) ||
-      !nzchar(optimizer_message)
-    ) {
-      optimizer_message <- paste0(
-        "Optimizer convergence code: ",
-        optimizer$convergence,
-        "."
-      )
+    if (is.null(optimizer_message) || !nzchar(optimizer_message)) {
+      optimizer_message <- paste0("Optimizer convergence code: ", optimizer$convergence, ".")
     }
 
     ffp_abort(
@@ -1074,61 +747,23 @@ solve_entropy_problem <- function(
     )
   }
 
-  state <- entropy_dual_state(
-    parameters = optimizer$par,
-    problem = problem
-  )
-
+  state <- entropy_dual_state(parameters = optimizer$par, problem = problem)
   posterior <- state$posterior
 
-  if (
-    !entropy_solution_is_valid(
-      problem = problem,
-      posterior = posterior,
-      tolerance = tolerance
-    )
-  ) {
-    classification <- diagnose_entropy_problem(
-      problem = problem,
-      call = call
-    )
-
-    validate_entropy_solution(
-      problem = problem,
-      posterior = posterior,
-      tolerance = tolerance,
-      call = call
-    )
+  if (!entropy_solution_is_valid(problem = problem, posterior = posterior, tolerance = tolerance)) {
+    classification <- diagnose_entropy_problem(problem = problem, call = call)
+    validate_entropy_solution(problem = problem, posterior = posterior, tolerance = tolerance, call = call)
   }
 
-  if (
-    entropy_solution_needs_boundary_check(
-      problem = problem,
-      posterior = posterior,
-      trigger_tolerance = tolerance
-    )
-  ) {
-    classification <- diagnose_entropy_problem(
-      problem = problem,
-      call = call
-    )
+  if (entropy_solution_needs_boundary_check(problem = problem, posterior = posterior, trigger_tolerance = tolerance)) {
+    classification <- diagnose_entropy_problem(problem = problem, call = call)
   }
 
-  residuals <- entropy_solution_residuals(
-    problem = problem,
-    posterior = posterior
-  )
-
-  objective <- entropy_kl_divergence(
-    posterior = posterior,
-    prior = problem$prior
-  )
+  residuals <- entropy_solution_residuals(problem = problem, posterior = posterior)
+  objective <- entropy_kl_divergence(posterior = posterior, prior = problem$prior)
 
   if (!is.finite(objective)) {
-    classification <- diagnose_entropy_problem(
-      problem = problem,
-      call = call
-    )
+    classification <- diagnose_entropy_problem(problem = problem, call = call)
 
     ffp_abort(
       "The solver returned a posterior with non-finite relative entropy.",
@@ -1144,10 +779,7 @@ solve_entropy_problem <- function(
     status = "converged",
     backend = "stats::optim",
     method = optimized$method,
-    dual = list(
-      lambda = state$lambda,
-      nu = state$nu
-    ),
+    dual = list(lambda = state$lambda, nu = state$nu),
     counts = optimizer$counts,
     residuals = residuals,
     control = control

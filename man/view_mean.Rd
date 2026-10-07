@@ -22,7 +22,7 @@ Creates a view specification on posterior means.
 }
 \details{
 \code{x} can be a scenario variable, an expression evaluated from the scenario
-data, or an external vector or panel. External features are matched to model
+data, an external vector or panel. External features are matched to model
 scenarios strictly by position. The package does not reorder, join, recycle,
 or otherwise align observations automatically.
 

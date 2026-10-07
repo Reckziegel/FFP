@@ -2,10 +2,7 @@
 
 new_prior_spec <- function(method, parameters = list(), class) {
   structure(
-    list(
-      method = method,
-      parameters = parameters
-    ),
+    list(method = method, parameters = parameters),
     class = c(class, "ffp_prior_spec")
   )
 }
@@ -29,11 +26,7 @@ new_prior_spec <- function(method, parameters = list(), class) {
 #' model <- ffp_model(c(-0.02, 0.01, 0.03))
 #' model <- ffp_prior(model, prior_uniform())
 prior_uniform <- function() {
-  new_prior_spec(
-    method = "uniform",
-    parameters = list(),
-    class = "ffp_prior_uniform"
-  )
+  new_prior_spec(method = "uniform", parameters = list(), class = "ffp_prior_uniform")
 }
 
 
@@ -56,13 +49,7 @@ prior_uniform <- function() {
 #' prior_custom(c(0.2, 0.3, 0.5))
 prior_custom <- function(probabilities) {
   call <- rlang::caller_env()
-
-  validate_probability_vector(
-    probabilities = probabilities,
-    arg = "probabilities",
-    call = call
-  )
-
+  validate_probability_vector(probabilities = probabilities, arg = "probabilities", call = call)
   if (!is.null(names(probabilities))) {
     cli::cli_warn(
       c(
@@ -70,23 +57,12 @@ prior_custom <- function(probabilities) {
         "i" = "Probabilities are matched to scenarios by position.",
         "i" = "Scenario labels and indexes belong to the scenario data."
       ),
-      class = c(
-        "ffp_warning_named_probabilities",
-        "ffp_warning"
-      ),
+      class = c("ffp_warning_named_probabilities", "ffp_warning"),
       call = call
     )
   }
-
   probabilities <- canonicalize_probabilities(probabilities)
-
-  new_prior_spec(
-    method = "custom",
-    parameters = list(
-      probabilities = probabilities
-    ),
-    class = "ffp_prior_custom"
-  )
+  new_prior_spec(method = "custom", parameters = list(probabilities = probabilities), class = "ffp_prior_custom")
 }
 
 
@@ -119,19 +95,8 @@ prior_custom <- function(probabilities) {
 #' )
 prior_exp_decay <- function(half_life) {
   call <- rlang::caller_env()
-
-  validate_half_life(
-    half_life = half_life,
-    call = call
-  )
-
-  new_prior_spec(
-    method = "exp_decay",
-    parameters = list(
-      half_life = as.double(half_life)
-    ),
-    class = "ffp_prior_exp_decay"
-  )
+  validate_half_life(half_life = half_life, call = call)
+  new_prior_spec(method = "exp_decay", parameters = list(half_life = as.double(half_life)), class = "ffp_prior_exp_decay")
 }
 
 
@@ -163,19 +128,8 @@ prior_exp_decay <- function(half_life) {
 #' )
 prior_rolling_window <- function(window) {
   call <- rlang::caller_env()
-
-  validate_window(
-    window = window,
-    call = call
-  )
-
-  new_prior_spec(
-    method = "rolling_window",
-    parameters = list(
-      window = as.double(window)
-    ),
-    class = "ffp_prior_rolling_window"
-  )
+  validate_window(window = window, call = call)
+  new_prior_spec(method = "rolling_window", parameters = list(window = as.double(window)), class = "ffp_prior_rolling_window")
 }
 
 
@@ -223,25 +177,10 @@ prior_rolling_window <- function(window) {
 #'     )
 #'   )
 prior_crisp <- function(...) {
-  call <- rlang::caller_env()
-
-  conditions <- rlang::enquos(
-    ...,
-    .ignore_empty = "none"
-  )
-
-  validate_crisp_conditions(
-    conditions = conditions,
-    call = call
-  )
-
-  new_prior_spec(
-    method = "crisp",
-    parameters = list(
-      conditions = conditions
-    ),
-    class = "ffp_prior_crisp"
-  )
+  call       <- rlang::caller_env()
+  conditions <- rlang::enquos(..., .ignore_empty = "none")
+  validate_crisp_conditions(conditions = conditions, call = call)
+  new_prior_spec(method = "crisp", parameters = list(conditions = conditions), class = "ffp_prior_crisp")
 }
 
 
@@ -335,31 +274,16 @@ prior_crisp <- function(...) {
 #'
 #' model$prior
 prior_kernel <- function(variable, target, bandwidth) {
-  call <- rlang::caller_env()
+  call     <- rlang::caller_env()
   variable <- rlang::enquo(variable)
 
-  validate_kernel_variable_spec(
-    variable = variable,
-    call = call
-  )
-
-  validate_kernel_target(
-    target = target,
-    call = call
-  )
-
-  validate_kernel_bandwidth(
-    bandwidth = bandwidth,
-    call = call
-  )
+  validate_kernel_variable_spec(variable = variable, call = call)
+  validate_kernel_target(target = target, call = call)
+  validate_kernel_bandwidth(bandwidth = bandwidth, call = call)
 
   new_prior_spec(
     method = "kernel",
-    parameters = list(
-      variable = variable,
-      target = as.double(target),
-      bandwidth = as.double(bandwidth)
-    ),
+    parameters = list(variable = variable, target = as.double(target), bandwidth = as.double(bandwidth)),
     class = "ffp_prior_kernel"
   )
 }
@@ -417,20 +341,14 @@ prior_kernel <- function(variable, target, bandwidth) {
 #'     )
 #'   )
 prior_product <- function(...) {
-  call <- rlang::caller_env()
+  call   <- rlang::caller_env()
   priors <- unname(rlang::list2(...))
 
-  validate_prior_components(
-    priors = priors,
-    constructor = "prior_product",
-    call = call
-  )
+  validate_prior_components(priors = priors, constructor = "prior_product", call = call)
 
   new_prior_spec(
     method = "product",
-    parameters = list(
-      priors = priors
-    ),
+    parameters = list(priors = priors),
     class = "ffp_prior_product"
   )
 }
@@ -486,14 +404,10 @@ prior_product <- function(...) {
 #'     )
 #'   )
 prior_mixture <- function(..., weights) {
-  call <- rlang::caller_env()
+  call   <- rlang::caller_env()
   priors <- unname(rlang::list2(...))
 
-  validate_prior_components(
-    priors = priors,
-    constructor = "prior_mixture",
-    call = call
-  )
+  validate_prior_components(priors = priors, constructor = "prior_mixture", call = call)
 
   if (missing(weights)) {
     ffp_abort(
@@ -509,18 +423,11 @@ prior_mixture <- function(..., weights) {
     )
   }
 
-  weights <- validate_mixture_weights(
-    weights = weights,
-    n_priors = length(priors),
-    call = call
-  )
+  weights <- validate_mixture_weights(weights = weights, n_priors = length(priors), call = call)
 
   new_prior_spec(
     method = "mixture",
-    parameters = list(
-      priors = priors,
-      weights = weights
-    ),
+    parameters = list(priors = priors, weights = weights),
     class = "ffp_prior_mixture"
   )
 }
@@ -557,26 +464,16 @@ prior_mixture <- function(..., weights) {
 #' model$prior
 ffp_prior <- function(model, prior) {
   call <- rlang::caller_env()
-
   validate_ffp_model(model, call = call)
   validate_prior_spec(prior, call = call)
 
-  probabilities <- realize_prior(
-    prior = prior,
-    model = model,
-    call = call
-  )
+  probabilities <- realize_prior(prior = prior, model = model, call = call)
+  probabilities <- validate_realized_prior(probabilities = probabilities, model = model, call = call)
 
-  probabilities <- validate_realized_prior(
-    probabilities = probabilities,
-    model = model,
-    call = call
-  )
-
-  model$prior <- probabilities
+  model$prior      <- probabilities
   model$prior_spec <- prior
-
   model
+
 }
 
 
@@ -590,99 +487,54 @@ realize_prior <- function(prior, model, call = rlang::caller_env()) {
 
 #' @exportS3Method
 #' @noRd
-realize_prior.ffp_prior_uniform <- function(
-    prior,
-    model,
-    call = rlang::caller_env()
-) {
+realize_prior.ffp_prior_uniform <- function(prior, model, call = rlang::caller_env()) {
   n_scenarios <- scenario_count(model$scenarios)
-
   rep(1 / n_scenarios, n_scenarios)
 }
 
 
 #' @exportS3Method
 #' @noRd
-realize_prior.ffp_prior_custom <- function(
-    prior,
-    model,
-    call = rlang::caller_env()
-) {
+realize_prior.ffp_prior_custom <- function(prior, model, call = rlang::caller_env()) {
   prior$parameters$probabilities
 }
 
 
 #' @exportS3Method
 #' @noRd
-realize_prior.ffp_prior_exp_decay <- function(
-    prior,
-    model,
-    call = rlang::caller_env()
-) {
-  validate_temporal_scenario_order(
-    model = model,
-    call = call
-  )
-
-  exp_decay_probabilities(
-    n_scenarios = scenario_count(model$scenarios),
-    half_life = prior$parameters$half_life,
-    call = call
-  )
+realize_prior.ffp_prior_exp_decay <- function(prior, model, call = rlang::caller_env()) {
+  validate_temporal_scenario_order(model = model, call = call)
+  exp_decay_probabilities(n_scenarios = scenario_count(model$scenarios), half_life = prior$parameters$half_life, call = call)
 }
 
 
 #' @exportS3Method
 #' @noRd
-realize_prior.ffp_prior_rolling_window <- function(
-    prior,
-    model,
-    call = rlang::caller_env()
-) {
-  validate_temporal_scenario_order(
-    model = model,
-    call = call
-  )
-
+realize_prior.ffp_prior_rolling_window <- function(prior, model, call = rlang::caller_env()) {
+  validate_temporal_scenario_order(model = model, call = call)
   n_scenarios <- scenario_count(model$scenarios)
-  window <- prior$parameters$window
-
-  validate_window_compatibility(
-    window = window,
-    n_scenarios = n_scenarios,
-    call = call
-  )
-
-  rolling_window_probabilities(
-    n_scenarios = n_scenarios,
-    window = window
-  )
+  window      <- prior$parameters$window
+  validate_window_compatibility(window = window, n_scenarios = n_scenarios, call = call)
+  rolling_window_probabilities(n_scenarios = n_scenarios, window = window)
 }
 
 
 #' @exportS3Method
 #' @noRd
-realize_prior.ffp_prior_crisp <- function(
-    prior,
-    model,
-    call = rlang::caller_env()
-) {
+realize_prior.ffp_prior_crisp <- function(prior, model, call = rlang::caller_env()) {
   n_scenarios <- scenario_count(model$scenarios)
-  data <- scenario_data_mask(model$scenarios)
-
-  selected <- rep(TRUE, n_scenarios)
+  data        <- scenario_data_mask(model$scenarios)
+  selected    <- rep(TRUE, n_scenarios)
 
   for (i in seq_along(prior$parameters$conditions)) {
     condition <- prior$parameters$conditions[[i]]
-
     result <- evaluate_crisp_condition(
-      condition = condition,
-      data = data,
+      condition   = condition,
+      data        = data,
       n_scenarios = n_scenarios,
       condition_number = i,
-      call = call
+      call        = call
     )
-
     selected <- selected & result
   }
 
@@ -696,10 +548,7 @@ realize_prior.ffp_prior_crisp <- function(
           "positive probability."
         )
       ),
-      class = c(
-        "ffp_error_empty_conditioning_set",
-        "ffp_error_invalid_prior"
-      ),
+      class = c("ffp_error_empty_conditioning_set", "ffp_error_invalid_prior"),
       call = call
     )
   }
@@ -710,37 +559,29 @@ realize_prior.ffp_prior_crisp <- function(
 
 #' @exportS3Method
 #' @noRd
-realize_prior.ffp_prior_kernel <- function(
-    prior,
-    model,
-    call = rlang::caller_env()
-) {
+realize_prior.ffp_prior_kernel <- function(prior, model, call = rlang::caller_env()) {
   n_scenarios <- scenario_count(model$scenarios)
-  data <- scenario_data_mask(model$scenarios)
+  data        <- scenario_data_mask(model$scenarios)
 
   values <- evaluate_kernel_variable(
-    variable = prior$parameters$variable,
-    data = data,
+    variable    = prior$parameters$variable,
+    data        = data,
     n_scenarios = n_scenarios,
-    call = call
+    call        = call
   )
 
   kernel_conditioning_probabilities(
-    values = values,
-    target = prior$parameters$target,
+    values    = values,
+    target    = prior$parameters$target,
     bandwidth = prior$parameters$bandwidth,
-    call = call
+    call      = call
   )
 }
 
 
 #' @exportS3Method
 #' @noRd
-realize_prior.ffp_prior_product <- function(
-    prior,
-    model,
-    call = rlang::caller_env()
-) {
+realize_prior.ffp_prior_product <- function(prior, model, call = rlang::caller_env()) {
   probabilities <- lapply(
     prior$parameters$priors,
     realize_prior_component,
@@ -748,49 +589,30 @@ realize_prior.ffp_prior_product <- function(
     call = call
   )
 
-  prior_product_probabilities(
-    probabilities = probabilities,
-    call = call
-  )
+  prior_product_probabilities(probabilities = probabilities, call = call)
 }
 
 
 #' @exportS3Method
 #' @noRd
-realize_prior.ffp_prior_mixture <- function(
-    prior,
-    model,
-    call = rlang::caller_env()
-) {
+realize_prior.ffp_prior_mixture <- function(prior, model, call = rlang::caller_env()) {
   probabilities <- lapply(
     prior$parameters$priors,
     realize_prior_component,
     model = model,
     call = call
   )
-
-  prior_mixture_probabilities(
-    probabilities = probabilities,
-    weights = prior$parameters$weights
-  )
+  prior_mixture_probabilities(probabilities = probabilities, weights = prior$parameters$weights)
 }
 
 
 #' @exportS3Method
 #' @noRd
-realize_prior.ffp_prior_spec <- function(
-    prior,
-    model,
-    call = rlang::caller_env()
-) {
+realize_prior.ffp_prior_spec <- function(prior, model, call = rlang::caller_env()) {
   ffp_abort(
     c(
       "Unsupported prior specification.",
-      "x" = paste0(
-        "No realization method is available for class `",
-        class(prior)[[1]],
-        "`."
-      )
+      "x" = paste0("No realization method is available for class `", class(prior)[[1]], "`.")
     ),
     class = "ffp_error_invalid_prior",
     call = call
@@ -800,11 +622,7 @@ realize_prior.ffp_prior_spec <- function(
 
 #' @exportS3Method
 #' @noRd
-realize_prior.default <- function(
-    prior,
-    model,
-    call = rlang::caller_env()
-) {
+realize_prior.default <- function(prior, model, call = rlang::caller_env()) {
   ffp_abort(
     c(
       "Unsupported prior specification.",
@@ -816,98 +634,48 @@ realize_prior.default <- function(
 }
 
 
-realize_prior_component <- function(
-    prior,
-    model,
-    call = rlang::caller_env()
-) {
-  validate_prior_spec(
-    prior = prior,
-    call = call
-  )
-
-  probabilities <- realize_prior(
-    prior = prior,
-    model = model,
-    call = call
-  )
-
-  validate_realized_prior(
-    probabilities = probabilities,
-    model = model,
-    call = call
-  )
+realize_prior_component <- function(prior, model, call = rlang::caller_env()) {
+  validate_prior_spec(prior = prior, call = call)
+  probabilities <- realize_prior(prior = prior, model = model, call = call)
+  validate_realized_prior(probabilities = probabilities,model = model, call = call)
 }
 
 
 # Prior computation -------------------------------------------------------
 
-exp_decay_probabilities <- function(
-    n_scenarios,
-    half_life,
-    call = rlang::caller_env()
-) {
-  ages <- n_scenarios - seq_len(n_scenarios)
+exp_decay_probabilities <- function(n_scenarios, half_life, call = rlang::caller_env()) {
+  ages        <- n_scenarios - seq_len(n_scenarios)
   log_weights <- -log(2) * ages / half_life
-
-  normalize_log_weights(
-    log_weights = log_weights,
-    context = "exponential-decay prior",
-    call = call
-  )
+  normalize_log_weights(log_weights = log_weights, context = "exponential-decay prior", call = call)
 }
 
 
 rolling_window_probabilities <- function(n_scenarios, window) {
   probabilities <- numeric(n_scenarios)
-
-  first_active <- n_scenarios - window + 1
-  active <- seq.int(first_active, n_scenarios)
-
+  first_active  <- n_scenarios - window + 1
+  active        <- seq.int(first_active, n_scenarios)
   probabilities[active] <- 1 / window
-
   probabilities
+
 }
 
 
 crisp_conditioning_probabilities <- function(selected) {
   weights <- as.double(selected)
-
   weights / sum(weights)
 }
 
 
-kernel_conditioning_probabilities <- function(
-    values,
-    target,
-    bandwidth,
-    call = rlang::caller_env()
-) {
+kernel_conditioning_probabilities <- function(values, target, bandwidth, call = rlang::caller_env()) {
   scaled_distance <- (values - target) / bandwidth
-  log_weights <- -0.5 * scaled_distance^2
-
-  normalize_log_weights(
-    log_weights = log_weights,
-    context = "kernel-conditioning prior",
-    call = call
-  )
+  log_weights     <- -0.5 * scaled_distance^2
+  normalize_log_weights(log_weights = log_weights, context = "kernel-conditioning prior", call = call)
 }
 
 
-prior_product_probabilities <- function(
-    probabilities,
-    call = rlang::caller_env()
-) {
-  probability_matrix <- do.call(
-    cbind,
-    probabilities
-  )
-
-  structural_zero <- apply(
-    probability_matrix == 0,
-    1,
-    any
-  )
+prior_product_probabilities <- function(probabilities, call = rlang::caller_env()) {
+  probability_matrix <- do.call(cbind, probabilities)
+  structural_zero    <- apply(probability_matrix == 0, 1, any)
 
   if (all(structural_zero)) {
     ffp_abort(
@@ -931,41 +699,25 @@ prior_product_probabilities <- function(
   }
 
   log_probabilities <- log(probability_matrix)
+  log_weights <- rowSums(log_probabilities)
 
-  log_weights <- rowSums(
-    log_probabilities
-  )
-
-  normalize_log_weights(
-    log_weights = log_weights,
-    structural_zero = structural_zero,
-    context = "product prior",
-    call = call
-  )
+  normalize_log_weights(log_weights = log_weights, structural_zero = structural_zero, context = "product prior", call = call)
 }
 
 
 prior_mixture_probabilities <- function(probabilities, weights) {
-  probability_matrix <- do.call(
-    cbind,
-    probabilities
-  )
-
-  mixture <- as.vector(
-    probability_matrix %*% weights
-  )
-
+  probability_matrix <- do.call(cbind, probabilities)
+  mixture <- as.vector(probability_matrix %*% weights)
   canonicalize_probabilities(mixture)
 }
 
 
-normalize_log_weights <- function(
-    log_weights,
-    structural_zero = rep(FALSE, length(log_weights)),
-    context = "prior",
-    call = rlang::caller_env()
-) {
-  active <- !structural_zero
+normalize_log_weights <- function(log_weights,
+                                  structural_zero = rep(FALSE, length(log_weights)),
+                                  context = "prior",
+                                  call = rlang::caller_env()) {
+
+  active        <- !structural_zero
   finite_active <- active & is.finite(log_weights)
 
   if (!any(finite_active)) {
@@ -983,32 +735,16 @@ normalize_log_weights <- function(
     )
   }
 
-  max_log_weight <- max(
-    log_weights[finite_active]
-  )
-
-  shifted <- log_weights - max_log_weight
-
-  min_log_weight <- log(
-    .Machine$double.xmin
-  )
-
+  max_log_weight <- max(log_weights[finite_active])
+  shifted        <- log_weights - max_log_weight
+  min_log_weight <- log(.Machine$double.xmin)
   non_finite_active <- active & !is.finite(shifted)
 
   shifted[non_finite_active] <- min_log_weight
+  shifted[active]            <- pmax(shifted[active], min_log_weight)
 
-  shifted[active] <- pmax(
-    shifted[active],
-    min_log_weight
-  )
-
-  weights <- numeric(
-    length(log_weights)
-  )
-
-  weights[active] <- exp(
-    shifted[active]
-  )
+  weights         <- numeric(length(log_weights))
+  weights[active] <- exp(shifted[active])
 
   total <- sum(weights)
 
@@ -1039,20 +775,12 @@ evaluate_crisp_condition <- function(
   condition_label <- rlang::as_label(condition)
 
   result <- tryCatch(
-    rlang::eval_tidy(
-      condition,
-      data = data
-    ),
+    rlang::eval_tidy(condition, data = data),
     error = function(error) {
       ffp_abort(
         c(
           "Failed to evaluate a crisp conditioning expression.",
-          "x" = paste0(
-            "Condition ",
-            condition_number,
-            ": ",
-            condition_label
-          ),
+          "x" = paste0("Condition ", condition_number, ": ", condition_label),
           "i" = paste0(
             "Conditions are evaluated against the scenario variables and ",
             "the environment in which the prior was created."
@@ -1159,10 +887,7 @@ validate_crisp_condition_result <- function(
   }
 
   if (result_size == 1L) {
-    result <- rep(
-      result,
-      n_scenarios
-    )
+    result <- rep(result, n_scenarios)
   }
 
   unname(result)
@@ -1180,10 +905,7 @@ evaluate_kernel_variable <- function(
   variable_label <- rlang::as_label(variable)
 
   values <- tryCatch(
-    rlang::eval_tidy(
-      variable,
-      data = data
-    ),
+    rlang::eval_tidy(variable, data = data),
     error = function(error) {
       ffp_abort(
         c(
@@ -1214,9 +936,7 @@ evaluate_kernel_variable <- function(
     call = call
   )
 
-  unname(
-    as.double(values)
-  )
+  unname(as.double(values))
 }
 
 
@@ -1325,30 +1045,20 @@ scenario_data_mask <- function(scenarios) {
   }
 
   if (inherits(scenarios, "data.frame")) {
-    return(
-      as.list(scenarios)
-    )
+    return(as.list(scenarios))
   }
 
-  values <- as.matrix(scenarios)
-
-  columns <- lapply(
-    seq_len(NCOL(values)),
-    function(i) values[, i]
-  )
-
+  values  <- as.matrix(scenarios)
+  columns <- lapply(seq_len(NCOL(values)), function(i) values[, i])
   names(columns) <- variable_names
-
   columns
 }
 
 
 # Validation --------------------------------------------------------------
 
-validate_ffp_model <- function(
-    model,
-    call = rlang::caller_env()
-) {
+validate_ffp_model <- function(model, call = rlang::caller_env()) {
+
   if (!inherits(model, "ffp_model")) {
     ffp_abort(
       c(
@@ -1364,10 +1074,7 @@ validate_ffp_model <- function(
 }
 
 
-validate_prior_spec <- function(
-    prior,
-    call = rlang::caller_env()
-) {
+validate_prior_spec <- function(prior, call = rlang::caller_env()) {
   if (!inherits(prior, "ffp_prior_spec")) {
     ffp_abort(
       c(
@@ -1388,11 +1095,7 @@ validate_prior_spec <- function(
 }
 
 
-validate_prior_components <- function(
-    priors,
-    constructor,
-    call = rlang::caller_env()
-) {
+validate_prior_components <- function(priors, constructor, call = rlang::caller_env()) {
   if (length(priors) < 2L) {
     ffp_abort(
       c(
@@ -1408,12 +1111,7 @@ validate_prior_components <- function(
     )
   }
 
-  valid <- vapply(
-    priors,
-    inherits,
-    logical(1),
-    what = "ffp_prior_spec"
-  )
+  valid <- vapply(priors, inherits, logical(1), what = "ffp_prior_spec")
 
   if (!all(valid)) {
     invalid <- which(!valid)[[1]]
@@ -1442,18 +1140,8 @@ validate_prior_components <- function(
 }
 
 
-validate_half_life <- function(
-    half_life,
-    call = rlang::caller_env()
-) {
-  if (
-    !is.numeric(half_life) ||
-    length(half_life) != 1L ||
-    !is.null(dim(half_life)) ||
-    is.na(half_life) ||
-    !is.finite(half_life) ||
-    half_life <= 0
-  ) {
+validate_half_life <- function(half_life, call = rlang::caller_env()) {
+  if (!is.numeric(half_life) || length(half_life) != 1L || !is.null(dim(half_life)) || is.na(half_life) || !is.finite(half_life) || half_life <= 0) {
     ffp_abort(
       c(
         "{.arg half_life} must be a positive finite number.",
@@ -1468,19 +1156,10 @@ validate_half_life <- function(
 }
 
 
-validate_window <- function(
-    window,
-    call = rlang::caller_env()
-) {
-  if (
-    !is.numeric(window) ||
-    length(window) != 1L ||
-    !is.null(dim(window)) ||
-    is.na(window) ||
-    !is.finite(window) ||
-    window <= 0 ||
-    window != floor(window)
-  ) {
+validate_window <- function(window, call = rlang::caller_env()) {
+
+  if (!is.numeric(window) || length(window) != 1L || !is.null(dim(window)) || is.na(window) || !is.finite(window) || window <= 0 || window != floor(window)) {
+
     ffp_abort(
       c(
         "{.arg window} must be a positive whole number.",
@@ -1489,17 +1168,15 @@ validate_window <- function(
       class = "ffp_error_invalid_prior",
       call = call
     )
+
   }
 
   invisible(window)
+
 }
 
 
-validate_window_compatibility <- function(
-    window,
-    n_scenarios,
-    call = rlang::caller_env()
-) {
+validate_window_compatibility <- function(window, n_scenarios, call = rlang::caller_env()) {
   if (window > n_scenarios) {
     ffp_abort(
       c(
@@ -1522,10 +1199,7 @@ validate_window_compatibility <- function(
 }
 
 
-validate_crisp_conditions <- function(
-    conditions,
-    call = rlang::caller_env()
-) {
+validate_crisp_conditions <- function(conditions, call = rlang::caller_env()) {
   if (length(conditions) == 0L) {
     ffp_abort(
       c(
@@ -1540,11 +1214,7 @@ validate_crisp_conditions <- function(
     )
   }
 
-  missing_conditions <- vapply(
-    conditions,
-    rlang::quo_is_missing,
-    logical(1)
-  )
+  missing_conditions <- vapply(conditions, rlang::quo_is_missing, logical(1))
 
   if (any(missing_conditions)) {
     ffp_abort(
@@ -1561,10 +1231,7 @@ validate_crisp_conditions <- function(
 }
 
 
-validate_kernel_variable_spec <- function(
-    variable,
-    call = rlang::caller_env()
-) {
+validate_kernel_variable_spec <- function(variable, call = rlang::caller_env()) {
   if (rlang::quo_is_missing(variable)) {
     ffp_abort(
       c(
@@ -1583,17 +1250,8 @@ validate_kernel_variable_spec <- function(
 }
 
 
-validate_kernel_target <- function(
-    target,
-    call = rlang::caller_env()
-) {
-  if (
-    !is.numeric(target) ||
-    length(target) != 1L ||
-    !is.null(dim(target)) ||
-    is.na(target) ||
-    !is.finite(target)
-  ) {
+validate_kernel_target <- function(target, call = rlang::caller_env()) {
+  if (!is.numeric(target) || length(target) != 1L || !is.null(dim(target)) || is.na(target) || !is.finite(target)) {
     ffp_abort(
       c(
         "{.arg target} must be a single finite number.",
@@ -1611,18 +1269,8 @@ validate_kernel_target <- function(
 }
 
 
-validate_kernel_bandwidth <- function(
-    bandwidth,
-    call = rlang::caller_env()
-) {
-  if (
-    !is.numeric(bandwidth) ||
-    length(bandwidth) != 1L ||
-    !is.null(dim(bandwidth)) ||
-    is.na(bandwidth) ||
-    !is.finite(bandwidth) ||
-    bandwidth <= 0
-  ) {
+validate_kernel_bandwidth <- function(bandwidth, call = rlang::caller_env()) {
+  if (!is.numeric(bandwidth) || length(bandwidth) != 1L || !is.null(dim(bandwidth)) || is.na(bandwidth) || !is.finite(bandwidth) || bandwidth <= 0) {
     ffp_abort(
       c(
         "{.arg bandwidth} must be a single positive finite number.",
@@ -1644,11 +1292,7 @@ validate_kernel_bandwidth <- function(
 }
 
 
-validate_mixture_weights <- function(
-    weights,
-    n_priors,
-    call = rlang::caller_env()
-) {
+validate_mixture_weights <- function(weights, n_priors, call = rlang::caller_env()) {
   if (length(weights) != n_priors) {
     ffp_abort(
       c(
@@ -1667,11 +1311,7 @@ validate_mixture_weights <- function(
     )
   }
 
-  validate_probability_vector(
-    probabilities = weights,
-    arg = "weights",
-    call = call
-  )
+  validate_probability_vector(probabilities = weights, arg = "weights", call = call)
 
   if (!is.null(names(weights))) {
     cli::cli_warn(
@@ -1691,11 +1331,7 @@ validate_mixture_weights <- function(
 }
 
 
-validate_probability_vector <- function(
-    probabilities,
-    arg,
-    call = rlang::caller_env()
-) {
+validate_probability_vector <- function(probabilities, arg, call = rlang::caller_env()) {
   if (!is.numeric(probabilities) || !is.null(dim(probabilities))) {
     ffp_abort(
       c(
@@ -1770,11 +1406,7 @@ validate_probability_vector <- function(
 }
 
 
-validate_realized_prior <- function(
-    probabilities,
-    model,
-    call = rlang::caller_env()
-) {
+validate_realized_prior <- function(probabilities, model, call = rlang::caller_env()) {
   n_scenarios <- scenario_count(model$scenarios)
 
   if (length(probabilities) != n_scenarios) {
@@ -1795,30 +1427,16 @@ validate_realized_prior <- function(
     )
   }
 
-  validate_probability_vector(
-    probabilities = probabilities,
-    arg = "prior",
-    call = call
-  )
-
+  validate_probability_vector(probabilities = probabilities, arg = "prior", call = call)
   canonicalize_probabilities(probabilities)
 }
 
 
-validate_temporal_scenario_order <- function(
-    model,
-    call = rlang::caller_env()
-) {
+validate_temporal_scenario_order <- function(model, call = rlang::caller_env()) {
   index <- model$metadata$index
 
-  if (
-    is.null(index) ||
-    !is_temporal_index(index) ||
-    length(index) <= 1L
-  ) {
-    return(
-      invisible(model)
-    )
+  if (is.null(index) || !is_temporal_index(index) || length(index) <= 1L) {
+    return(invisible(model))
   }
 
   index_numeric <- as.numeric(index)
@@ -1850,16 +1468,12 @@ is_temporal_index <- function(index) {
 
 probability_sum_is_one <- function(total) {
   tolerance <- sqrt(.Machine$double.eps)
-
   abs(total - 1) <= tolerance
 }
 
 
 canonicalize_probabilities <- function(probabilities) {
-  probabilities <- unname(
-    as.double(probabilities)
-  )
-
+  probabilities <- unname(as.double(probabilities))
   probabilities / sum(probabilities)
 }
 
@@ -2012,10 +1626,5 @@ format_prior_method <- function(method) {
 
 
 format_prior_number <- function(x) {
-  format(
-    x,
-    digits = 15,
-    scientific = FALSE,
-    trim = TRUE
-  )
+  format(x, digits = 15, scientific = FALSE, trim = TRUE)
 }

@@ -57,15 +57,8 @@ model <- ffp_model(scenarios) |>
     prior_uniform()
   ) |>
   ffp_view(
-    view_mean(
-      equity,
-      target = 0.02
-    ),
-    view_quantile(
-      inflation,
-      target = 0.045,
-      level = 0.80
-    )
+    view_mean(equity, target = 0.02),
+    view_quantile(inflation, target = 0.045, level = 0.80)
   )
 
 fit <- ffp_fit(model)

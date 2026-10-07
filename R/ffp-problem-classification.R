@@ -24,11 +24,7 @@ new_entropy_problem_classification <- function(
 
 validate_entropy_boundary_tolerance <- function(tolerance, call = rlang::caller_env()) {
 
-  valid <- is.numeric(tolerance) &&
-    length(tolerance) == 1L &&
-    !is.na(tolerance) &&
-    is.finite(tolerance) &&
-    tolerance > 0
+  valid <- is.numeric(tolerance) && length(tolerance) == 1L && !is.na(tolerance) && is.finite(tolerance) && tolerance > 0
 
   if (!valid) {
     ffp_abort(
@@ -44,90 +40,47 @@ validate_entropy_boundary_tolerance <- function(tolerance, call = rlang::caller_
 
 # LP helpers --------------------------------------------------------------
 
-entropy_lp_base_constraints <- function(
-    problem,
-    extra_variables = 0L
-) {
+entropy_lp_base_constraints <- function(problem, extra_variables = 0L) {
   n_extra <- as.integer(extra_variables)
 
   equality_matrix <- cbind(
     problem$a_eq,
-    matrix(
-      0,
-      nrow = nrow(problem$a_eq),
-      ncol = n_extra
-    )
+    matrix(0, nrow = nrow(problem$a_eq), ncol = n_extra)
   )
 
   inequality_matrix <- cbind(
     problem$a_ineq,
-    matrix(
-      0,
-      nrow = nrow(problem$a_ineq),
-      ncol = n_extra
-    )
+    matrix(0, nrow = nrow(problem$a_ineq), ncol = n_extra)
   )
 
-  matrix <- rbind(
-    equality_matrix,
-    inequality_matrix
-  )
+  matrix <- rbind(equality_matrix, inequality_matrix)
 
-  direction <- c(
-    rep("=", nrow(problem$a_eq)),
-    rep("<=", nrow(problem$a_ineq))
-  )
+  direction <- c(rep("=", nrow(problem$a_eq)), rep("<=", nrow(problem$a_ineq)))
 
-  rhs <- c(
-    problem$b_eq,
-    problem$b_ineq
-  )
+  rhs <- c(problem$b_eq, problem$b_ineq)
 
   storage.mode(matrix) <- "double"
   dimnames(matrix) <- NULL
 
-  list(
-    matrix = matrix,
-    direction = direction,
-    rhs = rhs
-  )
+  list(matrix = matrix, direction = direction, rhs = rhs)
 }
 
 
-entropy_support_constraints <- function(
-    problem,
-    n_variables
-) {
-  zero_prior <- which(
-    problem$prior == 0
-  )
+entropy_support_constraints <- function(problem, n_variables) {
+  zero_prior <- which(problem$prior == 0)
 
   if (length(zero_prior) == 0L) {
     return(
       list(
-        matrix = matrix(
-          numeric(),
-          nrow = 0L,
-          ncol = n_variables
-        ),
+        matrix = matrix(numeric(), nrow = 0L, ncol = n_variables),
         direction = character(),
         rhs = numeric()
       )
     )
   }
 
-  matrix <- matrix(
-    0,
-    nrow = length(zero_prior),
-    ncol = n_variables
-  )
-
-  matrix[
-    cbind(
-      seq_along(zero_prior),
-      zero_prior
-    )
-  ] <- 1
+  matrix <- matrix(0, nrow = length(zero_prior), ncol = n_variables)
+  matrix[cbind(seq_along(zero_prior), zero_prior)] <- 1
 
   list(
     matrix = matrix,
@@ -141,28 +94,15 @@ bind_entropy_lp_constraints <- function(...) {
   blocks <- list(...)
 
   list(
-    matrix = do.call(
-      rbind,
-      lapply(blocks, `[[`, "matrix")
-    ),
-    direction = unlist(
-      lapply(blocks, `[[`, "direction"),
-      use.names = FALSE
-    ),
-    rhs = unlist(
-      lapply(blocks, `[[`, "rhs"),
-      use.names = FALSE
-    )
+    matrix    = do.call(rbind, lapply(blocks, `[[`, "matrix")),
+    direction = unlist(lapply(blocks, `[[`, "direction"), use.names = FALSE),
+    rhs       = unlist(lapply(blocks, `[[`, "rhs"), use.names = FALSE)
   )
 }
 
 
-run_entropy_lp <- function(
-    direction,
-    objective,
-    constraints,
-    call = rlang::caller_env()
-) {
+run_entropy_lp <- function(direction, objective, constraints, call = rlang::caller_env()) {
+
   result <- tryCatch(
     lpSolve::lp(
       direction = direction,
@@ -185,33 +125,20 @@ run_entropy_lp <- function(
 
   if (result$status == 0L) {
     return(
-      list(
-        feasible = TRUE,
-        solution = result$solution,
-        objective = result$objval
-      )
+      list(feasible = TRUE, solution = result$solution, objective = result$objval)
     )
   }
 
   if (result$status == 2L) {
     return(
-      list(
-        feasible = FALSE,
-        solution = NULL,
-        objective = NA_real_
-      )
+      list(feasible = FALSE, solution = NULL, objective = NA_real_)
     )
   }
 
   ffp_abort(
     c(
       "The entropy-problem classification LP did not return a conclusive result.",
-      "x" = paste0(
-        "lpSolve returned status ",
-        result$status,
-        "."
-      )
-    ),
+      "x" = paste0("lpSolve returned status ", result$status, ".")),
     class = "ffp_error_entropy_classification_failure",
     call = call
   )
@@ -220,152 +147,63 @@ run_entropy_lp <- function(
 
 # Feasibility -------------------------------------------------------------
 
-entropy_full_feasibility <- function(
-    problem,
-    call = rlang::caller_env()
-) {
-  constraints <- entropy_lp_base_constraints(
-    problem = problem
-  )
-
-  run_entropy_lp(
-    direction = "min",
-    objective = rep(0, problem$n_scenarios),
-    constraints = constraints,
-    call = call
-  )
+entropy_full_feasibility <- function(problem, call = rlang::caller_env()) {
+  constraints <- entropy_lp_base_constraints(problem = problem)
+  run_entropy_lp(direction = "min", objective = rep(0, problem$n_scenarios), constraints = constraints, call = call)
 }
 
 
-entropy_support_feasibility <- function(
-    problem,
-    call = rlang::caller_env()
-) {
-  base <- entropy_lp_base_constraints(
-    problem = problem
-  )
-
-  support <- entropy_support_constraints(
-    problem = problem,
-    n_variables = problem$n_scenarios
-  )
-
-  constraints <- bind_entropy_lp_constraints(
-    base,
-    support
-  )
-
-  run_entropy_lp(
-    direction = "min",
-    objective = rep(0, problem$n_scenarios),
-    constraints = constraints,
-    call = call
-  )
+entropy_support_feasibility <- function(problem, call = rlang::caller_env()) {
+  base    <- entropy_lp_base_constraints(problem = problem)
+  support <- entropy_support_constraints(problem = problem, n_variables = problem$n_scenarios)
+  constraints <- bind_entropy_lp_constraints(base, support)
+  run_entropy_lp(direction = "min", objective = rep(0, problem$n_scenarios), constraints = constraints, call = call)
 }
 
 
 # Interior margin ---------------------------------------------------------
 
-entropy_interior_margin <- function(
-    problem,
-    call = rlang::caller_env()
-) {
+entropy_interior_margin <- function(problem, call = rlang::caller_env()) {
   n_scenarios <- problem$n_scenarios
   n_variables <- n_scenarios + 1L
   margin_column <- n_variables
 
-  base <- entropy_lp_base_constraints(
-    problem = problem,
-    extra_variables = 1L
-  )
+  base <- entropy_lp_base_constraints(problem = problem, extra_variables = 1L)
+  support <- entropy_support_constraints(problem = problem, n_variables = n_variables)
+  positive_prior <- which(problem$prior > 0)
+  margin_matrix <- matrix(0, nrow = length(positive_prior), ncol = n_variables)
 
-  support <- entropy_support_constraints(
-    problem = problem,
-    n_variables = n_variables
-  )
-
-  positive_prior <- which(
-    problem$prior > 0
-  )
-
-  margin_matrix <- matrix(
-    0,
-    nrow = length(positive_prior),
-    ncol = n_variables
-  )
-
-  margin_matrix[
-    cbind(
-      seq_along(positive_prior),
-      positive_prior
-    )
-  ] <- 1
-
+  margin_matrix[cbind(seq_along(positive_prior), positive_prior)] <- 1
   margin_matrix[, margin_column] <- -1
 
   margin_constraints <- list(
-    matrix = margin_matrix,
+    matrix    = margin_matrix,
     direction = rep(">=", length(positive_prior)),
-    rhs = rep(0, length(positive_prior))
+    rhs       = rep(0, length(positive_prior))
   )
 
-  constraints <- bind_entropy_lp_constraints(
-    base,
-    support,
-    margin_constraints
-  )
+  constraints <- bind_entropy_lp_constraints(base, support, margin_constraints)
+  objective <- c(rep(0, n_scenarios), 1)
 
-  objective <- c(
-    rep(0, n_scenarios),
-    1
-  )
-
-  result <- run_entropy_lp(
-    direction = "max",
-    objective = objective,
-    constraints = constraints,
-    call = call
-  )
+  result <- run_entropy_lp(direction = "max", objective = objective, constraints = constraints, call = call)
 
   if (!result$feasible) {
     return(
-      list(
-        feasible = FALSE,
-        margin = NA_real_,
-        witness = NULL
-      )
+      list(feasible = FALSE, margin = NA_real_, witness = NULL)
     )
   }
 
-  list(
-    feasible = TRUE,
-    margin = result$solution[[margin_column]],
-    witness = result$solution[seq_len(n_scenarios)]
-  )
+  list(feasible = TRUE, margin = result$solution[[margin_column]], witness = result$solution[seq_len(n_scenarios)])
 }
 
 
 # Classifier --------------------------------------------------------------
 
-classify_entropy_problem <- function(
-    problem,
-    boundary_tolerance = 1e-10,
-    call = rlang::caller_env()
-) {
-  validate_ffp_entropy_problem(
-    problem,
-    call = call
-  )
+classify_entropy_problem <- function(problem, boundary_tolerance = 1e-10, call = rlang::caller_env()) {
+  validate_ffp_entropy_problem(problem, call = call)
+  validate_entropy_boundary_tolerance(tolerance = boundary_tolerance, call = call)
 
-  validate_entropy_boundary_tolerance(
-    tolerance = boundary_tolerance,
-    call = call
-  )
-
-  full <- entropy_full_feasibility(
-    problem = problem,
-    call = call
-  )
+  full <- entropy_full_feasibility(problem = problem, call = call)
 
   if (!full$feasible) {
     return(
@@ -380,10 +218,7 @@ classify_entropy_problem <- function(
     )
   }
 
-  support <- entropy_support_feasibility(
-    problem = problem,
-    call = call
-  )
+  support <- entropy_support_feasibility(problem = problem, call = call)
 
   if (!support$feasible) {
     return(
@@ -398,10 +233,7 @@ classify_entropy_problem <- function(
     )
   }
 
-  interior <- entropy_interior_margin(
-    problem = problem,
-    call = call
-  )
+  interior <- entropy_interior_margin(problem = problem, call = call)
 
   if (!interior$feasible) {
     ffp_abort(
@@ -448,16 +280,7 @@ print.ffp_entropy_problem_classification <- function(x, ...) {
   cat("Subtype:         ", x$subtype, "\n", sep = "")
 
   if (is.finite(x$interior_margin)) {
-    cat(
-      "Interior margin: ",
-      format(
-        x$interior_margin,
-        digits = 6,
-        scientific = TRUE
-      ),
-      "\n",
-      sep = ""
-    )
+    cat("Interior margin: ", format(x$interior_margin, digits = 6, scientific = TRUE), "\n", sep = "")
   }
 
   invisible(x)

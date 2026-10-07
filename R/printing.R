@@ -18,7 +18,6 @@ view_component <- function(x, name) {
   if (!name %in% names(x)) {
     return(NULL)
   }
-
   x[[name]]
 }
 
@@ -38,10 +37,7 @@ n_view_scenarios <- function(x) {
   Aeq <- view_component(x, "Aeq")
   A   <- view_component(x, "A")
 
-  matrices <- Filter(
-    Negate(is.null),
-    list(Aeq, A)
-  )
+  matrices <- Filter(Negate(is.null), list(Aeq, A))
 
   if (!length(matrices)) {
     return(NA_integer_)
@@ -61,21 +57,12 @@ format_constraint <- function(n, type) {
   if (n == 0L) {
     return(NULL)
   }
-
-  paste(
-    n,
-    type,
-    if (n == 1L) "constraint" else "constraints"
-  )
+  paste(n, type, if (n == 1L) "constraint" else "constraints")
 }
 
 
 format_view_dim <- function(x) {
-  paste0(
-    NROW(x),
-    " \u00d7 ",
-    NCOL(x)
-  )
+  paste0(NROW(x), " \u00d7 ", NCOL(x))
 }
 
 

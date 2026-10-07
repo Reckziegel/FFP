@@ -1,11 +1,7 @@
 # Constraint objects ------------------------------------------------------
 
 empty_constraint_matrix <- function(n_scenarios) {
-  matrix(
-    numeric(),
-    nrow = 0L,
-    ncol = n_scenarios
-  )
+  matrix(numeric(), nrow = 0L, ncol = n_scenarios)
 }
 
 
@@ -89,10 +85,7 @@ new_ffp_constraints <- function(
 }
 
 
-validate_ffp_constraints <- function(
-    x,
-    call = rlang::caller_env()
-) {
+validate_ffp_constraints <- function(x, call = rlang::caller_env()) {
   if (!inherits(x, "ffp_constraints")) {
     ffp_abort(
       "The object must inherit from {.cls ffp_constraints}.",
@@ -101,60 +94,20 @@ validate_ffp_constraints <- function(
     )
   }
 
-  validate_constraint_scenario_count(
-    x$n_scenarios,
-    call = call
-  )
-
-  validate_constraint_matrix(
-    x$a_eq,
-    n_scenarios = x$n_scenarios,
-    arg = "a_eq",
-    call = call
-  )
-
-  validate_constraint_rhs(
-    x$b_eq,
-    n_constraints = nrow(x$a_eq),
-    arg = "b_eq",
-    call = call
-  )
-
-  validate_constraint_matrix(
-    x$a_ineq,
-    n_scenarios = x$n_scenarios,
-    arg = "a_ineq",
-    call = call
-  )
-
-  validate_constraint_rhs(
-    x$b_ineq,
-    n_constraints = nrow(x$a_ineq),
-    arg = "b_ineq",
-    call = call
-  )
-
-  validate_constraint_metadata(
-    metadata = x$metadata,
-    n_equalities = nrow(x$a_eq),
-    n_inequalities = nrow(x$a_ineq),
-    call = call
-  )
+  validate_constraint_scenario_count(x$n_scenarios, call = call)
+  validate_constraint_matrix(x$a_eq, n_scenarios = x$n_scenarios, arg = "a_eq", call = call)
+  validate_constraint_rhs(x$b_eq, n_constraints = nrow(x$a_eq), arg = "b_eq", call = call)
+  validate_constraint_matrix(x$a_ineq, n_scenarios = x$n_scenarios, arg = "a_ineq", call = call)
+  validate_constraint_rhs(x$b_ineq, n_constraints = nrow(x$a_ineq), arg = "b_ineq", call = call)
+  validate_constraint_metadata(metadata = x$metadata, n_equalities = nrow(x$a_eq), n_inequalities = nrow(x$a_ineq), call = call)
 
   invisible(x)
 }
 
 
-validate_constraint_scenario_count <- function(
-    n_scenarios,
-    call = rlang::caller_env()
-) {
-  valid <- is.numeric(n_scenarios) &&
-    length(n_scenarios) == 1L &&
-    !is.na(n_scenarios) &&
-    is.finite(n_scenarios) &&
-    n_scenarios >= 1 &&
-    n_scenarios == floor(n_scenarios)
+validate_constraint_scenario_count <- function(n_scenarios, call = rlang::caller_env()) {
+
+  valid <- is.numeric(n_scenarios) && length(n_scenarios) == 1L && !is.na(n_scenarios) && is.finite(n_scenarios) && n_scenarios >= 1 && n_scenarios == floor(n_scenarios)
 
   if (!valid) {
     ffp_abort(
@@ -168,12 +121,7 @@ validate_constraint_scenario_count <- function(
 }
 
 
-validate_constraint_matrix <- function(
-    x,
-    n_scenarios,
-    arg,
-    call = rlang::caller_env()
-) {
+validate_constraint_matrix <- function(x, n_scenarios, arg, call = rlang::caller_env()) {
   if (!is.matrix(x) || !is.numeric(x)) {
     ffp_abort(
       paste0("`", arg, "` must be a numeric matrix."),
@@ -186,13 +134,7 @@ validate_constraint_matrix <- function(
     ffp_abort(
       c(
         paste0("`", arg, "` has an invalid scenario dimension."),
-        "x" = paste0(
-          "Expected ",
-          n_scenarios,
-          " column(s), but found ",
-          ncol(x),
-          "."
-        )
+        "x" = paste0("Expected ", n_scenarios, " column(s), but found ", ncol(x), ".")
       ),
       class = "ffp_error_invalid_constraints",
       call = call
@@ -211,12 +153,7 @@ validate_constraint_matrix <- function(
 }
 
 
-validate_constraint_rhs <- function(
-    x,
-    n_constraints,
-    arg,
-    call = rlang::caller_env()
-) {
+validate_constraint_rhs <- function(x, n_constraints, arg, call = rlang::caller_env()) {
   if (!is.numeric(x) || !is.null(dim(x))) {
     ffp_abort(
       paste0("`", arg, "` must be a numeric vector."),
@@ -229,13 +166,7 @@ validate_constraint_rhs <- function(
     ffp_abort(
       c(
         paste0("`", arg, "` has an invalid length."),
-        "x" = paste0(
-          "Expected ",
-          n_constraints,
-          " value(s), but found ",
-          length(x),
-          "."
-        )
+        "x" = paste0("Expected ", n_constraints, " value(s), but found ", length(x), ".")
       ),
       class = "ffp_error_invalid_constraints",
       call = call
@@ -254,12 +185,7 @@ validate_constraint_rhs <- function(
 }
 
 
-validate_constraint_metadata <- function(
-    metadata,
-    n_equalities,
-    n_inequalities,
-    call = rlang::caller_env()
-) {
+validate_constraint_metadata <- function(metadata, n_equalities, n_inequalities, call = rlang::caller_env()) {
   required <- c(
     "constraint_type",
     "constraint_row",
@@ -294,13 +220,7 @@ validate_constraint_metadata <- function(
     ffp_abort(
       c(
         "`metadata` must contain one row per mathematical constraint.",
-        "x" = paste0(
-          "Expected ",
-          expected_rows,
-          " row(s), but found ",
-          nrow(metadata),
-          "."
-        )
+        "x" = paste0("Expected ", expected_rows, " row(s), but found ", nrow(metadata), ".")
       ),
       class = "ffp_error_invalid_constraints",
       call = call
@@ -313,10 +233,7 @@ validate_constraint_metadata <- function(
 
   valid_types <- c("equality", "inequality")
 
-  if (
-    anyNA(metadata$constraint_type) ||
-    !all(metadata$constraint_type %in% valid_types)
-  ) {
+  if (anyNA(metadata$constraint_type) || !all(metadata$constraint_type %in% valid_types)) {
     ffp_abort(
       "`constraint_type` must be `equality` or `inequality`.",
       class = "ffp_error_invalid_constraints",
@@ -324,7 +241,7 @@ validate_constraint_metadata <- function(
     )
   }
 
-  equality_rows <- metadata$constraint_type == "equality"
+  equality_rows   <- metadata$constraint_type == "equality"
   inequality_rows <- metadata$constraint_type == "inequality"
 
   if (sum(equality_rows) != n_equalities) {
@@ -343,15 +260,10 @@ validate_constraint_metadata <- function(
     )
   }
 
-  expected_eq_rows <- seq_len(n_equalities)
+  expected_eq_rows   <- seq_len(n_equalities)
   expected_ineq_rows <- seq_len(n_inequalities)
 
-  if (
-    !identical(
-      metadata$constraint_row[equality_rows],
-      expected_eq_rows
-    )
-  ) {
+  if (!identical(metadata$constraint_row[equality_rows], expected_eq_rows)) {
     ffp_abort(
       "Equality `constraint_row` values are inconsistent with `a_eq`.",
       class = "ffp_error_invalid_constraints",
@@ -360,11 +272,7 @@ validate_constraint_metadata <- function(
   }
 
   if (
-    !identical(
-      metadata$constraint_row[inequality_rows],
-      expected_ineq_rows
-    )
-  ) {
+    !identical(metadata$constraint_row[inequality_rows], expected_ineq_rows)) {
     ffp_abort(
       "Inequality `constraint_row` values are inconsistent with `a_ineq`.",
       class = "ffp_error_invalid_constraints",
@@ -372,13 +280,7 @@ validate_constraint_metadata <- function(
     )
   }
 
-  if (
-    !is.integer(metadata$view_index) ||
-    any(
-      !is.na(metadata$view_index) &
-      metadata$view_index < 1L
-    )
-  ) {
+  if (!is.integer(metadata$view_index) || any(!is.na(metadata$view_index) & metadata$view_index < 1L)) {
     ffp_abort(
       "`view_index` must contain positive integers or missing values.",
       class = "ffp_error_invalid_constraints",
@@ -386,11 +288,7 @@ validate_constraint_metadata <- function(
     )
   }
 
-  if (
-    !is.integer(metadata$view_constraint_index) ||
-    anyNA(metadata$view_constraint_index) ||
-    any(metadata$view_constraint_index < 1L)
-  ) {
+  if (!is.integer(metadata$view_constraint_index) || anyNA(metadata$view_constraint_index) || any(metadata$view_constraint_index < 1L)) {
     ffp_abort(
       "`view_constraint_index` must contain positive integers.",
       class = "ffp_error_invalid_constraints",
@@ -398,12 +296,7 @@ validate_constraint_metadata <- function(
     )
   }
 
-  if (
-    anyNA(metadata$method) ||
-    any(!nzchar(metadata$method)) ||
-    anyNA(metadata$label) ||
-    any(!nzchar(metadata$label))
-  ) {
+  if (anyNA(metadata$method) || any(!nzchar(metadata$method)) || anyNA(metadata$label) || any(!nzchar(metadata$label))) {
     ffp_abort(
       "Constraint metadata must contain non-empty `method` and `label` values.",
       class = "ffp_error_invalid_constraints",
@@ -416,13 +309,8 @@ validate_constraint_metadata <- function(
 
 
 reindex_constraint_metadata <- function(metadata) {
-  equality_rows <- which(
-    metadata$constraint_type == "equality"
-  )
-
-  inequality_rows <- which(
-    metadata$constraint_type == "inequality"
-  )
+  equality_rows   <- which(metadata$constraint_type == "equality")
+  inequality_rows <- which(metadata$constraint_type == "inequality")
 
   if (length(equality_rows) > 0L) {
     metadata$constraint_row[equality_rows] <- seq_along(equality_rows)
@@ -438,17 +326,8 @@ reindex_constraint_metadata <- function(metadata) {
 }
 
 
-set_constraint_view_index <- function(
-    constraints,
-    view_index,
-    call = rlang::caller_env()
-) {
-  valid <- is.numeric(view_index) &&
-    length(view_index) == 1L &&
-    !is.na(view_index) &&
-    is.finite(view_index) &&
-    view_index >= 1 &&
-    view_index == floor(view_index)
+set_constraint_view_index <- function(constraints, view_index, call = rlang::caller_env()) {
+  valid <- is.numeric(view_index) && length(view_index) == 1L && !is.na(view_index) && is.finite(view_index) && view_index >= 1 && view_index == floor(view_index)
 
   if (!valid) {
     ffp_abort(
@@ -459,20 +338,12 @@ set_constraint_view_index <- function(
   }
 
   constraints$metadata$view_index[] <- as.integer(view_index)
-
-  validate_ffp_constraints(
-    constraints,
-    call = call
-  )
-
+  validate_ffp_constraints(constraints, call = call)
   constraints
 }
 
 
-bind_ffp_constraints <- function(
-    constraints,
-    call = rlang::caller_env()
-) {
+bind_ffp_constraints <- function(constraints, call = rlang::caller_env()) {
   if (length(constraints) == 0L) {
     ffp_abort(
       "`constraints` must contain at least one constraint object.",
@@ -481,12 +352,7 @@ bind_ffp_constraints <- function(
     )
   }
 
-  valid <- vapply(
-    constraints,
-    inherits,
-    logical(1),
-    what = "ffp_constraints"
-  )
+  valid <- vapply(constraints, inherits, logical(1), what = "ffp_constraints")
 
   if (!all(valid)) {
     ffp_abort(
@@ -496,19 +362,9 @@ bind_ffp_constraints <- function(
     )
   }
 
-  invisible(
-    lapply(
-      constraints,
-      validate_ffp_constraints,
-      call = call
-    )
-  )
+  invisible(lapply(constraints, validate_ffp_constraints, call = call))
 
-  n_scenarios <- vapply(
-    constraints,
-    function(x) x$n_scenarios,
-    integer(1)
-  )
+  n_scenarios <- vapply(constraints, function(x) x$n_scenarios, integer(1))
 
   if (length(unique(n_scenarios)) != 1L) {
     ffp_abort(
@@ -527,16 +383,13 @@ bind_ffp_constraints <- function(
   metadata <- empty_constraint_metadata()
 
   for (x in constraints) {
-    a_eq <- rbind(a_eq, x$a_eq)
+    a_eq   <- rbind(a_eq, x$a_eq)
     a_ineq <- rbind(a_ineq, x$a_ineq)
 
-    b_eq <- c(b_eq, x$b_eq)
+    b_eq   <- c(b_eq, x$b_eq)
     b_ineq <- c(b_ineq, x$b_ineq)
 
-    metadata <- rbind(
-      metadata,
-      x$metadata
-    )
+    metadata <- rbind(metadata, x$metadata)
   }
 
   metadata <- reindex_constraint_metadata(metadata)
@@ -555,23 +408,13 @@ bind_ffp_constraints <- function(
 # Compiler ----------------------------------------------------------------
 
 #' @noRd
-compile_view <- function(
-    view,
-    prior,
-    call = rlang::caller_env()
-) {
+compile_view <- function(view, prior, call = rlang::caller_env()) {
   UseMethod("compile_view")
 }
 
 
-compile_views <- function(
-    model,
-    call = rlang::caller_env()
-) {
-  validate_ffp_model(
-    model = model,
-    call = call
-  )
+compile_views <- function(model, call = rlang::caller_env()) {
+  validate_ffp_model(model = model, call = call)
 
   if (is.null(model$prior)) {
     ffp_abort(
@@ -587,19 +430,10 @@ compile_views <- function(
   n_scenarios <- scenario_count(model$scenarios)
 
   if (length(model$views) == 0L) {
-    return(
-      new_ffp_constraints(
-        n_scenarios = n_scenarios
-      )
-    )
+    return(new_ffp_constraints(n_scenarios = n_scenarios))
   }
 
-  valid_views <- vapply(
-    model$views,
-    inherits,
-    logical(1),
-    what = "ffp_view"
-  )
+  valid_views <- vapply(model$views, inherits, logical(1), what = "ffp_view")
 
   if (!all(valid_views)) {
     ffp_abort(
@@ -612,24 +446,12 @@ compile_views <- function(
   constraints <- lapply(
     seq_along(model$views),
     function(i) {
-      compiled <- compile_view(
-        view = model$views[[i]],
-        prior = model$prior,
-        call = call
-      )
-
-      set_constraint_view_index(
-        constraints = compiled,
-        view_index = i,
-        call = call
-      )
+      compiled <- compile_view(view = model$views[[i]], prior = model$prior, call = call)
+      set_constraint_view_index(constraints = compiled, view_index = i, call = call)
     }
   )
 
-  bind_ffp_constraints(
-    constraints = constraints,
-    call = call
-  )
+  bind_ffp_constraints(constraints = constraints, call = call)
 }
 
 
@@ -637,21 +459,15 @@ compile_views <- function(
 
 #' @exportS3Method
 #' @noRd
-compile_view.ffp_view_mean <- function(
-    view,
-    prior,
-    call = rlang::caller_env()
-) {
+compile_view.ffp_view_mean <- function(view, prior, call = rlang::caller_env()) {
+
   n_scenarios <- feature_observation_count(view$features)
-  n_features <- feature_count(view$features)
+  n_features  <- feature_count(view$features)
 
   feature_values <- vapply(
     seq_len(n_features),
     function(i) {
-      feature_column(
-        view$features,
-        i = i
-      )
+      feature_column(view$features, i = i)
     },
     numeric(n_scenarios)
   )
@@ -660,23 +476,16 @@ compile_view.ffp_view_mean <- function(
   storage.mode(a_eq) <- "double"
   dimnames(a_eq) <- NULL
 
-  b_eq <- unname(
-    as.numeric(view$target)
-  )
+  b_eq <- unname(as.numeric(view$target))
 
   feature_labels <- view_feature_labels(view)
-  target_labels <- format_constraint_value(view$target)
+  target_labels  <- format_constraint_value(view$target)
 
   metadata <- new_constraint_metadata(
     type = "equality",
     method = "mean",
     feature_1 = feature_labels,
-    label = paste0(
-      "E[",
-      feature_labels,
-      "] = ",
-      target_labels
-    )
+    label = paste0("E[", feature_labels, "] = ", target_labels)
   )
 
   new_ffp_constraints(
@@ -692,49 +501,28 @@ compile_view.ffp_view_mean <- function(
 
 #' @exportS3Method
 #' @noRd
-compile_view.ffp_view_probability <- function(
-    view,
-    prior,
-    call = rlang::caller_env()
-) {
+compile_view.ffp_view_probability <- function(view, prior, call = rlang::caller_env()) {
   n_scenarios <- feature_observation_count(view$features)
   n_features <- feature_count(view$features)
 
   events <- vapply(
     seq_len(n_features),
     function(i) {
-      feature_column(
-        view$features,
-        i = i
-      )
+      feature_column(view$features, i = i)
     },
     logical(n_scenarios)
   )
 
   feature_labels <- view_feature_labels(view)
-  target_labels <- format_constraint_value(view$target)
+  target_labels  <- format_constraint_value(view$target)
 
   given_features <- view$parameters$given
 
   if (is.null(given_features)) {
-    a_eq <- t(
-      matrix(
-        as.numeric(events),
-        nrow = n_scenarios,
-        ncol = n_features
-      )
-    )
+    a_eq <- t(matrix(as.numeric(events), nrow = n_scenarios, ncol = n_features))
+    b_eq <- unname(as.numeric(view$target))
 
-    b_eq <- unname(
-      as.numeric(view$target)
-    )
-
-    labels <- paste0(
-      "P[",
-      feature_labels,
-      "] = ",
-      target_labels
-    )
+    labels <- paste0("P[", feature_labels, "] = ", target_labels)
 
     metadata <- new_constraint_metadata(
       type = "equality",
@@ -753,19 +541,10 @@ compile_view.ffp_view_probability <- function(
     )
   }
 
-  given <- feature_column(
-    given_features,
-    i = 1L
-  )
+  given <- feature_column(given_features, i = 1L)
+  conditioning_probability <- sum(prior[given])
 
-  conditioning_probability <- sum(
-    prior[given]
-  )
-
-  if (
-    !is.finite(conditioning_probability) ||
-    conditioning_probability <= 0
-  ) {
+  if (!is.finite(conditioning_probability) || conditioning_probability <= 0) {
     ffp_abort(
       c(
         "The conditioning event has zero probability under the current prior.",
@@ -775,10 +554,7 @@ compile_view.ffp_view_probability <- function(
           "positive prior support."
         )
       ),
-      class = c(
-        "ffp_error_zero_conditioning_probability",
-        "ffp_error_incompatible_view"
-      ),
+      class = c("ffp_error_zero_conditioning_probability", "ffp_error_incompatible_view"),
       call = call
     )
   }
@@ -787,38 +563,23 @@ compile_view.ffp_view_probability <- function(
     seq_len(n_features),
     function(i) {
       joint <- events[, i] & given
-
-      as.numeric(joint) -
-        view$target[[i]] * as.numeric(given)
+      as.numeric(joint) - view$target[[i]] * as.numeric(given)
     },
     numeric(n_scenarios)
   )
 
-  a_eq <- t(a_eq)
+  a_eq           <- t(a_eq)
   dimnames(a_eq) <- NULL
 
-  b_eq <- rep(
-    0,
-    n_features
-  )
+  b_eq <- rep(0, n_features)
 
   condition_label <- view$metadata$given_expression
 
-  if (
-    is.null(condition_label) ||
-    !nzchar(condition_label)
-  ) {
+  if (is.null(condition_label) || !nzchar(condition_label)) {
     condition_label <- "given"
   }
 
-  labels <- paste0(
-    "P[",
-    feature_labels,
-    " | ",
-    condition_label,
-    "] = ",
-    target_labels
-  )
+  labels <- paste0("P[", feature_labels, " | ", condition_label, "] = ", target_labels)
 
   metadata <- new_constraint_metadata(
     type = "equality",
@@ -841,24 +602,12 @@ compile_view.ffp_view_probability <- function(
 
 #' @exportS3Method
 #' @noRd
-compile_view.ffp_view_quantile <- function(
-    view,
-    prior,
-    call = rlang::caller_env()
-) {
+compile_view.ffp_view_quantile <- function(view, prior, call = rlang::caller_env()) {
+
   n_features <- feature_count(view$features)
+  levels <- resolve_quantile_levels(view = view, n_features = n_features, call = call)
 
-  levels <- resolve_quantile_levels(
-    view = view,
-    n_features = n_features,
-    call = call
-  )
-
-  compile_quantile_like_view(
-    view = view,
-    levels = levels,
-    method = "quantile"
-  )
+  compile_quantile_like_view(view = view, levels = levels, method = "quantile")
 }
 
 
@@ -866,18 +615,9 @@ compile_view.ffp_view_quantile <- function(
 
 #' @exportS3Method
 #' @noRd
-compile_view.ffp_view_median <- function(
-    view,
-    prior,
-    call = rlang::caller_env()
-) {
+compile_view.ffp_view_median <- function(view, prior, call = rlang::caller_env()) {
   n_features <- feature_count(view$features)
-
-  compile_quantile_like_view(
-    view = view,
-    levels = rep(0.5, n_features),
-    method = "median"
-  )
+  compile_quantile_like_view(view = view, levels = rep(0.5, n_features), method = "median")
 }
 
 
@@ -886,13 +626,9 @@ compile_view.ffp_view_median <- function(
 
 #' @exportS3Method
 #' @noRd
-compile_view.ffp_view_rank <- function(
-    view,
-    prior,
-    call = rlang::caller_env()
-) {
+compile_view.ffp_view_rank <- function(view, prior, call = rlang::caller_env()) {
   n_scenarios <- feature_observation_count(view$features)
-  n_features <- feature_count(view$features)
+  n_features  <- feature_count(view$features)
 
   if (n_features < 2L) {
     ffp_abort(
@@ -907,10 +643,7 @@ compile_view.ffp_view_rank <- function(
   ordered_values <- vapply(
     seq_len(n_features),
     function(i) {
-      feature_column(
-        view$features,
-        i = i
-      )
+      feature_column(view$features, i = i)
     },
     numeric(n_scenarios)
   )
@@ -918,8 +651,7 @@ compile_view.ffp_view_rank <- function(
   a_ineq <- vapply(
     seq_len(n_features - 1L),
     function(i) {
-      ordered_values[, i + 1L] -
-        ordered_values[, i]
+      ordered_values[, i + 1L] - ordered_values[, i]
     },
     numeric(n_scenarios)
   )
@@ -928,26 +660,17 @@ compile_view.ffp_view_rank <- function(
   storage.mode(a_ineq) <- "double"
   dimnames(a_ineq) <- NULL
 
-  b_ineq <- rep(
-    0,
-    n_features - 1L
-  )
+  b_ineq <- rep(0, n_features - 1L)
 
   higher_labels <- feature_labels[-n_features]
-  lower_labels <- feature_labels[-1L]
+  lower_labels  <- feature_labels[-1L]
 
   metadata <- new_constraint_metadata(
     type = "inequality",
     method = "rank",
     feature_1 = higher_labels,
     feature_2 = lower_labels,
-    label = paste0(
-      "E[",
-      higher_labels,
-      "] >= E[",
-      lower_labels,
-      "]"
-    )
+    label = paste0("E[", higher_labels, "] >= E[", lower_labels, "]")
   )
 
   new_ffp_constraints(
@@ -966,19 +689,12 @@ compile_view.ffp_view_variance <- function(view, prior, call = rlang::caller_env
   n_scenarios <- feature_observation_count(view$features)
   n_features  <- feature_count(view$features)
 
-  validate_reference_prior(
-    prior = prior,
-    n_scenarios = n_scenarios,
-    call = call
-  )
+  validate_reference_prior(prior = prior, n_scenarios = n_scenarios, call = call)
 
   feature_values <- vapply(
     seq_len(n_features),
     function(i) {
-      feature_column(
-        view$features,
-        i = i
-      )
+      feature_column(view$features, i = i)
     },
     numeric(n_scenarios)
   )
@@ -986,11 +702,7 @@ compile_view.ffp_view_variance <- function(view, prior, call = rlang::caller_env
   reference_means <- vapply(
     seq_len(n_features),
     function(i) {
-      reference_mean(
-        x = feature_values[, i],
-        prior = prior,
-        call = call
-      )
+      reference_mean(x = feature_values[, i], prior = prior, call = call)
     },
     numeric(1)
   )
@@ -1010,12 +722,7 @@ compile_view.ffp_view_variance <- function(view, prior, call = rlang::caller_env
     type = "equality",
     method = "variance",
     feature_1 = feature_labels,
-    label = paste0(
-      "Variance[",
-      feature_labels,
-      "] target = ",
-      target_labels
-    )
+    label = paste0("Variance[", feature_labels, "] target = ", target_labels)
   )
 
   new_ffp_constraints(
@@ -1030,19 +737,11 @@ compile_view.ffp_view_variance <- function(view, prior, call = rlang::caller_env
 
 #' @exportS3Method
 #' @noRd
-compile_view.ffp_view <- function(
-    view,
-    prior,
-    call = rlang::caller_env()
-) {
+compile_view.ffp_view <- function(view, prior, call = rlang::caller_env()) {
   ffp_abort(
     c(
       "Unsupported bound view.",
-      "x" = paste0(
-        "No compiler is available for view method `",
-        view$method,
-        "`."
-      )
+      "x" = paste0("No compiler is available for view method `", view$method, "`.")
     ),
     class = "ffp_error_invalid_view",
     call = call
@@ -1052,11 +751,7 @@ compile_view.ffp_view <- function(
 
 #' @exportS3Method
 #' @noRd
-compile_view.default <- function(
-    view,
-    prior,
-    call = rlang::caller_env()
-) {
+compile_view.default <- function(view, prior, call = rlang::caller_env()) {
   ffp_abort(
     "The object must inherit from {.cls ffp_view}.",
     class = "ffp_error_invalid_view",
@@ -1077,10 +772,7 @@ view_feature_labels <- function(view) {
 
   expression <- view$metadata$expression
 
-  if (
-    is.null(expression) ||
-    !nzchar(expression)
-  ) {
+  if (is.null(expression) || !nzchar(expression)) {
     expression <- "feature"
   }
 
@@ -1088,54 +780,27 @@ view_feature_labels <- function(view) {
     return(expression)
   }
 
-  paste0(
-    expression,
-    "[",
-    seq_len(n_features),
-    "]"
-  )
+  paste0(expression, "[", seq_len(n_features), "]")
 }
 
 
 format_constraint_value <- function(x) {
-  format(
-    x,
-    digits = 8,
-    trim = TRUE
-  )
+  format(x, digits = 8, trim = TRUE)
 }
 
 
-resolve_quantile_levels <- function(
-    view,
-    n_features,
-    call = rlang::caller_env()
-) {
-  levels <- as.numeric(
-    view$parameters$level
-  )
+resolve_quantile_levels <- function(view, n_features, call = rlang::caller_env()) {
+  levels <- as.numeric(view$parameters$level)
 
   if (length(levels) == 1L) {
-    return(
-      rep(
-        levels,
-        n_features
-      )
-    )
+    return(rep(levels, n_features))
   }
 
   if (length(levels) != n_features) {
     ffp_abort(
       c(
         "The bound quantile view has incompatible `level` values.",
-        "x" = paste0(
-          "Expected one value or ",
-          n_features,
-          " values, but found ",
-          length(levels),
-          "."
-        )
-      ),
+        "x" = paste0("Expected one value or ", n_features, " values, but found ", length(levels), ".")),
       class = "ffp_error_invalid_view_level",
       call = call
     )
@@ -1145,54 +810,28 @@ resolve_quantile_levels <- function(
 }
 
 
-compile_quantile_like_view <- function(
-    view,
-    levels,
-    method
-) {
+compile_quantile_like_view <- function(view, levels, method) {
   n_scenarios <- feature_observation_count(view$features)
   n_features <- feature_count(view$features)
 
   feature_labels <- view_feature_labels(view)
 
-  constraint_rows <- vector(
-    "list",
-    2L * n_features
-  )
-
-  rhs <- numeric(
-    2L * n_features
-  )
-
-  metadata_feature <- character(
-    2L * n_features
-  )
-
-  labels <- character(
-    2L * n_features
-  )
-
+  constraint_rows <- vector("list", 2L * n_features)
+  rhs <- numeric(2L * n_features)
+  metadata_feature <- character(2L * n_features)
+  labels <- character(2L * n_features)
   constraint_index <- 1L
 
   for (i in seq_len(n_features)) {
-    values <- feature_column(
-      view$features,
-      i = i
-    )
-
+    values <- feature_column(view$features, i = i)
     target <- view$target[[i]]
     level <- levels[[i]]
 
     lower_row <- constraint_index
     upper_row <- constraint_index + 1L
 
-    constraint_rows[[lower_row]] <- as.numeric(
-      values < target
-    )
-
-    constraint_rows[[upper_row]] <- as.numeric(
-      values > target
-    )
+    constraint_rows[[lower_row]] <- as.numeric(values < target)
+    constraint_rows[[upper_row]] <- as.numeric(values > target)
 
     rhs[[lower_row]] <- level
     rhs[[upper_row]] <- 1 - level
@@ -1200,35 +839,17 @@ compile_quantile_like_view <- function(
     metadata_feature[[lower_row]] <- feature_labels[[i]]
     metadata_feature[[upper_row]] <- feature_labels[[i]]
 
-    target_label <- format_constraint_value(target)
-    level_label <- format_constraint_value(level)
+    target_label      <- format_constraint_value(target)
+    level_label       <- format_constraint_value(level)
     upper_level_label <- format_constraint_value(1 - level)
 
-    labels[[lower_row]] <- paste0(
-      "P[",
-      feature_labels[[i]],
-      " < ",
-      target_label,
-      "] <= ",
-      level_label
-    )
-
-    labels[[upper_row]] <- paste0(
-      "P[",
-      feature_labels[[i]],
-      " > ",
-      target_label,
-      "] <= ",
-      upper_level_label
-    )
+    labels[[lower_row]] <- paste0("P[", feature_labels[[i]], " < ", target_label, "] <= ", level_label)
+    labels[[upper_row]] <- paste0("P[", feature_labels[[i]], " > ", target_label, "] <= ", upper_level_label)
 
     constraint_index <- constraint_index + 2L
   }
 
-  a_ineq <- do.call(
-    rbind,
-    constraint_rows
-  )
+  a_ineq <- do.call(rbind, constraint_rows)
 
   storage.mode(a_ineq) <- "double"
   dimnames(a_ineq) <- NULL
@@ -1267,27 +888,14 @@ print.ffp_constraints <- function(x, ...) {
 
 # Reference moments -------------------------------------------------------
 
-validate_reference_prior <- function(
-    prior,
-    n_scenarios,
-    call = rlang::caller_env()
-) {
-  valid <- is.numeric(prior) &&
-    is.null(dim(prior)) &&
-    length(prior) == n_scenarios &&
-    !anyNA(prior) &&
-    all(is.finite(prior)) &&
-    all(prior >= 0)
+validate_reference_prior <- function(prior, n_scenarios, call = rlang::caller_env()) {
+  valid <- is.numeric(prior) && is.null(dim(prior)) && length(prior) == n_scenarios && !anyNA(prior) && all(is.finite(prior)) && all(prior >= 0)
 
   if (!valid) {
     ffp_abort(
       c(
         "The current prior is incompatible with the scenario support.",
-        "x" = paste0(
-          "Expected ",
-          n_scenarios,
-          " finite, non-negative probability value(s)."
-        )
+        "x" = paste0("Expected ", n_scenarios, " finite, non-negative probability value(s).")
       ),
       class = "ffp_error_invalid_prior",
       call = call
@@ -1308,36 +916,16 @@ validate_reference_prior <- function(
 }
 
 
-reference_mean <- function(
-    x,
-    prior,
-    call = rlang::caller_env()
-) {
+reference_mean <- function(x, prior, call = rlang::caller_env()) {
   n_scenarios <- length(x)
-
-  validate_reference_prior(
-    prior = prior,
-    n_scenarios = n_scenarios,
-    call = call
-  )
-
+  validate_reference_prior(prior = prior, n_scenarios = n_scenarios, call = call)
   sum(prior * x) / sum(prior)
 }
 
 
-reference_second_moment <- function(
-    x,
-    prior,
-    call = rlang::caller_env()
-) {
+reference_second_moment <- function(x, prior, call = rlang::caller_env()) {
   n_scenarios <- length(x)
-
-  validate_reference_prior(
-    prior = prior,
-    n_scenarios = n_scenarios,
-    call = call
-  )
-
+  validate_reference_prior(prior = prior, n_scenarios = n_scenarios, call = call)
   sum(prior * x^2) / sum(prior)
 }
 
@@ -1345,51 +933,24 @@ reference_second_moment <- function(
 
 # Reference variance ------------------------------------------------------
 
-reference_variance <- function(
-    x,
-    prior,
-    call = rlang::caller_env()
-) {
+reference_variance <- function(x, prior, call = rlang::caller_env()) {
   n_scenarios <- length(x)
+  validate_reference_prior(prior = prior, n_scenarios = n_scenarios, call = call)
 
-  validate_reference_prior(
-    prior = prior,
-    n_scenarios = n_scenarios,
-    call = call
-  )
-
-  mean <- reference_mean(
-    x = x,
-    prior = prior,
-    call = call
-  )
-
+  mean <- reference_mean(x = x, prior = prior, call = call)
   sum(prior * (x - mean)^2) / sum(prior)
 }
 
 
-reference_sd <- function(
-    x,
-    prior,
-    call = rlang::caller_env()
-) {
-  sqrt(
-    reference_variance(
-      x = x,
-      prior = prior,
-      call = call
-    )
-  )
+reference_sd <- function(x, prior, call = rlang::caller_env()) {
+  sqrt(reference_variance(x = x, prior = prior, call = call))
 }
 
 
 # Matrix-view helpers -----------------------------------------------------
 
 matrix_constraint_pairs <- function(n_features) {
-  rows <- rep(
-    seq_len(n_features),
-    times = rev(seq_len(n_features))
-  )
+  rows <- rep(seq_len(n_features), times = rev(seq_len(n_features)))
 
   cols <- unlist(
     lapply(
@@ -1401,24 +962,18 @@ matrix_constraint_pairs <- function(n_features) {
     use.names = FALSE
   )
 
-  cbind(
-    row = as.integer(rows),
-    col = as.integer(cols)
-  )
+  cbind(row = as.integer(rows), col = as.integer(cols))
 }
 
 
 bound_feature_matrix <- function(view) {
   n_scenarios <- feature_observation_count(view$features)
-  n_features <- feature_count(view$features)
+  n_features  <- feature_count(view$features)
 
   values <- vapply(
     seq_len(n_features),
     function(i) {
-      feature_column(
-        view$features,
-        i = i
-      )
+      feature_column(view$features, i = i)
     },
     numeric(n_scenarios)
   )
@@ -1430,55 +985,35 @@ bound_feature_matrix <- function(view) {
 }
 
 
-reference_feature_means <- function(
-    feature_values,
-    prior,
-    call = rlang::caller_env()
-) {
+reference_feature_means <- function(feature_values, prior, call = rlang::caller_env()) {
   vapply(
     seq_len(ncol(feature_values)),
     function(i) {
-      reference_mean(
-        x = feature_values[, i],
-        prior = prior,
-        call = call
-      )
+      reference_mean(x = feature_values[, i], prior = prior, call = call)
     },
     numeric(1)
   )
 }
 
 
-reference_feature_sds <- function(
-    feature_values,
-    prior,
-    call = rlang::caller_env()
-) {
+reference_feature_sds <- function(feature_values, prior, call = rlang::caller_env()) {
   vapply(
     seq_len(ncol(feature_values)),
     function(i) {
-      reference_sd(
-        x = feature_values[, i],
-        prior = prior,
-        call = call
-      )
+      reference_sd(x = feature_values[, i], prior = prior, call = call)
     },
     numeric(1)
   )
 }
 
 
-second_moment_constraint_matrix <- function(
-    feature_values,
-    pairs
-) {
+second_moment_constraint_matrix <- function(feature_values, pairs) {
   n_scenarios <- nrow(feature_values)
 
   constraints <- vapply(
     seq_len(nrow(pairs)),
     function(i) {
-      feature_values[, pairs[i, "row"]] *
-        feature_values[, pairs[i, "col"]]
+      feature_values[, pairs[i, "row"]] * feature_values[, pairs[i, "col"]]
     },
     numeric(n_scenarios)
   )
@@ -1493,14 +1028,7 @@ second_moment_constraint_matrix <- function(
 
 
 matrix_target_entries <- function(target, pairs) {
-  unname(
-    target[
-      cbind(
-        pairs[, "row"],
-        pairs[, "col"]
-      )
-    ]
-  )
+  unname(target[cbind(pairs[, "row"], pairs[, "col"])])
 }
 
 
@@ -1508,50 +1036,27 @@ matrix_target_entries <- function(target, pairs) {
 
 #' @exportS3Method
 #' @noRd
-compile_view.ffp_view_covariance <- function(
-    view,
-    prior,
-    call = rlang::caller_env()
-) {
+compile_view.ffp_view_covariance <- function(view, prior, call = rlang::caller_env()) {
   n_scenarios <- feature_observation_count(view$features)
   n_features <- feature_count(view$features)
 
-  validate_reference_prior(
-    prior = prior,
-    n_scenarios = n_scenarios,
-    call = call
-  )
+  validate_reference_prior(prior = prior, n_scenarios = n_scenarios, call = call)
 
   feature_values <- bound_feature_matrix(view)
 
-  reference_means <- reference_feature_means(
-    feature_values = feature_values,
-    prior = prior,
-    call = call
-  )
-
-  pairs <- matrix_constraint_pairs(n_features)
-
-  a_eq <- second_moment_constraint_matrix(
-    feature_values = feature_values,
-    pairs = pairs
-  )
-
-  targets <- matrix_target_entries(
-    target = view$target,
-    pairs = pairs
-  )
+  reference_means <- reference_feature_means(feature_values = feature_values, prior = prior, call = call)
+  pairs   <- matrix_constraint_pairs(n_features)
+  a_eq    <- second_moment_constraint_matrix(feature_values = feature_values, pairs = pairs)
+  targets <- matrix_target_entries(target = view$target, pairs = pairs)
 
   row_indices <- pairs[, "row"]
   col_indices <- pairs[, "col"]
 
-  b_eq <- reference_means[row_indices] *
-    reference_means[col_indices] +
-    targets
+  b_eq <- reference_means[row_indices] * reference_means[col_indices] + targets
 
   feature_labels <- view_feature_labels(view)
 
-  first_labels <- feature_labels[row_indices]
+  first_labels  <- feature_labels[row_indices]
   second_labels <- feature_labels[col_indices]
 
   metadata <- new_constraint_metadata(
@@ -1559,14 +1064,7 @@ compile_view.ffp_view_covariance <- function(
     method = "covariance",
     feature_1 = first_labels,
     feature_2 = second_labels,
-    label = paste0(
-      "Cov[",
-      first_labels,
-      ", ",
-      second_labels,
-      "] = ",
-      format_constraint_value(targets)
-    )
+    label = paste0("Cov[", first_labels, ", ", second_labels, "] = ", format_constraint_value(targets))
   )
 
   new_ffp_constraints(
@@ -1582,36 +1080,18 @@ compile_view.ffp_view_covariance <- function(
 
 #' @exportS3Method
 #' @noRd
-compile_view.ffp_view_correlation <- function(
-    view,
-    prior,
-    call = rlang::caller_env()
-) {
+compile_view.ffp_view_correlation <- function(view, prior, call = rlang::caller_env()) {
   n_scenarios <- feature_observation_count(view$features)
-  n_features <- feature_count(view$features)
+  n_features  <- feature_count(view$features)
 
-  validate_reference_prior(
-    prior = prior,
-    n_scenarios = n_scenarios,
-    call = call
-  )
+  validate_reference_prior(prior = prior, n_scenarios = n_scenarios, call = call)
 
   feature_values <- bound_feature_matrix(view)
 
-  reference_means <- reference_feature_means(
-    feature_values = feature_values,
-    prior = prior,
-    call = call
-  )
+  reference_means <- reference_feature_means(feature_values = feature_values, prior = prior, call = call)
+  reference_sds   <- reference_feature_sds(feature_values = feature_values, prior = prior, call = call)
 
-  reference_sds <- reference_feature_sds(
-    feature_values = feature_values,
-    prior = prior,
-    call = call
-  )
-
-  undefined <- !is.finite(reference_sds) |
-    reference_sds <= 0
+  undefined <- !is.finite(reference_sds) | reference_sds <= 0
 
   if (any(undefined)) {
     feature_labels <- view_feature_labels(view)
@@ -1629,38 +1109,24 @@ compile_view.ffp_view_correlation <- function(
           "prior dispersion."
         )
       ),
-      class = c(
-        "ffp_error_undefined_correlation",
-        "ffp_error_incompatible_view"
-      ),
+      class = c("ffp_error_undefined_correlation", "ffp_error_incompatible_view"),
       call = call
     )
   }
 
   pairs <- matrix_constraint_pairs(n_features)
 
-  a_eq <- second_moment_constraint_matrix(
-    feature_values = feature_values,
-    pairs = pairs
-  )
-
-  targets <- matrix_target_entries(
-    target = view$target,
-    pairs = pairs
-  )
+  a_eq <- second_moment_constraint_matrix(feature_values = feature_values, pairs = pairs)
+  targets <- matrix_target_entries(target = view$target, pairs = pairs)
 
   row_indices <- pairs[, "row"]
   col_indices <- pairs[, "col"]
 
-  b_eq <- reference_means[row_indices] *
-    reference_means[col_indices] +
-    reference_sds[row_indices] *
-    reference_sds[col_indices] *
-    targets
+  b_eq <- reference_means[row_indices] * reference_means[col_indices] + reference_sds[row_indices] * reference_sds[col_indices] * targets
 
   feature_labels <- view_feature_labels(view)
 
-  first_labels <- feature_labels[row_indices]
+  first_labels  <- feature_labels[row_indices]
   second_labels <- feature_labels[col_indices]
 
   metadata <- new_constraint_metadata(
@@ -1668,14 +1134,7 @@ compile_view.ffp_view_correlation <- function(
     method = "correlation",
     feature_1 = first_labels,
     feature_2 = second_labels,
-    label = paste0(
-      "Cor[",
-      first_labels,
-      ", ",
-      second_labels,
-      "] = ",
-      format_constraint_value(targets)
-    )
+    label = paste0("Cor[", first_labels, ", ", second_labels, "] = ", format_constraint_value(targets))
   )
 
   new_ffp_constraints(
@@ -1691,27 +1150,16 @@ compile_view.ffp_view_correlation <- function(
 
 #' @exportS3Method
 #' @noRd
-compile_view.ffp_view_volatility <- function(
-    view,
-    prior,
-    call = rlang::caller_env()
-) {
+compile_view.ffp_view_volatility <- function(view, prior, call = rlang::caller_env()) {
   n_scenarios <- feature_observation_count(view$features)
   n_features <- feature_count(view$features)
 
-  validate_reference_prior(
-    prior = prior,
-    n_scenarios = n_scenarios,
-    call = call
-  )
+  validate_reference_prior(prior = prior, n_scenarios = n_scenarios, call = call)
 
   feature_values <- vapply(
     seq_len(n_features),
     function(i) {
-      feature_column(
-        view$features,
-        i = i
-      )
+      feature_column(view$features, i = i)
     },
     numeric(n_scenarios)
   )
@@ -1719,11 +1167,7 @@ compile_view.ffp_view_volatility <- function(
   reference_means <- vapply(
     seq_len(n_features),
     function(i) {
-      reference_mean(
-        x = feature_values[, i],
-        prior = prior,
-        call = call
-      )
+      reference_mean(x = feature_values[, i], prior = prior, call = call)
     },
     numeric(1)
   )
@@ -1732,25 +1176,18 @@ compile_view.ffp_view_volatility <- function(
   storage.mode(a_eq) <- "double"
   dimnames(a_eq) <- NULL
 
-  targets <- unname(
-    as.numeric(view$target)
-  )
+  targets <- unname(as.numeric(view$target))
 
   b_eq <- reference_means^2 + targets^2
 
   feature_labels <- view_feature_labels(view)
-  target_labels <- format_constraint_value(targets)
+  target_labels  <- format_constraint_value(targets)
 
   metadata <- new_constraint_metadata(
     type = "equality",
     method = "volatility",
     feature_1 = feature_labels,
-    label = paste0(
-      "Volatility[",
-      feature_labels,
-      "] target = ",
-      target_labels
-    )
+    label = paste0("Volatility[", feature_labels, "] target = ", target_labels)
   )
 
   new_ffp_constraints(

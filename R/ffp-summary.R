@@ -89,15 +89,8 @@ fit_max_residual <- function(fit) {
 #'     prior_uniform()
 #'   ) |>
 #'   ffp_view(
-#'     view_mean(
-#'       equity,
-#'       target = 0.02
-#'     ),
-#'     view_quantile(
-#'       inflation,
-#'       target = 0.045,
-#'       level = 0.80
-#'     )
+#'     view_mean(equity, target = 0.02),
+#'     view_quantile(inflation, target = 0.045, level = 0.80)
 #'   )
 #'
 #' fit <- ffp_fit(model)
@@ -134,76 +127,23 @@ summary.ffp_fit <- function(object, ...) {
 #' @export
 #' @noRd
 print.summary_ffp_fit <- function(x, ...) {
+
   cat("<ffp_fit summary>\n\n")
 
-  cat(
-    "Scenarios:       ",
-    x$n_scenarios,
-    "\n",
-    sep = ""
-  )
-
-  cat(
-    "Views:           ",
-    x$n_views,
-    "\n",
-    sep = ""
-  )
-
-  cat(
-    "Status:          ",
-    x$status,
-    "\n",
-    sep = ""
-  )
+  cat("Scenarios:       ", x$n_scenarios, "\n", sep = "")
+  cat("Views:           ", x$n_views, "\n", sep = "")
+  cat("Status:          ", x$status, "\n", sep = "")
 
   cat("\n")
 
-  cat(
-    "KL divergence:   ",
-    format(
-      x$kl_divergence,
-      digits = 6
-    ),
-    "\n",
-    sep = ""
-  )
-
-  cat(
-    "Max residual:    ",
-    format(
-      x$max_residual,
-      digits = 3,
-      scientific = TRUE
-    ),
-    "\n",
-    sep = ""
-  )
+  cat("KL divergence:   ", format(x$kl_divergence, digits = 6), "\n", sep = "")
+  cat("Max residual:    ", format(x$max_residual, digits = 3, scientific = TRUE), "\n", sep = "")
 
   cat("\n")
 
-  cat(
-    "Views satisfied: ",
-    x$n_views_satisfied,
-    " / ",
-    x$n_views,
-    "\n",
-    sep = ""
-  )
-
-  cat(
-    "Inequalities:    ",
-    x$n_inequalities,
-    "\n",
-    sep = ""
-  )
-
-  cat(
-    "Binding:         ",
-    x$n_binding,
-    "\n",
-    sep = ""
-  )
+  cat("Views satisfied: ", x$n_views_satisfied, " / ", x$n_views, "\n", sep = "")
+  cat("Inequalities:    ", x$n_inequalities, "\n", sep = "")
+  cat("Binding:         ", x$n_binding, "\n", sep = "")
 
   invisible(x)
 }

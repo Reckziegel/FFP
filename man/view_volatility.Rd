@@ -23,7 +23,7 @@ Flexible Views formulation of Meucci (2008).
 }
 \details{
 \code{x} can be a scenario variable, an expression evaluated from the scenario
-data, or an external numeric vector or panel. External features are matched
+data, an external numeric vector or panel. External features are matched
 to model scenarios strictly by position. The package does not reorder, join,
 recycle, or otherwise align observations automatically.
 
@@ -74,10 +74,8 @@ view_volatility(
 )
 
 # Multiple features require one explicit target per feature
-panel <- cbind(equity = scenarios$equity, rates = scenarios$rates)
-
 view_volatility(
-  x = panel,
+  x = scenarios,
   target = c(0.15, 0.05)
 )
 

@@ -109,17 +109,9 @@ compute_view_diagnostics <- function(fit) {
 
       equality <- block$constraint_type == "equality"
       inequality <- block$constraint_type == "inequality"
+      errors <- c(block$residual[equality], block$violation[inequality])
 
-      errors <- c(
-        block$residual[equality],
-        block$violation[inequality]
-      )
-
-      max_error <- if (length(errors) == 0L) {
-        0
-      } else {
-        max(errors)
-      }
+      max_error <- if (length(errors) == 0L) 0 else max(errors)
 
       tibble::tibble(
         view_id = as.integer(i),

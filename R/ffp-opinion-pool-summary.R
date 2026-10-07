@@ -80,26 +80,12 @@ summary.ffp_opinion_pool <- function(object, ...) {
   structure(
     list(
       n_scenarios = object$n_scenarios,
-      n_views = object$fit$n_views,
-      confidence = object$confidence,
-      kl_full_confidence = entropy_kl_divergence(
-        object$full_confidence_posterior,
-        object$prior
-      ),
-      kl_posterior = entropy_kl_divergence(
-        object$posterior,
-        object$prior
-      ),
-      mass_reallocated_full_confidence =
-        opinion_pool_mass_reallocated(
-          object$full_confidence_posterior,
-          object$prior
-        ),
-      mass_reallocated_posterior =
-        opinion_pool_mass_reallocated(
-          object$posterior,
-          object$prior
-        )
+      n_views     = object$fit$n_views,
+      confidence  = object$confidence,
+      kl_full_confidence = entropy_kl_divergence(object$full_confidence_posterior, object$prior),
+      kl_posterior       = entropy_kl_divergence(object$posterior, object$prior),
+      mass_reallocated_full_confidence = opinion_pool_mass_reallocated(object$full_confidence_posterior, object$prior),
+      mass_reallocated_posterior       = opinion_pool_mass_reallocated(object$posterior, object$prior)
     ),
     class = "summary_ffp_opinion_pool"
   )
@@ -112,67 +98,35 @@ print.summary_ffp_opinion_pool <- function(x, ...) {
   cat("<ffp_opinion_pool summary>\n\n")
 
   cat(
-    sprintf(
-      "%-16s%s\n",
-      "Scenarios:",
-      format(x$n_scenarios, trim = TRUE)
-    )
+    sprintf("%-16s%s\n", "Scenarios:", format(x$n_scenarios, trim = TRUE))
   )
 
   cat(
-    sprintf(
-      "%-16s%s\n",
-      "Views:",
-      format(x$n_views, trim = TRUE)
-    )
+    sprintf("%-16s%s\n", "Views:", format(x$n_views, trim = TRUE))
   )
 
   cat(
-    sprintf(
-      "%-16s%s\n",
-      "Confidence:",
-      format_opinion_pool_confidence(x$confidence)
-    )
+    sprintf("%-16s%s\n", "Confidence:", format_opinion_pool_confidence(x$confidence))
   )
 
   cat("\nKL divergence:\n")
 
   cat(
-    sprintf(
-      "  %-18s%s\n",
-      "Full confidence:",
-      format_opinion_pool_number(x$kl_full_confidence)
-    )
+    sprintf("  %-18s%s\n", "Full confidence:", format_opinion_pool_number(x$kl_full_confidence))
   )
 
   cat(
-    sprintf(
-      "  %-18s%s\n",
-      "Posterior:",
-      format_opinion_pool_number(x$kl_posterior)
-    )
+    sprintf("  %-18s%s\n", "Posterior:", format_opinion_pool_number(x$kl_posterior))
   )
 
   cat("\nProbability mass reallocated:\n")
 
   cat(
-    sprintf(
-      "  %-18s%s\n",
-      "Full confidence:",
-      format_opinion_pool_percentage(
-        x$mass_reallocated_full_confidence
-      )
-    )
+    sprintf("  %-18s%s\n", "Full confidence:", format_opinion_pool_percentage(x$mass_reallocated_full_confidence))
   )
 
   cat(
-    sprintf(
-      "  %-18s%s\n",
-      "Posterior:",
-      format_opinion_pool_percentage(
-        x$mass_reallocated_posterior
-      )
-    )
+    sprintf("  %-18s%s\n", "Posterior:", format_opinion_pool_percentage(x$mass_reallocated_posterior))
   )
 
   invisible(x)
@@ -190,24 +144,10 @@ format_opinion_pool_number <- function(x) {
   if (is.infinite(x)) {
     return("Inf")
   }
-
-  format(
-    x,
-    digits = 4,
-    trim = TRUE,
-    scientific = FALSE
-  )
+  format(x, digits = 4, trim = TRUE, scientific = FALSE)
 }
 
 
 format_opinion_pool_percentage <- function(x) {
-  paste0(
-    format(
-      100 * x,
-      digits = 4,
-      trim = TRUE,
-      scientific = FALSE
-    ),
-    "%"
-  )
+  paste0(format(100 * x, digits = 4, trim = TRUE, scientific = FALSE), "%")
 }

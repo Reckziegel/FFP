@@ -27,10 +27,7 @@ abort_infeasible_entropy_problem <- function(classification, call = rlang::calle
         "requirements."
       )
     ),
-    class = c(
-      "ffp_error_infeasible_problem",
-      "ffp_error_solver_failure"
-    ),
+    class = c("ffp_error_infeasible_problem", "ffp_error_solver_failure"),
     call = call
   )
 }
@@ -89,11 +86,7 @@ abort_prior_support_boundary_problem <- function(classification, call = rlang::c
 
 diagnose_entropy_problem <- function(problem, boundary_tolerance = 1e-10, call = rlang::caller_env()) {
 
-  classification <- classify_entropy_problem(
-    problem = problem,
-    boundary_tolerance = boundary_tolerance,
-    call = call
-  )
+  classification <- classify_entropy_problem(problem = problem, boundary_tolerance = boundary_tolerance, call = call)
 
   if (identical(classification$category, "infeasible")) {
     abort_infeasible_entropy_problem(classification = classification, call = call)

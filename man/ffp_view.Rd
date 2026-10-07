@@ -37,16 +37,9 @@ scenarios <- data.frame(
 model <- ffp_model(scenarios) |>
   ffp_prior(prior_uniform()) |>
   ffp_view(
-    view_mean(
-      x = equity,
-      target = 0.01
-    ),
-    view_probability(
-      x = inflation > 0.04,
-      target = 0.25
-    )
+    view_mean(x = equity, target = 0.01),
+    view_probability(x = inflation > 0.04, target = 0.25)
   )
-
 model
 
 # External features are matched by position
@@ -54,9 +47,6 @@ signal <- c(-0.2, -0.1, 0, 0.2, 0.3)
 
 model <- model |>
   ffp_view(
-    view_mean(
-      x = signal,
-      target = 0.05
-    )
+    view_mean(x = signal, target = 0.05)
   )
 }

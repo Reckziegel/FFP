@@ -1,12 +1,7 @@
 # View specifications -----------------------------------------------------
 
-new_view_spec <- function(
-    method,
-    x,
-    target,
-    parameters = list(),
-    class
-) {
+new_view_spec <- function(method, x, target, parameters = list(), class) {
+
   structure(
     list(
       method = method,
@@ -24,7 +19,7 @@ new_view_spec <- function(
 #' Creates a view specification on posterior means.
 #'
 #' `x` can be a scenario variable, an expression evaluated from the scenario
-#' data, or an external vector or panel. External features are matched to model
+#' data, an external vector or panel. External features are matched to model
 #' scenarios strictly by position. The package does not reorder, join, recycle,
 #' or otherwise align observations automatically.
 #'
@@ -74,6 +69,7 @@ new_view_spec <- function(
 #'   target = rep(0.02, NCOL(ret))
 #' )
 view_mean <- function(x, target) {
+
   call <- rlang::caller_env()
 
   if (missing(target)) {
@@ -88,17 +84,8 @@ view_mean <- function(x, target) {
   }
 
   x <- rlang::enquo(x)
-
-  validate_view_x_spec(
-    x = x,
-    constructor = "view_mean",
-    call = call
-  )
-
-  target <- validate_mean_target(
-    target = target,
-    call = call
-  )
+  validate_view_x_spec(x = x, constructor = "view_mean",call = call)
+  target <- validate_mean_target(target = target, call = call)
 
   new_view_spec(
     method = "mean",
@@ -179,6 +166,7 @@ view_mean <- function(x, target) {
 #'   given = scenarios$recession
 #' )
 view_probability <- function(x, target, given = NULL) {
+
   call <- rlang::caller_env()
 
   if (missing(target)) {
@@ -192,19 +180,11 @@ view_probability <- function(x, target, given = NULL) {
     )
   }
 
-  x <- rlang::enquo(x)
+  x     <- rlang::enquo(x)
   given <- rlang::enquo(given)
 
-  validate_view_x_spec(
-    x = x,
-    constructor = "view_probability",
-    call = call
-  )
-
-  target <- validate_probability_target(
-    target = target,
-    call = call
-  )
+  validate_view_x_spec(x = x, constructor = "view_probability", call = call)
+  target <- validate_probability_target(target = target, call = call)
 
   if (rlang::quo_is_null(given) || rlang::quo_is_missing(given)) {
     given <- NULL
@@ -214,9 +194,7 @@ view_probability <- function(x, target, given = NULL) {
     method = "probability",
     x = x,
     target = target,
-    parameters = list(
-      given = given
-    ),
+    parameters = list(given = given),
     class = "ffp_view_probability_spec"
   )
 }
@@ -346,6 +324,7 @@ view_probability <- function(x, target, given = NULL) {
 #'     )
 #'   )
 view_quantile <- function(x, target, level) {
+
   call <- rlang::caller_env()
 
   if (missing(target)) {
@@ -374,31 +353,16 @@ view_quantile <- function(x, target, level) {
   }
 
   x <- rlang::enquo(x)
+  validate_view_x_spec(x = x, constructor = "view_quantile", call = call)
 
-  validate_view_x_spec(
-    x = x,
-    constructor = "view_quantile",
-    call = call
-  )
-
-  target <- validate_quantile_target(
-    target = target,
-    call = call
-  )
-
-  level <- resolve_quantile_level(
-    level = level,
-    n_targets = length(target),
-    call = call
-  )
+  target <- validate_quantile_target(target = target, call = call)
+  level  <- resolve_quantile_level(level = level, n_targets = length(target), call = call)
 
   new_view_spec(
     method = "quantile",
     x = x,
     target = target,
-    parameters = list(
-      level = level
-    ),
+    parameters = list(level = level),
     class = "ffp_view_quantile_spec"
   )
 }
@@ -465,16 +429,12 @@ view_quantile <- function(x, target, level) {
 #' )
 #'
 #' # Multiple features require one explicit target per feature
-#' panel <- cbind(
-#'   equity = scenarios$equity,
-#'   inflation = scenarios$inflation
-#' )
-#'
 #' view_median(
-#'   x = panel,
+#'   x = scenarios,
 #'   target = c(0.01, 0.035)
 #' )
 view_median <- function(x, target) {
+
   call <- rlang::caller_env()
 
   if (missing(target)) {
@@ -489,17 +449,8 @@ view_median <- function(x, target) {
   }
 
   x <- rlang::enquo(x)
-
-  validate_view_x_spec(
-    x = x,
-    constructor = "view_median",
-    call = call
-  )
-
-  target <- validate_median_target(
-    target = target,
-    call = call
-  )
+  validate_view_x_spec(x = x, constructor = "view_median", call = call)
+  target <- validate_median_target(target = target, call = call)
 
   new_view_spec(
     method = "median",
@@ -580,6 +531,7 @@ view_median <- function(x, target) {
 #'   order = c(1, 4, 2)
 #' )
 view_rank <- function(x, order) {
+
   call <- rlang::caller_env()
 
   if (missing(order)) {
@@ -600,25 +552,14 @@ view_rank <- function(x, order) {
   }
 
   x <- rlang::enquo(x)
-
-  validate_view_x_spec(
-    x = x,
-    constructor = "view_rank",
-    call = call
-  )
-
-  order <- validate_rank_order_spec(
-    order = order,
-    call = call
-  )
+  validate_view_x_spec(x = x, constructor = "view_rank", call = call)
+  order <- validate_rank_order_spec(order = order, call = call)
 
   new_view_spec(
     method = "rank",
     x = x,
     target = NULL,
-    parameters = list(
-      order = order
-    ),
+    parameters = list(order = order),
     class = "ffp_view_rank_spec"
   )
 }
@@ -630,7 +571,7 @@ view_rank <- function(x, order) {
 #' Flexible Views formulation of Meucci (2008).
 #'
 #' `x` can be a scenario variable, an expression evaluated from the scenario
-#' data, or an external numeric vector or panel. External features are matched
+#' data, an external numeric vector or panel. External features are matched
 #' to model scenarios strictly by position. The package does not reorder, join,
 #' recycle, or otherwise align observations automatically.
 #'
@@ -694,10 +635,8 @@ view_rank <- function(x, order) {
 #' )
 #'
 #' # Multiple features require one explicit target per feature
-#' panel <- cbind(equity = scenarios$equity, rates = scenarios$rates)
-#'
 #' view_volatility(
-#'   x = panel,
+#'   x = scenarios,
 #'   target = c(0.15, 0.05)
 #' )
 #'
@@ -706,15 +645,14 @@ view_rank <- function(x, order) {
 #'   ffp_prior(prior_uniform()) |>
 #'   ffp_view(view_volatility(x = equity, target = 0.15))
 view_volatility <- function(x, target) {
+
   call <- rlang::caller_env()
 
   if (missing(target)) {
     ffp_abort(
       c(
         "{.fn view_volatility} requires {.arg target}.",
-        "i" = paste0(
-          "Supply exactly one volatility target per feature in {.arg x}."
-        )
+        "i" = paste0("Supply exactly one volatility target per feature in {.arg x}.")
       ),
       class = "ffp_error_invalid_view",
       call = call
@@ -722,17 +660,8 @@ view_volatility <- function(x, target) {
   }
 
   x <- rlang::enquo(x)
-
-  validate_view_x_spec(
-    x = x,
-    constructor = "view_volatility",
-    call = call
-  )
-
-  target <- validate_volatility_target(
-    target = target,
-    call = call
-  )
+  validate_view_x_spec(x = x, constructor = "view_volatility", call = call)
+  target <- validate_volatility_target(target = target, call = call)
 
   new_view_spec(
     method = "volatility",
@@ -777,16 +706,9 @@ view_volatility <- function(x, target) {
 #' model <- ffp_model(scenarios) |>
 #'   ffp_prior(prior_uniform()) |>
 #'   ffp_view(
-#'     view_mean(
-#'       x = equity,
-#'       target = 0.01
-#'     ),
-#'     view_probability(
-#'       x = inflation > 0.04,
-#'       target = 0.25
-#'     )
+#'     view_mean(x = equity, target = 0.01),
+#'     view_probability(x = inflation > 0.04, target = 0.25)
 #'   )
-#'
 #' model
 #'
 #' # External features are matched by position
@@ -794,64 +716,39 @@ view_volatility <- function(x, target) {
 #'
 #' model <- model |>
 #'   ffp_view(
-#'     view_mean(
-#'       x = signal,
-#'       target = 0.05
-#'     )
+#'     view_mean(x = signal, target = 0.05)
 #'   )
 ffp_view <- function(model, ...) {
+
   call <- rlang::caller_env()
 
-  validate_ffp_model(
-    model = model,
-    call = call
-  )
+  validate_ffp_model(model = model, call = call)
+  validate_model_prior_for_views(model = model, call = call)
 
-  validate_model_prior_for_views(
-    model = model,
-    call = call
-  )
-
-  views <- unname(
-    rlang::list2(...)
-  )
-
-  validate_view_collection(
-    views = views,
-    call = call
-  )
+  views <- unname(rlang::list2(...))
+  validate_view_collection(views = views, call = call)
 
   for (view in views) {
-    bound_view <- bind_view(
-      view = view,
-      model = model,
-      call = call
-    )
-
+    bound_view <- bind_view(view = view, model = model, call = call)
     model$views[[length(model$views) + 1L]] <- bound_view
   }
 
   model
+
 }
 
 
 # Bound-view constructors -------------------------------------------------
 
-new_bound_view <- function(
-    method,
-    features,
-    target,
-    parameters = list(),
-    metadata = list(),
-    class
-) {
+new_bound_view <- function(method, features, target, parameters = list(), metadata = list(), class) {
+
   structure(
     list(
-      method = method,
-      features = features,
-      target = target,
+      method     = method,
+      features   = features,
+      target     = target,
       parameters = parameters,
-      metadata = metadata
+      metadata   = metadata
     ),
     class = c(class, "ffp_view")
   )
@@ -868,37 +765,19 @@ bind_view <- function(view, model, call = rlang::caller_env()) {
 
 #' @exportS3Method
 #' @noRd
-bind_view.ffp_view_mean_spec <- function(
-    view,
-    model,
-    call = rlang::caller_env()
-) {
-  features <- resolve_view_features(
-    expression = view$x,
-    model = model,
-    arg = "x",
-    call = call
-  )
+bind_view.ffp_view_mean_spec <- function(view, model, call = rlang::caller_env()) {
 
-  validate_mean_features(
-    features = features,
-    call = call
-  )
+  features <- resolve_view_features(expression = view$x, model = model, arg = "x", call = call)
 
-  validate_target_feature_compatibility(
-    target = view$target,
-    features = features,
-    call = call
-  )
+  validate_mean_features(features = features, call = call)
+  validate_target_feature_compatibility(target = view$target, features = features, call = call)
 
   new_bound_view(
     method = "mean",
     features = features,
     target = view$target,
     parameters = list(),
-    metadata = list(
-      expression = compact_view_label(view$x)
-    ),
+    metadata = list(expression = compact_view_label(view$x)),
     class = "ffp_view_mean"
   )
 }
@@ -906,61 +785,26 @@ bind_view.ffp_view_mean_spec <- function(
 
 #' @exportS3Method
 #' @noRd
-bind_view.ffp_view_probability_spec <- function(
-    view,
-    model,
-    call = rlang::caller_env()
-) {
-  features <- resolve_view_features(
-    expression = view$x,
-    model = model,
-    arg = "x",
-    call = call
-  )
+bind_view.ffp_view_probability_spec <- function(view, model, call = rlang::caller_env()) {
 
-  validate_probability_features(
-    features = features,
-    arg = "x",
-    call = call
-  )
+  features <- resolve_view_features(expression = view$x, model = model, arg = "x", call = call)
 
-  validate_target_feature_compatibility(
-    target = view$target,
-    features = features,
-    call = call
-  )
+  validate_probability_features(features = features, arg = "x", call = call)
+  validate_target_feature_compatibility(target = view$target, features = features, call = call)
 
-  given <- NULL
+  given            <- NULL
   given_expression <- NULL
 
   if (!is.null(view$parameters$given)) {
-    given <- resolve_view_features(
-      expression = view$parameters$given,
-      model = model,
-      arg = "given",
-      call = call
-    )
 
-    validate_probability_features(
-      features = given,
-      arg = "given",
-      call = call
-    )
+    given <- resolve_view_features(expression = view$parameters$given, model = model, arg = "given", call = call)
 
-    validate_single_conditioning_event(
-      features = given,
-      call = call
-    )
+    validate_probability_features(features = given, arg = "given", call = call)
+    validate_single_conditioning_event(features = given, call = call)
+    validate_positive_conditioning_probability(features = given, model = model, call = call)
 
-    validate_positive_conditioning_probability(
-      features = given,
-      model = model,
-      call = call
-    )
+    given_expression <- compact_view_label(view$parameters$given)
 
-    given_expression <- compact_view_label(
-      view$parameters$given
-    )
   }
 
   new_bound_view(
@@ -970,10 +814,7 @@ bind_view.ffp_view_probability_spec <- function(
     parameters = list(
       given = given
     ),
-    metadata = list(
-      expression = compact_view_label(view$x),
-      given_expression = given_expression
-    ),
+    metadata = list(expression = compact_view_label(view$x), given_expression = given_expression),
     class = "ffp_view_probability"
   )
 }
@@ -981,28 +822,12 @@ bind_view.ffp_view_probability_spec <- function(
 
 #' @exportS3Method
 #' @noRd
-bind_view.ffp_view_quantile_spec <- function(
-    view,
-    model,
-    call = rlang::caller_env()
-) {
-  features <- resolve_view_features(
-    expression = view$x,
-    model = model,
-    arg = "x",
-    call = call
-  )
+bind_view.ffp_view_quantile_spec <- function(view, model, call = rlang::caller_env()) {
 
-  validate_quantile_features(
-    features = features,
-    call = call
-  )
+  features <- resolve_view_features(expression = view$x, model = model, arg = "x", call = call)
 
-  validate_target_feature_compatibility(
-    target = view$target,
-    features = features,
-    call = call
-  )
+  validate_quantile_features(features = features, call = call)
+  validate_target_feature_compatibility(target = view$target, features = features, call = call)
 
   new_bound_view(
     method = "quantile",
@@ -1011,46 +836,26 @@ bind_view.ffp_view_quantile_spec <- function(
     parameters = list(
       level = view$parameters$level
     ),
-    metadata = list(
-      expression = compact_view_label(view$x)
-    ),
+    metadata = list(expression = compact_view_label(view$x)),
     class = "ffp_view_quantile"
   )
 }
 
 #' @exportS3Method
 #' @noRd
-bind_view.ffp_view_median_spec <- function(
-    view,
-    model,
-    call = rlang::caller_env()
-) {
-  features <- resolve_view_features(
-    expression = view$x,
-    model = model,
-    arg = "x",
-    call = call
-  )
+bind_view.ffp_view_median_spec <- function(view, model, call = rlang::caller_env()) {
 
-  validate_median_features(
-    features = features,
-    call = call
-  )
+  features <- resolve_view_features(expression = view$x, model = model, arg = "x", call = call)
 
-  validate_target_feature_compatibility(
-    target = view$target,
-    features = features,
-    call = call
-  )
+  validate_median_features(features = features, call = call)
+  validate_target_feature_compatibility(target = view$target, features = features, call = call)
 
   new_bound_view(
     method = "median",
     features = features,
     target = view$target,
     parameters = list(),
-    metadata = list(
-      expression = compact_view_label(view$x)
-    ),
+    metadata = list(expression = compact_view_label(view$x)),
     class = "ffp_view_median"
   )
 }
@@ -1058,42 +863,20 @@ bind_view.ffp_view_median_spec <- function(
 
 #' @exportS3Method
 #' @noRd
-bind_view.ffp_view_rank_spec <- function(
-    view,
-    model,
-    call = rlang::caller_env()
-) {
-  features <- resolve_view_features(
-    expression = view$x,
-    model = model,
-    arg = "x",
-    call = call
-  )
+bind_view.ffp_view_rank_spec <- function(view, model, call = rlang::caller_env()) {
 
-  indices <- resolve_rank_order(
-    order = view$parameters$order,
-    features = features,
-    call = call
-  )
+  features <- resolve_view_features(expression = view$x, model = model, arg = "x", call = call)
+  indices  <- resolve_rank_order(order = view$parameters$order, features = features, call = call)
+  features <- subset_rank_features(features = features, indices = indices)
 
-  features <- subset_rank_features(
-    features = features,
-    indices = indices
-  )
-
-  validate_rank_features(
-    features = features,
-    call = call
-  )
+  validate_rank_features(features = features, call = call)
 
   new_bound_view(
     method = "rank",
     features = features,
     target = NULL,
     parameters = list(),
-    metadata = list(
-      expression = compact_view_label(view$x)
-    ),
+    metadata = list(expression = compact_view_label(view$x)),
     class = "ffp_view_rank"
   )
 }
@@ -1101,37 +884,19 @@ bind_view.ffp_view_rank_spec <- function(
 
 #' @exportS3Method
 #' @noRd
-bind_view.ffp_view_volatility_spec <- function(
-    view,
-    model,
-    call = rlang::caller_env()
-) {
-  features <- resolve_view_features(
-    expression = view$x,
-    model = model,
-    arg = "x",
-    call = call
-  )
+bind_view.ffp_view_volatility_spec <- function(view, model, call = rlang::caller_env()) {
 
-  validate_volatility_features(
-    features = features,
-    call = call
-  )
+  features <- resolve_view_features(expression = view$x, model = model, arg = "x", call = call)
 
-  validate_target_feature_compatibility(
-    target = view$target,
-    features = features,
-    call = call
-  )
+  validate_volatility_features(features = features, call = call)
+  validate_target_feature_compatibility(target = view$target, features = features, call = call)
 
   new_bound_view(
     method = "volatility",
     features = features,
     target = view$target,
     parameters = list(),
-    metadata = list(
-      expression = compact_view_label(view$x)
-    ),
+    metadata = list(expression = compact_view_label(view$x)),
     class = "ffp_view_volatility"
   )
 }
@@ -1140,19 +905,12 @@ bind_view.ffp_view_volatility_spec <- function(
 
 #' @exportS3Method
 #' @noRd
-bind_view.ffp_view_spec <- function(
-    view,
-    model,
-    call = rlang::caller_env()
-) {
+bind_view.ffp_view_spec <- function(view, model, call = rlang::caller_env()) {
+
   ffp_abort(
     c(
       "Unsupported view specification.",
-      "x" = paste0(
-        "No binding method is available for class `",
-        class(view)[[1]],
-        "`."
-      )
+      "x" = paste0("No binding method is available for class `", class(view)[[1]], "`.")
     ),
     class = "ffp_error_invalid_view",
     call = call
@@ -1162,11 +920,7 @@ bind_view.ffp_view_spec <- function(
 
 #' @exportS3Method
 #' @noRd
-bind_view.default <- function(
-    view,
-    model,
-    call = rlang::caller_env()
-) {
+bind_view.default <- function(view, model, call = rlang::caller_env()) {
   ffp_abort(
     c(
       "Unsupported view specification.",
@@ -1180,25 +934,13 @@ bind_view.default <- function(
 
 # Feature resolution ------------------------------------------------------
 
-resolve_view_features <- function(
-    expression,
-    model,
-    arg,
-    call = rlang::caller_env()
-) {
-  data <- scenario_data_mask(
-    model$scenarios
-  )
+resolve_view_features <- function(expression, model, arg, call = rlang::caller_env()) {
 
-  label <- compact_view_label(
-    expression
-  )
+  data  <- scenario_data_mask(model$scenarios)
+  label <- compact_view_label(expression)
 
   values <- tryCatch(
-    rlang::eval_tidy(
-      expression,
-      data = data
-    ),
+    rlang::eval_tidy(expression, data = data),
     error = function(error) {
       ffp_abort(
         c(
@@ -1231,56 +973,26 @@ resolve_view_features <- function(
 
 # Scenario-feature interface ---------------------------------------------
 
-new_ffp_feature_set <- function(
-    values,
-    feature_names = NULL,
-    source_class = NULL
-) {
+new_ffp_feature_set <- function(values, feature_names = NULL, source_class = NULL) {
   structure(
-    list(
-      values = values,
-      names = feature_names,
-      source_class = source_class
-    ),
+    list(values = values, names = feature_names, source_class = source_class),
     class = "ffp_feature_set"
   )
 }
 
 
 #' @noRd
-as_scenario_features <- function(
-    x,
-    n_scenarios,
-    arg = "x",
-    expression_label = NULL,
-    call = rlang::caller_env()
-) {
+as_scenario_features <- function(x, n_scenarios, arg = "x", expression_label = NULL, call = rlang::caller_env()) {
   UseMethod("as_scenario_features")
 }
 
 
 #' @exportS3Method
 #' @noRd
-as_scenario_features.matrix <- function(
-    x,
-    n_scenarios,
-    arg = "x",
-    expression_label = NULL,
-    call = rlang::caller_env()
-) {
-  features <- new_ffp_feature_set(
-    values = x,
-    feature_names = colnames(x),
-    source_class = first_class(x)
-  )
+as_scenario_features.matrix <- function(x, n_scenarios, arg = "x", expression_label = NULL, call = rlang::caller_env()) {
 
-  validate_feature_set(
-    features = features,
-    n_scenarios = n_scenarios,
-    arg = arg,
-    expression_label = expression_label,
-    call = call
-  )
+  features <- new_ffp_feature_set(values = x, feature_names = colnames(x), source_class = first_class(x))
+  validate_feature_set(features = features, n_scenarios = n_scenarios, arg = arg, expression_label = expression_label, call = call)
 
   features
 }
@@ -1288,13 +1000,8 @@ as_scenario_features.matrix <- function(
 
 #' @exportS3Method
 #' @noRd
-as_scenario_features.array <- function(
-    x,
-    n_scenarios,
-    arg = "x",
-    expression_label = NULL,
-    call = rlang::caller_env()
-) {
+as_scenario_features.array <- function(x, n_scenarios, arg = "x", expression_label = NULL, call = rlang::caller_env()) {
+
   if (length(dim(x)) > 2L) {
     ffp_abort(
       c(
@@ -1317,32 +1024,19 @@ as_scenario_features.array <- function(
     expression_label = expression_label,
     call = call
   )
+
 }
 
 
 #' @exportS3Method
 #' @noRd
-as_scenario_features.data.frame <- function(
-    x,
-    n_scenarios,
-    arg = "x",
-    expression_label = NULL,
-    call = rlang::caller_env()
-) {
-  list_columns <- vapply(
-    x,
-    is.list,
-    logical(1)
-  )
+as_scenario_features.data.frame <- function(x, n_scenarios, arg = "x", expression_label = NULL, call = rlang::caller_env()) {
+
+  list_columns <- vapply(x, is.list,logical(1))
 
   if (any(list_columns)) {
     column_names <- names(x)[list_columns]
-    column_names <- paste0(
-      "`",
-      column_names,
-      "`",
-      collapse = ", "
-    )
+    column_names <- paste0("`", column_names, "`", collapse = ", ")
 
     ffp_abort(
       c(
@@ -1358,19 +1052,8 @@ as_scenario_features.data.frame <- function(
     )
   }
 
-  features <- new_ffp_feature_set(
-    values = x,
-    feature_names = names(x),
-    source_class = first_class(x)
-  )
-
-  validate_feature_set(
-    features = features,
-    n_scenarios = n_scenarios,
-    arg = arg,
-    expression_label = expression_label,
-    call = call
-  )
+  features <- new_ffp_feature_set(values = x, feature_names = names(x), source_class = first_class(x))
+  validate_feature_set(features = features, n_scenarios = n_scenarios, arg = arg, expression_label = expression_label, call = call)
 
   features
 }
@@ -1378,28 +1061,12 @@ as_scenario_features.data.frame <- function(
 
 #' @exportS3Method
 #' @noRd
-as_scenario_features.xts <- function(
-    x,
-    n_scenarios,
-    arg = "x",
-    expression_label = NULL,
-    call = rlang::caller_env()
-) {
-  values <- as.matrix(x)
+as_scenario_features.xts <- function(x, n_scenarios, arg = "x", expression_label = NULL, call = rlang::caller_env()) {
 
-  features <- new_ffp_feature_set(
-    values = values,
-    feature_names = colnames(values),
-    source_class = first_class(x)
-  )
+  values   <- as.matrix(x)
+  features <- new_ffp_feature_set(values = values, feature_names = colnames(values), source_class = first_class(x))
 
-  validate_feature_set(
-    features = features,
-    n_scenarios = n_scenarios,
-    arg = arg,
-    expression_label = expression_label,
-    call = call
-  )
+  validate_feature_set(features = features, n_scenarios = n_scenarios, arg = arg, expression_label = expression_label, call = call)
 
   features
 }
@@ -1407,67 +1074,27 @@ as_scenario_features.xts <- function(
 
 #' @exportS3Method
 #' @noRd
-as_scenario_features.ts <- function(
-    x,
-    n_scenarios,
-    arg = "x",
-    expression_label = NULL,
-    call = rlang::caller_env()
-) {
-  values <- if (is.null(dim(x))) {
-    as.vector(x)
-  } else {
-    as.matrix(x)
-  }
+as_scenario_features.ts <- function(x, n_scenarios, arg = "x", expression_label = NULL, call = rlang::caller_env()) {
 
-  feature_names <- if (is.null(dim(values))) {
-    NULL
-  } else {
-    colnames(values)
-  }
+  values        <- if (is.null(dim(x))) as.vector(x) else as.matrix(x)
+  feature_names <- if (is.null(dim(values))) NULL else colnames(values)
 
-  features <- new_ffp_feature_set(
-    values = values,
-    feature_names = feature_names,
-    source_class = first_class(x)
-  )
+  features <- new_ffp_feature_set(values = values, feature_names = feature_names, source_class = first_class(x))
 
-  validate_feature_set(
-    features = features,
-    n_scenarios = n_scenarios,
-    arg = arg,
-    expression_label = expression_label,
-    call = call
-  )
+  validate_feature_set(features = features, n_scenarios = n_scenarios, arg = arg, expression_label = expression_label, call = call)
 
   features
+
 }
 
 
 #' @exportS3Method
 #' @noRd
-as_scenario_features.default <- function(
-    x,
-    n_scenarios,
-    arg = "x",
-    expression_label = NULL,
-    call = rlang::caller_env()
-) {
+as_scenario_features.default <- function(x, n_scenarios, arg = "x", expression_label = NULL, call = rlang::caller_env()) {
+
   if (is.atomic(x) && is.null(dim(x))) {
-    features <- new_ffp_feature_set(
-      values = x,
-      feature_names = NULL,
-      source_class = first_class(x)
-    )
-
-    validate_feature_set(
-      features = features,
-      n_scenarios = n_scenarios,
-      arg = arg,
-      expression_label = expression_label,
-      call = call
-    )
-
+    features <- new_ffp_feature_set(values = x, feature_names = NULL, source_class = first_class(x))
+    validate_feature_set(features = features, n_scenarios = n_scenarios, arg = arg, expression_label = expression_label, call = call)
     return(features)
   }
 
@@ -1490,26 +1117,20 @@ as_scenario_features.default <- function(
     ),
     call = call
   )
+
 }
 
 
 feature_count <- function(x) {
   values <- x$values
-
-  if (is.atomic(values) && is.null(dim(values))) {
-    return(1L)
-  }
-
+  if (is.atomic(values) && is.null(dim(values))) return(1L)
   NCOL(values)
 }
 
-
-feature_observation_count <- function(x) {
-  NROW(x$values)
-}
-
+feature_observation_count <- function(x) NROW(x$values)
 
 feature_column <- function(x, i = 1L) {
+
   values <- x$values
 
   if (is.atomic(values) && is.null(dim(values))) {
@@ -1526,11 +1147,8 @@ feature_column <- function(x, i = 1L) {
 
 # View validation ---------------------------------------------------------
 
-validate_view_x_spec <- function(
-    x,
-    constructor,
-    call = rlang::caller_env()
-) {
+validate_view_x_spec <- function(x, constructor, call = rlang::caller_env()) {
+
   if (rlang::quo_is_missing(x)) {
     ffp_abort(
       c(
@@ -1546,37 +1164,18 @@ validate_view_x_spec <- function(
 }
 
 
-validate_mean_target <- function(
-    target,
-    call = rlang::caller_env()
-) {
-  validate_numeric_view_target(
-    target = target,
-    call = call
-  )
-
+validate_mean_target <- function(target, call = rlang::caller_env()) {
+  validate_numeric_view_target(target = target, call = call)
   target
 }
 
-
-validate_quantile_target <- function(
-    target,
-    call = rlang::caller_env()
-) {
-  validate_numeric_view_target(
-    target = target,
-    call = call
-  )
-
+validate_quantile_target <- function(target, call = rlang::caller_env()) {
+  validate_numeric_view_target(target = target, call = call)
   target
 }
 
+resolve_quantile_level <- function(level, n_targets, call = rlang::caller_env()) {
 
-resolve_quantile_level <- function(
-    level,
-    n_targets,
-    call = rlang::caller_env()
-) {
   if (!is.numeric(level) || !is.null(dim(level))) {
     ffp_abort(
       c(
@@ -1676,23 +1275,13 @@ resolve_quantile_level <- function(
 }
 
 
-validate_median_target <- function(
-    target,
-    call = rlang::caller_env()
-) {
-  validate_numeric_view_target(
-    target = target,
-    call = call
-  )
-
+validate_median_target <- function(target, call = rlang::caller_env()) {
+  validate_numeric_view_target(target = target, call = call)
   target
 }
 
+validate_rank_order_spec <- function(order, call = rlang::caller_env()) {
 
-validate_rank_order_spec <- function(
-    order,
-    call = rlang::caller_env()
-) {
   if (is.character(order)) {
     if (length(order) < 2L) {
       ffp_abort(
@@ -1810,15 +1399,8 @@ validate_rank_order_spec <- function(
 }
 
 
-validate_probability_target <- function(
-    target,
-    call = rlang::caller_env()
-) {
-  validate_numeric_view_target(
-    target = target,
-    call = call
-  )
-
+validate_probability_target <- function(target, call = rlang::caller_env()) {
+  validate_numeric_view_target(target = target, call = call)
   if (any(target < 0 | target > 1)) {
     ffp_abort(
       c(
@@ -1832,15 +1414,12 @@ validate_probability_target <- function(
       call = call
     )
   }
-
   target
 }
 
 
-validate_numeric_view_target <- function(
-    target,
-    call = rlang::caller_env()
-) {
+validate_numeric_view_target <- function(target, call = rlang::caller_env()) {
+
   if (!is.numeric(target) || !is.null(dim(target))) {
     ffp_abort(
       c(
@@ -1898,10 +1477,8 @@ validate_numeric_view_target <- function(
 }
 
 
-validate_view_collection <- function(
-    views,
-    call = rlang::caller_env()
-) {
+validate_view_collection <- function(views, call = rlang::caller_env()) {
+
   if (length(views) == 0L) {
     ffp_abort(
       c(
@@ -1918,26 +1495,14 @@ validate_view_collection <- function(
     )
   }
 
-  valid <- vapply(
-    views,
-    inherits,
-    logical(1),
-    what = "ffp_view_spec"
-  )
+  valid <- vapply(views, inherits, logical(1), what = "ffp_view_spec")
 
   if (!all(valid)) {
     invalid <- which(!valid)[[1]]
-
     ffp_abort(
       c(
         "All inputs to {.fn ffp_view} must be view specifications.",
-        "x" = paste0(
-          "Input ",
-          invalid,
-          " has class `",
-          first_class(views[[invalid]]),
-          "`."
-        ),
+        "x" = paste0("Input ", invalid, " has class `", first_class(views[[invalid]]), "`."),
         "i" = paste0(
           "Create views with constructors such as {.fn view_mean}, ",
           "{.fn view_probability}, {.fn view_quantile}, {.fn view_median}, ",
@@ -1953,10 +1518,8 @@ validate_view_collection <- function(
 }
 
 
-validate_model_prior_for_views <- function(
-    model,
-    call = rlang::caller_env()
-) {
+validate_model_prior_for_views <- function(model, call = rlang::caller_env()) {
+
   if (is.null(model$prior)) {
     ffp_abort(
       c(
@@ -1970,20 +1533,14 @@ validate_model_prior_for_views <- function(
       call = call
     )
   }
-
   invisible(model)
 }
 
 
-validate_feature_set <- function(
-    features,
-    n_scenarios,
-    arg,
-    expression_label = NULL,
-    call = rlang::caller_env()
-) {
+validate_feature_set <- function(features, n_scenarios, arg, expression_label = NULL, call = rlang::caller_env()) {
+
   n_observations <- feature_observation_count(features)
-  n_features <- feature_count(features)
+  n_features     <- feature_count(features)
 
   if (n_observations != n_scenarios) {
     detail <- if (is.null(expression_label)) {
@@ -2030,21 +1587,14 @@ validate_feature_set <- function(
     )
   }
 
-  validate_feature_names(
-    feature_names = features$names,
-    arg = arg,
-    call = call
-  )
+  validate_feature_names(feature_names = features$names, arg = arg, call = call)
 
   invisible(features)
 }
 
 
-validate_feature_names <- function(
-    feature_names,
-    arg,
-    call = rlang::caller_env()
-) {
+validate_feature_names <- function(feature_names, arg, call = rlang::caller_env()) {
+
   if (is.null(feature_names)) {
     return(invisible(feature_names))
   }
@@ -2070,27 +1620,17 @@ validate_feature_names <- function(
     )
   }
 
-  duplicated_names <- unique(
-    feature_names[duplicated(feature_names)]
-  )
+  duplicated_names <- unique(feature_names[duplicated(feature_names)])
 
   if (length(duplicated_names) > 0L) {
-    duplicated_names <- paste0(
-      "`",
-      duplicated_names,
-      "`",
-      collapse = ", "
-    )
+    duplicated_names <- paste0("`", duplicated_names, "`", collapse = ", ")
 
     ffp_abort(
       c(
         paste0("Feature names in {.arg ", arg, "} must be unique."),
         "x" = paste0("Duplicated name(s): ", duplicated_names, ".")
       ),
-      class = c(
-        "ffp_error_invalid_view_features",
-        "ffp_error_invalid_view"
-      ),
+      class = c("ffp_error_invalid_view_features", "ffp_error_invalid_view"),
       call = call
     )
   }
@@ -2099,10 +1639,8 @@ validate_feature_names <- function(
 }
 
 
-validate_mean_features <- function(
-    features,
-    call = rlang::caller_env()
-) {
+validate_mean_features <- function(features, call = rlang::caller_env()) {
+
   values <- features$values
 
   numeric_features <- if (inherits(values, "data.frame")) {
@@ -2158,10 +1696,8 @@ validate_mean_features <- function(
 }
 
 
-validate_quantile_features <- function(
-    features,
-    call = rlang::caller_env()
-) {
+validate_quantile_features <- function(features, call = rlang::caller_env()) {
+
   values <- features$values
 
   numeric_features <- if (inherits(values, "data.frame")) {
@@ -2217,10 +1753,8 @@ validate_quantile_features <- function(
 }
 
 
-validate_median_features <- function(
-    features,
-    call = rlang::caller_env()
-) {
+validate_median_features <- function(features, call = rlang::caller_env()) {
+
   values <- features$values
 
   numeric_features <- if (inherits(values, "data.frame")) {
@@ -2276,10 +1810,8 @@ validate_median_features <- function(
 }
 
 
-validate_rank_features <- function(
-    features,
-    call = rlang::caller_env()
-) {
+validate_rank_features <- function(features, call = rlang::caller_env()) {
+
   values <- features$values
 
   numeric_features <- if (inherits(values, "data.frame")) {
@@ -2337,10 +1869,7 @@ validate_rank_features <- function(
         "{.fn view_rank} requires at least two features.",
         "i" = "Supply a panel containing two or more quantities to rank."
       ),
-      class = c(
-        "ffp_error_invalid_view_features",
-        "ffp_error_invalid_view"
-      ),
+      class = c("ffp_error_invalid_view_features", "ffp_error_invalid_view"),
       call = call
     )
   }
@@ -2349,17 +1878,13 @@ validate_rank_features <- function(
 }
 
 
-resolve_rank_order <- function(
-    order,
-    features,
-    call = rlang::caller_env()
-) {
+resolve_rank_order <- function(order, features, call = rlang::caller_env()) {
+
   n_features <- feature_count(features)
 
   if (is.character(order)) {
     feature_names <- features$names
-    unnamed <- is.null(feature_names) ||
-      all(is.na(feature_names) | !nzchar(feature_names))
+    unnamed <- is.null(feature_names) || all(is.na(feature_names) | !nzchar(feature_names))
 
     if (unnamed) {
       ffp_abort(
@@ -2367,10 +1892,7 @@ resolve_rank_order <- function(
           "Character {.arg order} requires named features.",
           "i" = "Name the features or select them by numeric position."
         ),
-        class = c(
-          "ffp_error_invalid_view_order",
-          "ffp_error_invalid_view"
-        ),
+        class = c("ffp_error_invalid_view_order", "ffp_error_invalid_view"),
         call = call
       )
     }
@@ -2387,10 +1909,7 @@ resolve_rank_order <- function(
           "x" = paste0("Unknown name(s): ", unknown, "."),
           "i" = "Use names present in the resolved scenario features."
         ),
-        class = c(
-          "ffp_error_invalid_view_order",
-          "ffp_error_invalid_view"
-        ),
+        class = c("ffp_error_invalid_view_order", "ffp_error_invalid_view"),
         call = call
       )
     }
@@ -2423,12 +1942,13 @@ resolve_rank_order <- function(
 
 
 subset_rank_features <- function(features, indices) {
+
   values <- features$values
 
   selected_values <- if (inherits(values, "data.frame")) {
-    values[, indices, drop = FALSE]
+    values[ , indices, drop = FALSE]
   } else {
-    values[, indices, drop = FALSE]
+    values[ , indices, drop = FALSE]
   }
 
   selected_names <- if (is.null(features$names)) {
@@ -2437,19 +1957,13 @@ subset_rank_features <- function(features, indices) {
     features$names[indices]
   }
 
-  new_ffp_feature_set(
-    values = selected_values,
-    feature_names = selected_names,
-    source_class = features$source_class
-  )
+  new_ffp_feature_set(values = selected_values, feature_names = selected_names, source_class = features$source_class)
+
 }
 
 
-validate_probability_features <- function(
-    features,
-    arg,
-    call = rlang::caller_env()
-) {
+validate_probability_features <- function(features, arg, call = rlang::caller_env()) {
+
   values <- features$values
 
   logical_features <- if (inherits(values, "data.frame")) {
@@ -2472,10 +1986,7 @@ validate_probability_features <- function(
           "or combinations with `&` and `|`."
         )
       ),
-      class = c(
-        "ffp_error_invalid_view_features",
-        "ffp_error_invalid_view"
-      ),
+      class = c("ffp_error_invalid_view_features", "ffp_error_invalid_view"),
       call = call
     )
   }
@@ -2487,10 +1998,7 @@ validate_probability_features <- function(
         "x" = "Found at least one {.val NA} result.",
         "i" = "Every scenario must resolve unambiguously to TRUE or FALSE."
       ),
-      class = c(
-        "ffp_error_invalid_view_features",
-        "ffp_error_invalid_view"
-      ),
+      class = c("ffp_error_invalid_view_features", "ffp_error_invalid_view"),
       call = call
     )
   }
@@ -2499,12 +2007,9 @@ validate_probability_features <- function(
 }
 
 
-validate_target_feature_compatibility <- function(
-    target,
-    features,
-    call = rlang::caller_env()
-) {
-  n_targets <- length(target)
+validate_target_feature_compatibility <- function(target, features, call = rlang::caller_env()) {
+
+  n_targets  <- length(target)
   n_features <- feature_count(features)
 
   if (n_targets != n_features) {
@@ -2520,10 +2025,7 @@ validate_target_feature_compatibility <- function(
         ),
         "i" = "Targets are matched to features by position and are never recycled."
       ),
-      class = c(
-        "ffp_error_incompatible_view",
-        "ffp_error_invalid_view"
-      ),
+      class = c("ffp_error_incompatible_view", "ffp_error_invalid_view"),
       call = call
     )
   }
@@ -2532,10 +2034,8 @@ validate_target_feature_compatibility <- function(
 }
 
 
-validate_single_conditioning_event <- function(
-    features,
-    call = rlang::caller_env()
-) {
+validate_single_conditioning_event <- function(features, call = rlang::caller_env()) {
+
   n_features <- feature_count(features)
 
   if (n_features != 1L) {
@@ -2552,10 +2052,7 @@ validate_single_conditioning_event <- function(
           "events require different conditioning information."
         )
       ),
-      class = c(
-        "ffp_error_invalid_view_features",
-        "ffp_error_invalid_view"
-      ),
+      class = c("ffp_error_invalid_view_features", "ffp_error_invalid_view"),
       call = call
     )
   }
@@ -2564,19 +2061,10 @@ validate_single_conditioning_event <- function(
 }
 
 
-validate_positive_conditioning_probability <- function(
-    features,
-    model,
-    call = rlang::caller_env()
-) {
-  conditioning_event <- feature_column(
-    features,
-    i = 1L
-  )
+validate_positive_conditioning_probability <- function(features, model, call = rlang::caller_env()) {
 
-  probability <- sum(
-    model$prior[conditioning_event]
-  )
+  conditioning_event <- feature_column(features, i = 1L)
+  probability <- sum(model$prior[conditioning_event])
 
   if (!is.finite(probability) || probability <= 0) {
     ffp_abort(
@@ -2599,14 +2087,9 @@ validate_positive_conditioning_probability <- function(
   invisible(probability)
 }
 
-validate_volatility_target <- function(
-    target,
-    call = rlang::caller_env()
-) {
-  validate_numeric_view_target(
-    target = target,
-    call = call
-  )
+validate_volatility_target <- function(target, call = rlang::caller_env()) {
+
+  validate_numeric_view_target(target = target, call = call)
 
   if (any(target < 0)) {
     ffp_abort(
@@ -2614,10 +2097,7 @@ validate_volatility_target <- function(
         "{.arg target} must contain non-negative volatility values.",
         "i" = "Use zero or a positive value for each volatility target."
       ),
-      class = c(
-        "ffp_error_invalid_view_target",
-        "ffp_error_invalid_view"
-      ),
+      class = c("ffp_error_invalid_view_target", "ffp_error_invalid_view"),
       call = call
     )
   }
@@ -2626,10 +2106,8 @@ validate_volatility_target <- function(
 }
 
 
-validate_volatility_features <- function(
-    features,
-    call = rlang::caller_env()
-) {
+validate_volatility_features <- function(features, call = rlang::caller_env()) {
+
   values <- features$values
 
   numeric_features <- if (inherits(values, "data.frame")) {
@@ -2647,10 +2125,7 @@ validate_volatility_features <- function(
           "Use a quantitative scenario feature for a posterior volatility view."
         )
       ),
-      class = c(
-        "ffp_error_invalid_view_features",
-        "ffp_error_invalid_view"
-      ),
+      class = c("ffp_error_invalid_view_features", "ffp_error_invalid_view"),
       call = call
     )
   }
@@ -2661,10 +2136,7 @@ validate_volatility_features <- function(
         "Volatility-view features must not contain missing values.",
         "x" = "Found at least one {.val NA} or {.val NaN} value."
       ),
-      class = c(
-        "ffp_error_invalid_view_features",
-        "ffp_error_invalid_view"
-      ),
+      class = c("ffp_error_invalid_view_features", "ffp_error_invalid_view"),
       call = call
     )
   }
@@ -2675,10 +2147,7 @@ validate_volatility_features <- function(
         "Volatility-view features must contain only finite values.",
         "x" = "Found at least one {.val Inf} or {.val -Inf} value."
       ),
-      class = c(
-        "ffp_error_invalid_view_features",
-        "ffp_error_invalid_view"
-      ),
+      class = c("ffp_error_invalid_view_features", "ffp_error_invalid_view"),
       call = call
     )
   }
@@ -2688,6 +2157,7 @@ validate_volatility_features <- function(
 
 
 has_non_finite_feature_values <- function(values) {
+
   if (inherits(values, "data.frame")) {
     return(
       any(
@@ -2705,6 +2175,7 @@ has_non_finite_feature_values <- function(values) {
 
 
 first_class <- function(x) {
+
   input_class <- class(x)
 
   if (length(input_class) == 0L) {
@@ -2726,7 +2197,6 @@ view_constraint_count <- function(x) {
 
   if (x$method %in% c("covariance", "correlation")) {
     k <- feature_count(x$features)
-
     return(as.integer(k * (k + 1L) / 2L))
   }
 
@@ -2885,15 +2355,9 @@ format_view_level <- function(level) {
 
   if (all(level == level[[1]])) {
     return(
-      format(
-        level[[1]],
-        digits = 15,
-        scientific = FALSE,
-        trim = TRUE
-      )
+      format(level[[1]], digits = 15, scientific = FALSE, trim = TRUE)
     )
   }
-
   "mixed"
 }
 
@@ -2935,15 +2399,10 @@ compact_rank_order <- function(x, width = 60L) {
 compact_view_label <- function(x, width = 60L) {
   label <- rlang::as_label(x)
   label <- gsub("[[:space:]]+", " ", label)
-
   if (nchar(label, type = "width") <= width) {
     return(label)
   }
-
-  paste0(
-    substr(label, 1L, width - 3L),
-    "..."
-  )
+  paste0(substr(label, 1L, width - 3L), "...")
 }
 
 # Correlation view --------------------------------------------------------
@@ -3025,6 +2484,7 @@ compact_view_label <- function(x, width = 60L) {
 #'   target = target_cor
 #' )
 view_correlation <- function(x, target) {
+
   call <- rlang::caller_env()
 
   if (missing(target)) {
@@ -3039,17 +2499,8 @@ view_correlation <- function(x, target) {
   }
 
   x <- rlang::enquo(x)
-
-  validate_view_x_spec(
-    x = x,
-    constructor = "view_correlation",
-    call = call
-  )
-
-  target <- validate_correlation_target(
-    target = target,
-    call = call
-  )
+  validate_view_x_spec(x = x, constructor = "view_correlation", call = call)
+  target <- validate_correlation_target(target = target, call = call)
 
   new_view_spec(
     method = "correlation",
@@ -3063,34 +2514,13 @@ view_correlation <- function(x, target) {
 
 #' @exportS3Method
 #' @noRd
-bind_view.ffp_view_correlation_spec <- function(
-    view,
-    model,
-    call = rlang::caller_env()
-) {
-  features <- resolve_view_features(
-    expression = view$x,
-    model = model,
-    arg = "x",
-    call = call
-  )
+bind_view.ffp_view_correlation_spec <- function(view, model, call = rlang::caller_env()) {
 
-  validate_correlation_features(
-    features = features,
-    call = call
-  )
+  features <- resolve_view_features(expression = view$x, model = model, arg = "x", call = call)
 
-  validate_correlation_compatibility(
-    target = view$target,
-    features = features,
-    call = call
-  )
-
-  validate_correlation_reference_dispersion(
-    features = features,
-    model = model,
-    call = call
-  )
+  validate_correlation_features(features = features,call = call)
+  validate_correlation_compatibility(target = view$target, features = features, call = call)
+  validate_correlation_reference_dispersion(features = features, model = model, call = call)
 
   new_bound_view(
     method = "correlation",
@@ -3105,10 +2535,8 @@ bind_view.ffp_view_correlation_spec <- function(
 }
 
 
-validate_correlation_target <- function(
-    target,
-    call = rlang::caller_env()
-) {
+validate_correlation_target <- function(target, call = rlang::caller_env()) {
+
   tolerance <- sqrt(.Machine$double.eps)
 
   if (!is.matrix(target) || !is.numeric(target)) {
@@ -3117,10 +2545,7 @@ validate_correlation_target <- function(
         "{.arg target} must be a numeric matrix.",
         "i" = "Supply the complete target correlation matrix."
       ),
-      class = c(
-        "ffp_error_invalid_view_target",
-        "ffp_error_invalid_view"
-      ),
+      class = c("ffp_error_invalid_view_target", "ffp_error_invalid_view"),
       call = call
     )
   }
@@ -3137,10 +2562,7 @@ validate_correlation_target <- function(
           " matrix."
         )
       ),
-      class = c(
-        "ffp_error_invalid_view_target",
-        "ffp_error_invalid_view"
-      ),
+      class = c("ffp_error_invalid_view_target", "ffp_error_invalid_view"),
       call = call
     )
   }
@@ -3151,10 +2573,7 @@ validate_correlation_target <- function(
         "{.arg target} must not contain missing values.",
         "x" = "Found at least one {.val NA} or {.val NaN} value."
       ),
-      class = c(
-        "ffp_error_invalid_view_target",
-        "ffp_error_invalid_view"
-      ),
+      class = c("ffp_error_invalid_view_target", "ffp_error_invalid_view"),
       call = call
     )
   }
@@ -3165,10 +2584,7 @@ validate_correlation_target <- function(
         "{.arg target} must contain only finite values.",
         "x" = "Found at least one {.val Inf} or {.val -Inf} value."
       ),
-      class = c(
-        "ffp_error_invalid_view_target",
-        "ffp_error_invalid_view"
-      ),
+      class = c("ffp_error_invalid_view_target", "ffp_error_invalid_view"),
       call = call
     )
   }
@@ -3179,10 +2595,7 @@ validate_correlation_target <- function(
         "Entries in {.arg target} must be between -1 and 1.",
         "i" = "Supply a valid correlation matrix."
       ),
-      class = c(
-        "ffp_error_invalid_view_target",
-        "ffp_error_invalid_view"
-      ),
+      class = c("ffp_error_invalid_view_target", "ffp_error_invalid_view"),
       call = call
     )
   }
@@ -3193,10 +2606,7 @@ validate_correlation_target <- function(
         "{.arg target} must be symmetric.",
         "i" = "A correlation matrix must equal its transpose."
       ),
-      class = c(
-        "ffp_error_invalid_view_target",
-        "ffp_error_invalid_view"
-      ),
+      class = c("ffp_error_invalid_view_target", "ffp_error_invalid_view"),
       call = call
     )
   }
@@ -3207,19 +2617,12 @@ validate_correlation_target <- function(
         "{.arg target} must have ones on its diagonal.",
         "i" = "Each feature must have correlation one with itself."
       ),
-      class = c(
-        "ffp_error_invalid_view_target",
-        "ffp_error_invalid_view"
-      ),
+      class = c("ffp_error_invalid_view_target", "ffp_error_invalid_view"),
       call = call
     )
   }
 
-  eigenvalues <- eigen(
-    target,
-    symmetric = TRUE,
-    only.values = TRUE
-  )$values
+  eigenvalues <- eigen(target, symmetric = TRUE, only.values = TRUE)$values
 
   if (min(eigenvalues) < -tolerance) {
     ffp_abort(
@@ -3227,27 +2630,19 @@ validate_correlation_target <- function(
         "{.arg target} must be positive semidefinite.",
         "i" = "Supply a valid correlation matrix."
       ),
-      class = c(
-        "ffp_error_invalid_view_target",
-        "ffp_error_invalid_view"
-      ),
+      class = c("ffp_error_invalid_view_target", "ffp_error_invalid_view"),
       call = call
     )
   }
 
-  validate_correlation_target_names(
-    target = target,
-    call = call
-  )
-
+  validate_correlation_target_names(target = target, call = call)
   target
+
 }
 
 
-validate_correlation_target_names <- function(
-    target,
-    call = rlang::caller_env()
-) {
+validate_correlation_target_names <- function(target, call = rlang::caller_env()) {
+
   row_names <- rownames(target)
   col_names <- colnames(target)
 
@@ -3261,24 +2656,17 @@ validate_correlation_target_names <- function(
         "Dimnames in {.arg target} must be complete.",
         "x" = "Supply both row names and column names, or neither."
       ),
-      class = c(
-        "ffp_error_invalid_view_target",
-        "ffp_error_invalid_view"
-      ),
+      class = c("ffp_error_invalid_view_target", "ffp_error_invalid_view"),
       call = call
     )
   }
 
-  invalid_names <- is.na(row_names) | !nzchar(row_names) |
-    is.na(col_names) | !nzchar(col_names)
+  invalid_names <- is.na(row_names) | !nzchar(row_names) | is.na(col_names) | !nzchar(col_names)
 
   if (any(invalid_names)) {
     ffp_abort(
       "{.arg target} must not contain missing or empty dimension names.",
-      class = c(
-        "ffp_error_invalid_view_target",
-        "ffp_error_invalid_view"
-      ),
+      class = c("ffp_error_invalid_view_target", "ffp_error_invalid_view"),
       call = call
     )
   }
@@ -3286,10 +2674,7 @@ validate_correlation_target_names <- function(
   if (anyDuplicated(row_names) || anyDuplicated(col_names)) {
     ffp_abort(
       "{.arg target} dimension names must be unique.",
-      class = c(
-        "ffp_error_invalid_view_target",
-        "ffp_error_invalid_view"
-      ),
+      class = c("ffp_error_invalid_view_target", "ffp_error_invalid_view"),
       call = call
     )
   }
@@ -3300,10 +2685,7 @@ validate_correlation_target_names <- function(
         "Row and column names in {.arg target} must be identical.",
         "i" = "Use the same feature order on both dimensions."
       ),
-      class = c(
-        "ffp_error_invalid_view_target",
-        "ffp_error_invalid_view"
-      ),
+      class = c("ffp_error_invalid_view_target", "ffp_error_invalid_view"),
       call = call
     )
   }
@@ -3312,20 +2694,15 @@ validate_correlation_target_names <- function(
 }
 
 
-validate_correlation_features <- function(
-    features,
-    call = rlang::caller_env()
-) {
+validate_correlation_features <- function(features, call = rlang::caller_env()) {
+
   if (feature_count(features) < 2L) {
     ffp_abort(
       c(
         "{.fn view_correlation} requires at least two features.",
         "i" = "Supply a scenario panel containing the variables to correlate."
       ),
-      class = c(
-        "ffp_error_invalid_view_features",
-        "ffp_error_invalid_view"
-      ),
+      class = c("ffp_error_invalid_view_features", "ffp_error_invalid_view"),
       call = call
     )
   }
@@ -3344,10 +2721,7 @@ validate_correlation_features <- function(
         "{.fn view_correlation} requires numeric features.",
         "x" = "At least one feature in {.arg x} is not numeric."
       ),
-      class = c(
-        "ffp_error_invalid_view_features",
-        "ffp_error_invalid_view"
-      ),
+      class = c("ffp_error_invalid_view_features", "ffp_error_invalid_view"),
       call = call
     )
   }
@@ -3358,10 +2732,7 @@ validate_correlation_features <- function(
         "Correlation-view features must not contain missing values.",
         "x" = "Found at least one {.val NA} or {.val NaN} value."
       ),
-      class = c(
-        "ffp_error_invalid_view_features",
-        "ffp_error_invalid_view"
-      ),
+      class = c("ffp_error_invalid_view_features", "ffp_error_invalid_view"),
       call = call
     )
   }
@@ -3372,10 +2743,7 @@ validate_correlation_features <- function(
         "Correlation-view features must contain only finite values.",
         "x" = "Found at least one {.val Inf} or {.val -Inf} value."
       ),
-      class = c(
-        "ffp_error_invalid_view_features",
-        "ffp_error_invalid_view"
-      ),
+      class = c("ffp_error_invalid_view_features", "ffp_error_invalid_view"),
       call = call
     )
   }
@@ -3384,11 +2752,8 @@ validate_correlation_features <- function(
 }
 
 
-validate_correlation_compatibility <- function(
-    target,
-    features,
-    call = rlang::caller_env()
-) {
+validate_correlation_compatibility <- function(target, features, call = rlang::caller_env()) {
+
   n_features <- feature_count(features)
 
   if (nrow(target) != n_features) {
@@ -3405,10 +2770,7 @@ validate_correlation_compatibility <- function(
           " matrix."
         )
       ),
-      class = c(
-        "ffp_error_incompatible_view",
-        "ffp_error_invalid_view"
-      ),
+      class = c("ffp_error_incompatible_view", "ffp_error_invalid_view"),
       call = call
     )
   }
@@ -3436,24 +2798,13 @@ validate_correlation_compatibility <- function(
 }
 
 
-validate_correlation_reference_dispersion <- function(
-    features,
-    model,
-    call = rlang::caller_env()
-) {
+validate_correlation_reference_dispersion <- function(features, model, call = rlang::caller_env()) {
+
   for (i in seq_len(feature_count(features))) {
-    values <- feature_column(
-      features,
-      i = i
-    )
 
-    reference_mean <- sum(
-      model$prior * values
-    )
-
-    reference_variance <- sum(
-      model$prior * (values - reference_mean)^2
-    )
+    values             <- feature_column(features, i = i)
+    reference_mean     <- sum(model$prior * values)
+    reference_variance <- sum(model$prior * (values - reference_mean)^2)
 
     if (!is.finite(reference_variance) || reference_variance <= 0) {
       feature <- if (is.null(features$names)) {
@@ -3470,10 +2821,7 @@ validate_correlation_reference_dispersion <- function(
             " has zero variance under the model prior."
           )
         ),
-        class = c(
-          "ffp_error_undefined_correlation",
-          "ffp_error_incompatible_view"
-        ),
+        class = c("ffp_error_undefined_correlation", "ffp_error_incompatible_view"),
         call = call
       )
     }
@@ -3543,6 +2891,7 @@ validate_correlation_reference_dispersion <- function(
 #'   target = c(0.0225, 0.0100)
 #' )
 view_variance <- function(x, target) {
+
   call <- rlang::caller_env()
 
   if (missing(target)) {
@@ -3557,17 +2906,8 @@ view_variance <- function(x, target) {
   }
 
   x <- rlang::enquo(x)
-
-  validate_view_x_spec(
-    x = x,
-    constructor = "view_variance",
-    call = call
-  )
-
-  target <- validate_variance_target(
-    target = target,
-    call = call
-  )
+  validate_view_x_spec(x = x, constructor = "view_variance", call = call)
+  target <- validate_variance_target(target = target, call = call)
 
   new_view_spec(
     method = "variance",
@@ -3581,50 +2921,27 @@ view_variance <- function(x, target) {
 
 #' @exportS3Method
 #' @noRd
-bind_view.ffp_view_variance_spec <- function(
-    view,
-    model,
-    call = rlang::caller_env()
-) {
-  features <- resolve_view_features(
-    expression = view$x,
-    model = model,
-    arg = "x",
-    call = call
-  )
+bind_view.ffp_view_variance_spec <- function(view, model, call = rlang::caller_env()) {
 
-  validate_variance_features(
-    features = features,
-    call = call
-  )
+  features <- resolve_view_features(expression = view$x, model = model, arg = "x", call = call)
 
-  validate_target_feature_compatibility(
-    target = view$target,
-    features = features,
-    call = call
-  )
+  validate_variance_features(features = features, call = call)
+  validate_target_feature_compatibility(target = view$target, features = features, call = call)
 
   new_bound_view(
     method = "variance",
     features = features,
     target = view$target,
     parameters = list(),
-    metadata = list(
-      expression = compact_view_label(view$x)
-    ),
+    metadata = list(expression = compact_view_label(view$x)),
     class = "ffp_view_variance"
   )
 }
 
 
-validate_variance_target <- function(
-    target,
-    call = rlang::caller_env()
-) {
-  validate_numeric_view_target(
-    target = target,
-    call = call
-  )
+validate_variance_target <- function(target, call = rlang::caller_env()) {
+
+  validate_numeric_view_target(target = target,call = call)
 
   if (any(target < 0)) {
     ffp_abort(
@@ -3632,10 +2949,7 @@ validate_variance_target <- function(
         "{.arg target} must contain non-negative variance values.",
         "i" = "Use zero or a positive value for each variance target."
       ),
-      class = c(
-        "ffp_error_invalid_view_target",
-        "ffp_error_invalid_view"
-      ),
+      class = c("ffp_error_invalid_view_target", "ffp_error_invalid_view"),
       call = call
     )
   }
@@ -3644,10 +2958,8 @@ validate_variance_target <- function(
 }
 
 
-validate_variance_features <- function(
-    features,
-    call = rlang::caller_env()
-) {
+validate_variance_features <- function(features, call = rlang::caller_env()) {
+
   values <- features$values
 
   numeric_features <- if (inherits(values, "data.frame")) {
@@ -3779,6 +3091,7 @@ validate_variance_features <- function(
 #'   target = target_cov
 #' )
 view_covariance <- function(x, target) {
+
   call <- rlang::caller_env()
 
   if (missing(target)) {
@@ -3793,17 +3106,8 @@ view_covariance <- function(x, target) {
   }
 
   x <- rlang::enquo(x)
-
-  validate_view_x_spec(
-    x = x,
-    constructor = "view_covariance",
-    call = call
-  )
-
-  target <- validate_covariance_target(
-    target = target,
-    call = call
-  )
+  validate_view_x_spec(x = x, constructor = "view_covariance", call = call)
+  target <- validate_covariance_target(target = target, call = call)
 
   new_view_spec(
     method = "covariance",
@@ -3817,28 +3121,12 @@ view_covariance <- function(x, target) {
 
 #' @exportS3Method
 #' @noRd
-bind_view.ffp_view_covariance_spec <- function(
-    view,
-    model,
-    call = rlang::caller_env()
-) {
-  features <- resolve_view_features(
-    expression = view$x,
-    model = model,
-    arg = "x",
-    call = call
-  )
+bind_view.ffp_view_covariance_spec <- function(view, model, call = rlang::caller_env()) {
 
-  validate_covariance_features(
-    features = features,
-    call = call
-  )
+  features <- resolve_view_features(expression = view$x, model = model, arg = "x", call = call)
 
-  validate_covariance_compatibility(
-    target = view$target,
-    features = features,
-    call = call
-  )
+  validate_covariance_features(features = features, call = call)
+  validate_covariance_compatibility(target = view$target, features = features, call = call)
 
   new_bound_view(
     method = "covariance",
@@ -3853,10 +3141,8 @@ bind_view.ffp_view_covariance_spec <- function(
 }
 
 
-validate_covariance_target <- function(
-    target,
-    call = rlang::caller_env()
-) {
+validate_covariance_target <- function(target, call = rlang::caller_env()) {
+
   tolerance <- sqrt(.Machine$double.eps)
 
   if (!is.matrix(target) || !is.numeric(target)) {
@@ -3935,11 +3221,7 @@ validate_covariance_target <- function(
     )
   }
 
-  eigenvalues <- eigen(
-    target,
-    symmetric = TRUE,
-    only.values = TRUE
-  )$values
+  eigenvalues <- eigen(target, symmetric = TRUE, only.values = TRUE)$values
 
   if (min(eigenvalues) < -tolerance) {
     ffp_abort(
@@ -3955,19 +3237,14 @@ validate_covariance_target <- function(
     )
   }
 
-  validate_covariance_target_names(
-    target = target,
-    call = call
-  )
+  validate_covariance_target_names(target = target, call = call)
 
   target
 }
 
 
-validate_covariance_target_names <- function(
-    target,
-    call = rlang::caller_env()
-) {
+validate_covariance_target_names <- function(target, call = rlang::caller_env()) {
+
   row_names <- rownames(target)
   col_names <- colnames(target)
 
@@ -3989,8 +3266,7 @@ validate_covariance_target_names <- function(
     )
   }
 
-  invalid_names <- is.na(row_names) | !nzchar(row_names) |
-    is.na(col_names) | !nzchar(col_names)
+  invalid_names <- is.na(row_names) | !nzchar(row_names) | is.na(col_names) | !nzchar(col_names)
 
   if (any(invalid_names)) {
     ffp_abort(
@@ -4032,10 +3308,8 @@ validate_covariance_target_names <- function(
 }
 
 
-validate_covariance_features <- function(
-    features,
-    call = rlang::caller_env()
-) {
+validate_covariance_features <- function(features, call = rlang::caller_env()) {
+
   if (feature_count(features) < 2L) {
     ffp_abort(
       c(
@@ -4104,11 +3378,8 @@ validate_covariance_features <- function(
 }
 
 
-validate_covariance_compatibility <- function(
-    target,
-    features,
-    call = rlang::caller_env()
-) {
+validate_covariance_compatibility <- function(target, features, call = rlang::caller_env()) {
+
   n_features <- feature_count(features)
 
   if (nrow(target) != n_features) {

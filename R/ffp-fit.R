@@ -1,14 +1,7 @@
 # Fit objects -------------------------------------------------------------
 
-new_ffp_fit <- function(
-    posterior,
-    prior,
-    constraints,
-    solver,
-    model,
-    n_scenarios,
-    n_views
-) {
+new_ffp_fit <- function(posterior, prior, constraints, solver, model, n_scenarios, n_views) {
+
   fit <- structure(
     list(
       posterior = posterior,
@@ -21,17 +14,13 @@ new_ffp_fit <- function(
     ),
     class = "ffp_fit"
   )
-
   validate_ffp_fit(fit)
-
   fit
 }
 
 
-validate_ffp_fit <- function(
-    x,
-    call = rlang::caller_env()
-) {
+validate_ffp_fit <- function(x, call = rlang::caller_env()) {
+
   if (!inherits(x, "ffp_fit")) {
     ffp_abort(
       "The object must inherit from {.cls ffp_fit}.",
@@ -48,20 +37,9 @@ validate_ffp_fit <- function(
     )
   }
 
-  validate_ffp_model(
-    model = x$model,
-    call = call
-  )
-
-  validate_fit_scenario_count(
-    n_scenarios = x$n_scenarios,
-    call = call
-  )
-
-  validate_fit_view_count(
-    n_views = x$n_views,
-    call = call
-  )
+  validate_ffp_model(model = x$model, call = call)
+  validate_fit_scenario_count(n_scenarios = x$n_scenarios, call = call)
+  validate_fit_view_count(n_views = x$n_views, call = call)
 
   if (scenario_count(x$model$scenarios) != x$n_scenarios) {
     ffp_abort(
@@ -79,19 +57,8 @@ validate_ffp_fit <- function(
     )
   }
 
-  validate_fit_probability_vector(
-    x = x$prior,
-    n_scenarios = x$n_scenarios,
-    arg = "prior",
-    call = call
-  )
-
-  validate_fit_probability_vector(
-    x = x$posterior,
-    n_scenarios = x$n_scenarios,
-    arg = "posterior",
-    call = call
-  )
+  validate_fit_probability_vector(x = x$prior, n_scenarios = x$n_scenarios, arg = "prior", call = call)
+  validate_fit_probability_vector(x = x$posterior, n_scenarios = x$n_scenarios, arg = "posterior", call = call)
 
   if (!identical(x$prior, x$model$prior)) {
     ffp_abort(
@@ -109,10 +76,7 @@ validate_ffp_fit <- function(
     )
   }
 
-  validate_ffp_constraints(
-    x$constraints,
-    call = call
-  )
+  validate_ffp_constraints(x$constraints, call = call)
 
   if (x$constraints$n_scenarios != x$n_scenarios) {
     ffp_abort(
@@ -130,10 +94,7 @@ validate_ffp_fit <- function(
     )
   }
 
-  validate_ffp_solver_result(
-    x$solver,
-    call = call
-  )
+  validate_ffp_solver_result(x$solver, call = call)
 
   if (!identical(x$posterior, x$solver$posterior)) {
     ffp_abort(
@@ -147,10 +108,8 @@ validate_ffp_fit <- function(
 }
 
 
-validate_fit_scenario_count <- function(
-    n_scenarios,
-    call = rlang::caller_env()
-) {
+validate_fit_scenario_count <- function(n_scenarios, call = rlang::caller_env()) {
+
   valid <- is.numeric(n_scenarios) &&
     length(n_scenarios) == 1L &&
     !is.na(n_scenarios) &&
@@ -170,10 +129,8 @@ validate_fit_scenario_count <- function(
 }
 
 
-validate_fit_view_count <- function(
-    n_views,
-    call = rlang::caller_env()
-) {
+validate_fit_view_count <- function(n_views, call = rlang::caller_env()) {
+
   valid <- is.numeric(n_views) &&
     length(n_views) == 1L &&
     !is.na(n_views) &&
@@ -193,12 +150,8 @@ validate_fit_view_count <- function(
 }
 
 
-validate_fit_probability_vector <- function(
-    x,
-    n_scenarios,
-    arg,
-    call = rlang::caller_env()
-) {
+validate_fit_probability_vector <- function(x, n_scenarios, arg, call = rlang::caller_env()) {
+
   valid <- is.numeric(x) &&
     is.null(dim(x)) &&
     length(x) == n_scenarios &&
@@ -223,10 +176,7 @@ validate_fit_probability_vector <- function(
 
   probability_sum <- sum(x)
 
-  if (
-    !is.finite(probability_sum) ||
-    abs(probability_sum - 1) > 1e-8
-  ) {
+  if (!is.finite(probability_sum) || abs(probability_sum - 1) > 1e-8) {
     ffp_abort(
       paste0("`", arg, "` must sum to one."),
       class = "ffp_error_invalid_fit",
@@ -397,16 +347,10 @@ validate_fit_probability_vector <- function(
 #' [entropy_solver_control()]
 #'
 #' @export
-ffp_fit <- function(
-    model,
-    control = entropy_solver_control()
-) {
+ffp_fit <- function(model, control = entropy_solver_control()) {
   call <- rlang::caller_env()
 
-  validate_ffp_model(
-    model = model,
-    call = call
-  )
+  validate_ffp_model(model = model, call = call)
 
   if (is.null(model$prior)) {
     ffp_abort(
@@ -422,27 +366,11 @@ ffp_fit <- function(
     )
   }
 
-  validate_entropy_solver_control(
-    control = control,
-    call = call
-  )
+  validate_entropy_solver_control(control = control, call = call)
 
-  constraints <- compile_views(
-    model = model,
-    call = call
-  )
-
-  problem <- build_entropy_problem(
-    model = model,
-    constraints = constraints,
-    call = call
-  )
-
-  solver <- solve_entropy_problem(
-    problem = problem,
-    control = control,
-    call = call
-  )
+  constraints <- compile_views(model = model, call = call)
+  problem <- build_entropy_problem(model = model, constraints = constraints, call = call)
+  solver  <- solve_entropy_problem(problem = problem, control = control, call = call)
 
   new_ffp_fit(
     posterior = solver$posterior,

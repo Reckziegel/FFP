@@ -25,7 +25,7 @@ ffp_stats <- function(x, ...) {
 #' @export
 ffp_stats.default <- function(x, p = NULL, prob = 0.01, ...) {
 
-  x <- ffp_stats_prepare_data(x)
+  x    <- ffp_stats_prepare_data(x)
   prob <- ffp_stats_validate_prob(prob)
 
   p <- ffp_stats_prepare_probabilities(
@@ -46,13 +46,8 @@ ffp_stats.default <- function(x, p = NULL, prob = 0.01, ...) {
   )
 }
 
-new_ffp_stats_single <- function(
-    statistics,
-    p,
-    prob,
-    n_scenarios,
-    n_variables
-) {
+new_ffp_stats_single <- function(statistics, p, prob, n_scenarios, n_variables) {
+
   effective_scenarios <- ens(p)
 
   structure(
@@ -69,36 +64,20 @@ new_ffp_stats_single <- function(
   )
 }
 
-new_ffp_stats_comparison <- function(
-    prior,
-    posterior,
-    prior_p,
-    posterior_p,
-    prob,
-    n_scenarios,
-    n_variables
-) {
-  prior_ens <- ens(prior_p)
+new_ffp_stats_comparison <- function(prior, posterior, prior_p, posterior_p, prob, n_scenarios, n_variables) {
+
+  prior_ens     <- ens(prior_p)
   posterior_ens <- ens(posterior_p)
 
   change <- ffp_stats_change(
-    prior = prior,
+    prior     = prior,
     posterior = posterior
   )
 
   effective_scenarios <- tibble::tibble(
-    distribution = c(
-      "prior",
-      "posterior"
-    ),
-    ens = c(
-      prior_ens,
-      posterior_ens
-    ),
-    scenario_share = c(
-      prior_ens / n_scenarios,
-      posterior_ens / n_scenarios
-    )
+    distribution   = c("prior", "posterior"),
+    ens            = c(prior_ens, posterior_ens),
+    scenario_share = c(prior_ens / n_scenarios, posterior_ens / n_scenarios)
   )
 
   structure(
@@ -117,39 +96,19 @@ new_ffp_stats_comparison <- function(
   )
 }
 
-ffp_stats_compare <- function(
-    x,
-    prior,
-    posterior,
-    prob = 0.01
-) {
-  x <- ffp_stats_prepare_data(x)
+ffp_stats_compare <- function(x, prior, posterior, prob = 0.01) {
+
+  x    <- ffp_stats_prepare_data(x)
   prob <- ffp_stats_validate_prob(prob)
 
   n_scenarios <- nrow(x)
   n_variables <- ncol(x)
 
-  prior <- ffp_stats_prepare_probabilities(
-    p = prior,
-    n_scenarios = n_scenarios
-  )
+  prior     <- ffp_stats_prepare_probabilities(p = prior, n_scenarios = n_scenarios)
+  posterior <- ffp_stats_prepare_probabilities(p = posterior, n_scenarios = n_scenarios)
 
-  posterior <- ffp_stats_prepare_probabilities(
-    p = posterior,
-    n_scenarios = n_scenarios
-  )
-
-  prior_stats <- ffp_stats_compute(
-    x = x,
-    p = prior,
-    prob = prob
-  )
-
-  posterior_stats <- ffp_stats_compute(
-    x = x,
-    p = posterior,
-    prob = prob
-  )
+  prior_stats     <- ffp_stats_compute(x = x, p = prior, prob = prob)
+  posterior_stats <- ffp_stats_compute(x = x, p = posterior, prob = prob)
 
   new_ffp_stats_comparison(
     prior = prior_stats,
@@ -310,54 +269,33 @@ as_tibble.ffp_stats <- function(x, ...) {
 
 
 ffp_stats_prepare_data <- function(x) {
+
   if (is.data.frame(x)) {
-    is_numeric <- vapply(
-      x,
-      is.numeric,
-      logical(1)
-    )
-
+    is_numeric <- vapply(x, is.numeric, logical(1))
     if (!any(is_numeric)) {
-      cli::cli_abort(
-        "{.arg x} must contain at least one numeric column."
-      )
+      cli::cli_abort("{.arg x} must contain at least one numeric column.")
     }
-
-    x <- as.matrix(
-      x[, is_numeric, drop = FALSE]
-    )
+    x <- as.matrix(x[ , is_numeric, drop = FALSE])
   } else if (is.numeric(x) && is.null(dim(x))) {
-    x <- matrix(
-      as.double(x),
-      ncol = 1,
-      dimnames = list(NULL, "x")
-    )
+    x <- matrix(as.double(x), ncol = 1, dimnames = list(NULL, "x"))
   } else {
     x <- as.matrix(x)
   }
 
   if (!is.numeric(x)) {
-    cli::cli_abort(
-      "{.arg x} must contain numeric scenarios."
-    )
+    cli::cli_abort("{.arg x} must contain numeric scenarios.")
   }
 
   if (nrow(x) == 0L) {
-    cli::cli_abort(
-      "{.arg x} must contain at least one scenario."
-    )
+    cli::cli_abort("{.arg x} must contain at least one scenario.")
   }
 
   if (ncol(x) == 0L) {
-    cli::cli_abort(
-      "{.arg x} must contain at least one variable."
-    )
+    cli::cli_abort("{.arg x} must contain at least one variable.")
   }
 
   if (any(!is.finite(x))) {
-    cli::cli_abort(
-      "{.arg x} must contain only finite values."
-    )
+    cli::cli_abort("{.arg x} must contain only finite values.")
   }
 
   storage.mode(x) <- "double"
@@ -365,26 +303,12 @@ ffp_stats_prepare_data <- function(x) {
   variable_names <- colnames(x)
 
   if (is.null(variable_names)) {
-    variable_names <- if (ncol(x) == 1L) {
-      "x"
-    } else {
-      paste0(
-        "variable_",
-        seq_len(ncol(x))
-      )
-    }
-
-    colnames(x) <- variable_names
+    variable_names <- if (ncol(x) == 1L) "x" else paste0("variable_", seq_len(ncol(x)))
+    colnames(x)    <- variable_names
   }
 
-  if (
-    anyNA(variable_names) ||
-    any(!nzchar(variable_names)) ||
-    anyDuplicated(variable_names)
-  ) {
-    cli::cli_abort(
-      "Variables in {.arg x} must have unique, non-empty names."
-    )
+  if (anyNA(variable_names) || any(!nzchar(variable_names)) || anyDuplicated(variable_names)) {
+    cli::cli_abort("Variables in {.arg x} must have unique, non-empty names.")
   }
 
   x
@@ -433,86 +357,36 @@ ffp_stats_validate_prob <- function(prob) {
 
 
 ffp_stats_compute <- function(x, p, prob) {
+
   p <- vctrs::vec_data(p)
-
-  mean <- unname(
-    colSums(x * p)
-  )
-
-  centered <- sweep(
-    x,
-    MARGIN = 2,
-    STATS = mean,
-    FUN = "-"
-  )
-
-  variance <- unname(
-    colSums(
-      centered^2 * p
-    )
-  )
-
+  mean <- unname(colSums(x * p))
+  centered <- sweep(x, MARGIN = 2, STATS = mean, FUN = "-")
+  variance <- unname(colSums(centered^2 * p))
   sd <- sqrt(variance)
-
-  third_moment <- unname(
-    colSums(
-      centered^3 * p
-    )
-  )
-
-  fourth_moment <- unname(
-    colSums(
-      centered^4 * p
-    )
-  )
-
-  skewness <- rep(
-    NA_real_,
-    ncol(x)
-  )
-
-  kurtosis <- rep(
-    NA_real_,
-    ncol(x)
-  )
+  third_moment <- unname(colSums(centered^3 * p))
+  fourth_moment <- unname(colSums(centered^4 * p))
+  skewness <- rep(NA_real_, ncol(x))
+  kurtosis <- rep(NA_real_, ncol(x))
 
   non_degenerate <- sd > 0
 
-  skewness[non_degenerate] <-
-    third_moment[non_degenerate] /
-    sd[non_degenerate]^3
-
-  kurtosis[non_degenerate] <-
-    fourth_moment[non_degenerate] /
-    sd[non_degenerate]^4
+  skewness[non_degenerate] <- third_moment[non_degenerate] / sd[non_degenerate]^3
+  kurtosis[non_degenerate] <- fourth_moment[non_degenerate] / sd[non_degenerate]^4
 
   tail_stats <- vapply(
     seq_len(ncol(x)),
-    function(column) {
-      ffp_stats_lower_tail(
-        x = x[, column],
-        p = p,
-        prob = prob
-      )
-    },
-    FUN.VALUE = c(
-      quantile = 0,
-      expected_shortfall = 0
-    )
+    function(column) ffp_stats_lower_tail(x = x[, column], p = p, prob = prob),
+    FUN.VALUE = c(quantile = 0, expected_shortfall = 0)
   )
 
   tibble::tibble(
     variable = colnames(x),
-    mean = mean,
-    sd = sd,
+    mean     = mean,
+    sd       = sd,
     skewness = skewness,
     kurtosis = kurtosis,
-    quantile = unname(
-      tail_stats["quantile", ]
-    ),
-    expected_shortfall = unname(
-      tail_stats["expected_shortfall", ]
-    )
+    quantile = unname(tail_stats["quantile", ]),
+    expected_shortfall = unname(tail_stats["expected_shortfall", ])
   )
 }
 
@@ -526,9 +400,9 @@ ffp_stats_lower_tail <- function(x, p, prob) {
   cumulative_probability <- cumsum(p)
 
   quantile_index <- which(cumulative_probability >= prob)[1L]
-  quantile <- x[[quantile_index]]
+  quantile       <- x[[quantile_index]]
 
-  below_quantile <- x < quantile
+  below_quantile    <- x < quantile
   probability_below <- sum(p[below_quantile])
   remaining_probability <- prob - probability_below
 
@@ -538,12 +412,8 @@ ffp_stats_lower_tail <- function(x, p, prob) {
 }
 
 #' @export
-summary.ffp_stats <- function(
-    object,
-    variable = NULL,
-    statistic = NULL,
-    ...
-) {
+summary.ffp_stats <- function(object, variable = NULL, statistic = NULL, ...) {
+
   if (!is.null(variable) && !is.null(statistic)) {
     cli::cli_abort(
       "Supply only one of {.arg variable} or {.arg statistic}."
@@ -559,10 +429,7 @@ summary.ffp_stats <- function(
   }
 
   if (!is.null(variable)) {
-    variable <- ffp_stats_validate_summary_variable(
-      object,
-      variable
-    )
+    variable <- ffp_stats_validate_summary_variable(object, variable)
 
     return(
       new_summary_ffp_stats(
@@ -577,15 +444,10 @@ summary.ffp_stats <- function(
     )
   }
 
-  statistic <- ffp_stats_validate_summary_statistic(
-    statistic
-  )
+  statistic <- ffp_stats_validate_summary_statistic(statistic)
 
   new_summary_ffp_stats(
-    data = ffp_stats_summary_statistic(
-      object,
-      statistic
-    ),
+    data = ffp_stats_summary_statistic(object, statistic),
     view = "statistic",
     label = statistic,
     prob = object$prob
@@ -593,12 +455,7 @@ summary.ffp_stats <- function(
 }
 
 
-new_summary_ffp_stats <- function(
-    data,
-    view,
-    label,
-    prob
-) {
+new_summary_ffp_stats <- function(data, view, label, prob) {
   structure(
     list(
       data = data,
@@ -621,16 +478,9 @@ ffp_stats_statistic_names <- function() {
   )
 }
 
-ffp_stats_validate_summary_variable <- function(
-    object,
-    variable
-) {
-  if (
-    !is.character(variable) ||
-    length(variable) != 1L ||
-    is.na(variable) ||
-    !nzchar(variable)
-  ) {
+ffp_stats_validate_summary_variable <- function(object, variable) {
+
+  if (!is.character(variable) || length(variable) != 1L || is.na(variable) || !nzchar(variable)) {
     cli::cli_abort(
       "{.arg variable} must be a single variable name."
     )
@@ -653,17 +503,11 @@ ffp_stats_validate_summary_variable <- function(
 }
 
 
-ffp_stats_validate_summary_statistic <- function(
-    statistic
-) {
+ffp_stats_validate_summary_statistic <- function(statistic) {
+
   statistics <- ffp_stats_statistic_names()
 
-  if (
-    !is.character(statistic) ||
-    length(statistic) != 1L ||
-    is.na(statistic) ||
-    !nzchar(statistic)
-  ) {
+  if (!is.character(statistic) || length(statistic) != 1L || is.na(statistic) || !nzchar(statistic)) {
     cli::cli_abort(
       "{.arg statistic} must be a single statistic name."
     )
@@ -679,10 +523,8 @@ ffp_stats_validate_summary_statistic <- function(
   statistic
 }
 
-ffp_stats_summary_variable <- function(
-    object,
-    variable
-) {
+ffp_stats_summary_variable <- function(object, variable) {
+
   statistic_names <- ffp_stats_statistic_names()
 
   if (identical(object$type, "single")) {
@@ -812,13 +654,8 @@ ffp_stats_format_statistic <- function(
 }
 
 #' @export
-as_tibble.summary_ffp_stats <- function(
-    x,
-    ...
-) {
-  tibble::as_tibble(
-    x$data
-  )
+as_tibble.summary_ffp_stats <- function(x, ...) {
+  tibble::as_tibble(x$data)
 }
 
 #' @rdname ffp_stats
@@ -840,11 +677,7 @@ as_tibble.summary_ffp_stats <- function(
 #' diagnostics for both probability distributions.
 #'
 #' @export
-ffp_stats.ffp_fit <- function(
-    x,
-    prob = 0.01,
-    ...
-) {
+ffp_stats.ffp_fit <- function(x, prob = 0.01, ...) {
   validate_ffp_fit(x)
 
   ffp_stats_compare(

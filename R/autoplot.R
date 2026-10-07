@@ -61,12 +61,8 @@
 #'   feature = "equity",
 #'   bins = 4
 #' )
-autoplot.ffp_fit <- function(
-    object,
-    feature = NULL,
-    bins = NULL,
-    ...
-) {
+autoplot.ffp_fit <- function(object, feature = NULL, bins = NULL, ...) {
+
   rlang::check_dots_empty()
 
   plot_data <- prepare_distribution_plot_data(
@@ -76,9 +72,7 @@ autoplot.ffp_fit <- function(
     call = rlang::caller_env()
   )
 
-  path_data <- distribution_histogram_path(
-    plot_data
-  )
+  path_data <- distribution_histogram_path(plot_data)
 
   ggplot2::ggplot(
     path_data,
@@ -101,9 +95,7 @@ autoplot.ffp_fit <- function(
 # Histogram path ----------------------------------------------------------
 
 distribution_histogram_path <- function(data) {
-  distributions <- levels(
-    data$distribution
-  )
+  distributions <- levels(data$distribution)
 
   purrr::map(
     distributions,

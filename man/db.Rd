@@ -9,7 +9,7 @@
 An object of class \code{matrix} (inherits from \code{array}) with 1083 rows and 9 columns.
 }
 \usage{
-db
+data(db)
 }
 \description{
 Dataset used in Historical Scenarios with Fully Flexible Probabilities

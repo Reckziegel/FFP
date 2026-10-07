@@ -65,13 +65,8 @@ view_median(
 )
 
 # Multiple features require one explicit target per feature
-panel <- cbind(
-  equity = scenarios$equity,
-  inflation = scenarios$inflation
-)
-
 view_median(
-  x = panel,
+  x = scenarios,
   target = c(0.01, 0.035)
 )
 }

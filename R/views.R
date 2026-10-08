@@ -193,26 +193,18 @@ construct_view_on_covariance <- function(x, mean, sigma) {
   assertthat::assert_that(assertthat::are_equal(NCOL(sigma), NROW(sigma)))
   vctrs::vec_assert(mean, double())
 
-  N  <- NCOL(x)
+  pairs <- matrix_constraint_pairs(NCOL(x))
+  second_moment <- (sigma + tcrossprod(mean))
 
-  SecMom <- sigma + mean %*% t(mean)   #...constrain the second moments...
-
-  Aeq <- NULL
-  beq <- NULL
-
-  for (k in 1:N) {
-    for (l in k:N) {
-      Aeq <- rbind(Aeq, t(x[ , k] * x[ , l]))
-      beq <- rbind(beq, SecMom[k, l])
-    }
-  }
+  Aeq <- second_moment_constraint_matrix(feature_values = x, pairs = pairs)
+  beq <- matrix(matrix_target_entries(target = second_moment, pairs = pairs), ncol = 1)
 
   vctrs::new_list_of(
     x      = list(Aeq = Aeq, beq = beq),
     .ptype = double(),
     class  = "ffp_views",
-    type   = "view_on_covariance")
-
+    type   = "view_on_covariance"
+  )
 }
 
 
@@ -220,7 +212,23 @@ construct_view_on_covariance <- function(x, mean, sigma) {
 
 #' Views on Correlation Structure
 #'
-#' Helper to construct views  on the correlation matrix.
+#' Constructs equality constraints on the posterior correlation structure.
+#'
+#' Reference means and standard deviations are computed from the scenarios
+#' under equal probabilities. The correlation target is then expressed as
+#' linear constraints on posterior second moments.
+#'
+#' For features `X_k` and `X_l`, the constraint is
+#'
+#' \deqn{
+#'   E_{\tilde p}[X_k X_l]
+#'   =
+#'   \hat m_k \hat m_l +
+#'   \hat \sigma_k \hat \sigma_l C_{k,l},
+#' }
+#'
+#' where the reference moments are computed under the equal-weight scenario
+#' distribution.
 #'
 #' @param x An univariate or a multivariate distribution.
 #' @param cor A \code{matrix} for the target correlation structure of
@@ -301,31 +309,32 @@ view_on_correlation.tbl_df <- function(x, cor) {
 
 #' @keywords internal
 construct_view_on_correlation <- function(x, cor) {
-
   assertthat::assert_that(assertthat::are_equal(NCOL(x), NROW(cor)))
   assertthat::assert_that(assertthat::are_equal(NCOL(cor), NROW(cor)))
 
-  N <- NCOL(cor)
-  mu <- colMeans(x)
-  sd <- apply(x, 2, stats::sd)
+  n_scenarios <- NROW(x)
+  n_features  <- NCOL(x)
 
-  Aeq <- NULL
-  beq <- NULL
+  prior <- rep(1 / n_scenarios, n_scenarios)
+  reference_means <- reference_feature_means(feature_values = x, prior = prior)
+  reference_sds   <- reference_feature_sds(feature_values = x, prior = prior)
 
-  # Attach the view on cor
-  for (k in 1:N) {
-    for (l in k:N) {
-      Aeq <- rbind(Aeq ,t(x[ , k] * x[ , l]))
-      beq <- rbind(beq, mu[[k]] * mu[[l]] + sd[[k]] * sd[[l]] * cor[k, l])
-    }
-  }
+  pairs   <- matrix_constraint_pairs(n_features)
+  Aeq     <- second_moment_constraint_matrix(feature_values = x, pairs = pairs)
+  targets <- matrix_target_entries(target = cor, pairs = pairs)
+
+  row_indices <- pairs[, "row"]
+  col_indices <- pairs[, "col"]
+
+  beq <- (reference_means[row_indices] * reference_means[col_indices] + reference_sds[row_indices] * reference_sds[col_indices] * targets)
+  beq <- matrix(beq, ncol = 1)
 
   vctrs::new_list_of(
-    x      = list(Aeq = Aeq, beq = beq),
+    x = list(Aeq = Aeq, beq = beq),
     .ptype = double(),
-    class  = "ffp_views",
-    type   = "view_on_correlation")
-
+    class = "ffp_views",
+    type = "view_on_correlation"
+  )
 }
 
 
@@ -433,17 +442,29 @@ construct_view_on_volatility <- function(x, vol) {
 
 #' Views on Relative Performance
 #'
-#' Helper to construct views on relative performance of assets.
+#' Constructs a ranking view on posterior expected returns.
 #'
-#' If `rank = c(2, 1)` it is implied that asset in the first column will outperform
-#' the asset in the second column. For longer vectors the interpretation
-#' is the same: assets on the right will outperform assets on the left.
+#' `rank` specifies the expected performance order using column positions in
+#' `x`. The first asset in `rank` is expected to outperform the second, the
+#' second is expected to outperform the third, and so on.
 #'
-#' @param x An univariate or a multivariate distribution.
-#' @param rank A \code{integer} with the assets rank (from the worst to the best
-#' performer).
+#' For example, `rank = c(1, 3, 2)` imposes
 #'
-#' @return A \code{list} of the `view` class.
+#' \deqn{
+#'   E[X_1] \ge E[X_3] \ge E[X_2].
+#' }
+#'
+#' The ranking is represented through adjacent linear inequalities. Therefore,
+#' a ranking of `K` assets generates `K - 1` constraints. Ties are allowed.
+#'
+#' @param x A multivariate scenario distribution with assets or features stored
+#'   in columns.
+#' @param rank A numeric vector containing the column positions in expected
+#'   performance order, from highest to lowest posterior mean.
+#'
+#' @return An object of class `ffp_views` containing the inequality constraints
+#'   `A` and `b`.
+#'
 #' @export
 #'
 #' @examples
@@ -453,18 +474,27 @@ construct_view_on_volatility <- function(x, vol) {
 #' x <- diff(log(EuStockMarkets))
 #' prior <- rep(1 / nrow(x), nrow(x))
 #'
-#' # asset in the first col will outperform the asset in the second col (DAX will
-#' # outperform SMI).
-#' views <- view_on_rank(x = x, rank = c(2, 1))
+#' # Require DAX (column 1) to outperform SMI (column 2)
+#' views <- view_on_rank(
+#'   x = x,
+#'   rank = c(1, 2)
+#' )
+#'
 #' views
 #'
-#' ep <- entropy_pooling(p = prior, A = views$A, b = views$b, solver = "nloptr")
+#' ep <- entropy_pooling(
+#'   p = prior,
+#'   A = views$A,
+#'   b = views$b,
+#'   solver = "nloptr"
+#' )
+#'
 #' autoplot(ep)
 #'
-#' # Prior Returns (SMI > DAX)
+#' # Prior expected returns
 #' colMeans(x)[1:2]
 #'
-#' # Posterior Returns (DAX > SMI)
+#' # Posterior expected returns satisfy DAX >= SMI
 #' ffp_moments(x, ep)$mu[1:2]
 view_on_rank <- function(x, rank) {
   UseMethod("view_on_rank", x)
@@ -511,23 +541,28 @@ view_on_rank.tbl_df <- function(x, rank) {
 
 #' @keywords internal
 construct_view_on_rank <- function(x, rank) {
-
-  #assertthat::assert_that(assertthat::are_equal(NROW(x), NROW(p)))
   assertthat::assert_that(is.numeric(rank), msg = "`.rank` must be a numeric vector.")
 
   rank_size <- vctrs::vec_size(rank)
+  ordered_values <- x[, rank, drop = FALSE]
 
-  # ...constrain the expectations...
-  view <- x[ , rank[1:(rank_size - 1)]] - x[ , rank[2:rank_size]]
-  A <- t(view)
+  A <- vapply(
+    seq_len(rank_size - 1L),
+    function(i) ordered_values[, i + 1L] - ordered_values[, i],
+    numeric(nrow(x))
+  )
+  A <- t(A)
+  storage.mode(A) <- "double"
+  dimnames(A) <- NULL
+
   b <- matrix(rep(0, nrow(A)), ncol = 1)
 
   vctrs::new_list_of(
-    x      = list(A = A, b = b),
+    x = list(A = A, b = b),
     .ptype = double(),
-    class  = "ffp_views",
-    type   = "view_on_rank")
-
+    class = "ffp_views",
+    type = "view_on_rank"
+  )
 }
 
 # Views on tail codependence ----------------------------------------------

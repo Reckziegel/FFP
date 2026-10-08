@@ -25,21 +25,32 @@ view_on_rank(x, rank)
 \method{view_on_rank}{tbl_df}(x, rank)
 }
 \arguments{
-\item{x}{An univariate or a multivariate distribution.}
+\item{x}{A multivariate scenario distribution with assets or features stored
+in columns.}
 
-\item{rank}{A \code{integer} with the assets rank (from the worst to the best
-performer).}
+\item{rank}{A numeric vector containing the column positions in expected
+performance order, from highest to lowest posterior mean.}
 }
 \value{
-A \code{list} of the \code{view} class.
+An object of class \code{ffp_views} containing the inequality constraints
+\code{A} and \code{b}.
 }
 \description{
-Helper to construct views on relative performance of assets.
+Constructs a ranking view on posterior expected returns.
 }
 \details{
-If \code{rank = c(2, 1)} it is implied that asset in the first column will outperform
-the asset in the second column. For longer vectors the interpretation
-is the same: assets on the right will outperform assets on the left.
+\code{rank} specifies the expected performance order using column positions in
+\code{x}. The first asset in \code{rank} is expected to outperform the second, the
+second is expected to outperform the third, and so on.
+
+For example, \code{rank = c(1, 3, 2)} imposes
+
+\deqn{
+  E[X_1] \ge E[X_3] \ge E[X_2].
+}
+
+The ranking is represented through adjacent linear inequalities. Therefore,
+a ranking of \code{K} assets generates \code{K - 1} constraints. Ties are allowed.
 }
 \examples{
 library(ggplot2)
@@ -48,17 +59,26 @@ library(ggplot2)
 x <- diff(log(EuStockMarkets))
 prior <- rep(1 / nrow(x), nrow(x))
 
-# asset in the first col will outperform the asset in the second col (DAX will
-# outperform SMI).
-views <- view_on_rank(x = x, rank = c(2, 1))
+# Require DAX (column 1) to outperform SMI (column 2)
+views <- view_on_rank(
+  x = x,
+  rank = c(1, 2)
+)
+
 views
 
-ep <- entropy_pooling(p = prior, A = views$A, b = views$b, solver = "nloptr")
+ep <- entropy_pooling(
+  p = prior,
+  A = views$A,
+  b = views$b,
+  solver = "nloptr"
+)
+
 autoplot(ep)
 
-# Prior Returns (SMI > DAX)
+# Prior expected returns
 colMeans(x)[1:2]
 
-# Posterior Returns (DAX > SMI)
+# Posterior expected returns satisfy DAX >= SMI
 ffp_moments(x, ep)$mu[1:2]
 }

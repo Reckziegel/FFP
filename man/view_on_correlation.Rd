@@ -34,7 +34,24 @@ the series in \code{x}.}
 A \code{list} of the \code{view} class.
 }
 \description{
-Helper to construct views  on the correlation matrix.
+Constructs equality constraints on the posterior correlation structure.
+}
+\details{
+Reference means and standard deviations are computed from the scenarios
+under equal probabilities. The correlation target is then expressed as
+linear constraints on posterior second moments.
+
+For features \code{X_k} and \code{X_l}, the constraint is
+
+\deqn{
+  E_{\tilde p}[X_k X_l]
+  =
+  \hat m_k \hat m_l +
+  \hat \sigma_k \hat \sigma_l C_{k,l},
+}
+
+where the reference moments are computed under the equal-weight scenario
+distribution.
 }
 \examples{
 library(ggplot2)

@@ -1,41 +1,36 @@
 #' Double-Decay Covariance Matrix
 #'
-#' This function computes the covariance matrix using two different decay factors.
+#' This function computes the covariance matrix using two different decay
+#' factors.
 #'
-#' A common practice is to estimate the covariance of the risk drivers using a high
-#' decay (short half-life) for the volatilities and a low decay (long half-life)
-#' for the correlations.
+#' A common practice is to estimate covariance using a slower decay for
+#' correlations and a faster decay for volatilities.
 #'
-#' @param x A set of relevant risk drivers.
-#' @param decay_low A \code{numeric} value with the low decay (long half-life).
-#' @param decay_high A \code{numeric} value with the high decay (short half-life).
+#' @param x A numeric matrix containing the relevant risk drivers.
+#' @param decay_low A numeric decay rate used to estimate correlations.
+#' @param decay_high A numeric decay rate used to estimate volatilities.
 #'
-#' @return A \code{list} with the posterior mean ans sigma.
+#' @return A list containing the target posterior mean and covariance matrix.
 #'
 #' @keywords internal
 DoubleDecay <- function(x, decay_low, decay_high) {
 
-  T_ <- nrow(x)
-  N  <- ncol(x)
+  n_scenarios <- nrow(x)
+  n_features  <- ncol(x)
+  target_mean <- matrix(0, nrow = n_features, ncol = 1)
+  correlation_probabilities <- exp_decay_probabilities(n_scenarios = n_scenarios, half_life = log(2) / decay_low)
+  correlation_second_moment <- crossprod(x, sweep(x, MARGIN = 1, STATS = correlation_probabilities, FUN = "*"))
 
-  m <- matrix(0, nrow = N, ncol = 1)
+  correlation <- stats::cov2cor(correlation_second_moment)
+  volatility_probabilities <- exp_decay_probabilities(n_scenarios = n_scenarios, half_life = log(2) / decay_high)
+  volatility_second_moment <- crossprod(x, sweep(x, MARGIN = 1, STATS = volatility_probabilities, FUN = "*"))
+  volatility <- sqrt(diag(volatility_second_moment))
 
-  p_c <- exp(-decay_low * (T_ - t(rbind(1:T_))))
-  p_c <- kronecker(matrix(1, 1, N), p_c / sum(p_c))
-  S_1 <- t(p_c * x) %*% x
-  C   <- stats::cov2cor(S_1)
-
-  p_s <- exp(-decay_high * (T_ - t(rbind(1:T_))))
-  p_s <- kronecker(matrix(1, 1, N), p_s / sum(p_s))
-  S_2 <- t(p_s * x) %*% x
-  s   <- sqrt(diag(S_2))
-
-  if (length(s) == 1) {
-    S <- s * C * s
+  if (length(volatility) == 1L) {
+    target_covariance <- volatility * correlation * volatility
   } else {
-    S <- diag(s) %*% C %*% diag(s)
+    target_covariance <- (diag(volatility) %*% correlation %*% diag(volatility))
   }
 
-  list(m = m, s = S)
-
+  list(m = target_mean, s = target_covariance)
 }

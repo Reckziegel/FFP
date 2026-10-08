@@ -75,48 +75,35 @@
 #'    )
 #' )
 #' ep
-entropy_pooling <- function(p, A = NULL, b = NULL, Aeq = NULL, beq = NULL, solver = c("nlminb", "solnl", "nloptr"), ...) {
+entropy_pooling <- function(p, A = NULL, b = NULL, Aeq = NULL, beq = NULL, solver = "nlminb", ...) {
 
-  assertthat::assert_that(assertthat::is.string(solver))
-
-  if (solver == "nlminb" & (!is.null(A) | !is.null(b))) {
-    cli::cli_abort(
-      c("x" = "Inequalities can only be solved with {.fn solnl} or {.fn nloptr}.",
-        "i" = "Use {.code solver = \"solnl\"} or {.code solver = \"nloptr\"} for inequality constraints.")
-    )
-  }
+  call   <- rlang::caller_env()
   solver <- rlang::arg_match(solver, c("nlminb", "solnl", "nloptr"))
 
-  if (!is.matrix(p)) {
-    p <- matrix(p, ncol = 1)
-  }
-  if (is.vector(b)) {
-    b <- matrix(b, nrow = vctrs::vec_size(b))
-  }
-  if (!vctrs::vec_size(b)) {
-    b <- matrix(NA_real_, nrow = 0, ncol = 0)
-  }
-  if (is.vector(beq)) {
-    beq <- matrix(beq, nrow = vctrs::vec_size(beq))
-  }
-  if (!vctrs::vec_size(A)) {
-    A <- matrix(NA_real_, nrow = 0, ncol = 0)
+  problem <- build_legacy_entropy_problem(p = p, A = A, b = b, Aeq = Aeq,beq = beq, call = call)
+
+  if (solver == "nlminb" && nrow(problem$a_ineq) > 0L) {
+    cli::cli_abort(
+      c(
+        "x" = "Inequalities can only be solved with {.fn solnl} or {.fn nloptr}.",
+        "i" = "Use {.code solver = \"solnl\"} or {.code solver = \"nloptr\"} for inequality constraints."
+        )
+      )
   }
 
-  # non-negativiy constraint
-  Aeq_non_neg <- matrix(1, nrow = 1, ncol = vctrs::vec_size(p))
-  beq_non_neg <- 1
-
-  Aeq <- rbind(Aeq, Aeq_non_neg)
-  beq <- rbind(beq, beq_non_neg)
-
-  K_ <- nrow(A)
-  K  <- nrow(Aeq)
-  A_   <- t(A)
-  b_   <- t(b)
+  p <- matrix(problem$prior, ncol = 1)
+  A <- problem$a_ineq
+  b <- matrix(problem$b_ineq, ncol = 1)
+  Aeq <- problem$a_eq
+  beq <- matrix(problem$b_eq, ncol = 1)
+  K_  <- nrow(A)
+  K   <- nrow(Aeq)
+  A_  <- t(A)
+  b_  <- t(b)
   Aeq_ <- t(Aeq)
   beq_ <- t(beq)
-  x0   <- matrix(0, nrow = K_ + K, ncol = 1)
+
+  x0 <- matrix(0, nrow = K_ + K, ncol = 1)
 
   # Equalities Constraint
   if (!K_) {
@@ -312,3 +299,141 @@ ep_nlminb <- function(p, Aeq, beq, Aeq_, beq_, objective, gradient, ...) {
 # },
 # hin    = function(x) InqMat %*% x,
 # hinjac = function(x) InqMat,
+
+normalize_legacy_entropy_matrix <- function(x, n_scenarios, arg, call = rlang::caller_env()) {
+
+  if (is.null(x)) {
+    return(empty_constraint_matrix(n_scenarios))
+  }
+
+  if (is.numeric(x) && is.null(dim(x))) {
+    x <- matrix(x, nrow = 1L)
+  }
+
+  if (!is.matrix(x) || !is.numeric(x)) {
+    ffp_abort(
+      paste0("`", arg, "` must be a numeric matrix or vector."),
+      class = "ffp_error_invalid_entropy_problem",
+      call = call
+    )
+  }
+
+  if (ncol(x) != n_scenarios) {
+    ffp_abort(
+      c(
+        paste0("`", arg, "` has an invalid scenario dimension."),
+        "x" = paste0("Expected ", n_scenarios, " column(s), but found ", ncol(x), ".")
+      ),
+      class = "ffp_error_invalid_entropy_problem",
+      call = call
+    )
+  }
+
+  if (anyNA(x) || any(!is.finite(x))) {
+    ffp_abort(
+      paste0("`", arg, "` must contain only finite values."),
+      class = "ffp_error_invalid_entropy_problem",
+      call = call
+    )
+  }
+
+  storage.mode(x) <- "double"
+  dimnames(x)     <- NULL
+
+  x
+}
+
+
+normalize_legacy_entropy_rhs <- function(x, n_constraints, arg, call = rlang::caller_env()) {
+
+  if (is.null(x)) {
+    x <- numeric()
+  }
+
+  if (!is.numeric(x)) {
+    ffp_abort(
+      paste0("`", arg, "` must be numeric."),
+      class = "ffp_error_invalid_entropy_problem",
+      call = call
+    )
+  }
+
+  x <- as.double(x)
+
+  if (length(x) != n_constraints) {
+    ffp_abort(
+      c(
+        paste0("`", arg, "` has an invalid length."),
+        "x" = paste0("Expected ", n_constraints, " value(s), but found ", length(x), ".")
+      ),
+      class = "ffp_error_invalid_entropy_problem",
+      call = call
+    )
+  }
+
+  if (anyNA(x) || any(!is.finite(x))) {
+    ffp_abort(
+      paste0("`", arg, "` must contain only finite values."),
+      class = "ffp_error_invalid_entropy_problem",
+      call = call
+    )
+  }
+
+  x
+}
+
+legacy_entropy_constraint_metadata <- function(n_equalities, n_inequalities) {
+
+  make_legacy_metadata <- function(type, n_constraints) {
+    if (n_constraints == 0L) {
+      return(empty_constraint_metadata())
+    }
+    new_constraint_metadata(
+      type = type,
+      method = "legacy",
+      feature_1 = rep(NA_character_, n_constraints),
+      label = paste0("Legacy ", type, " ", seq_len(n_constraints))
+    )
+  }
+
+  equality_metadata   <- make_legacy_metadata(type = "equality", n_constraints = n_equalities)
+  inequality_metadata <- make_legacy_metadata(type = "inequality", n_constraints = n_inequalities)
+
+  metadata <- rbind(equality_metadata, inequality_metadata)
+  reindex_constraint_metadata(metadata)
+}
+
+build_legacy_entropy_problem <- function(p, A = NULL, b = NULL, Aeq = NULL, beq = NULL, call = rlang::caller_env()) {
+
+  if (!is.numeric(p)) {
+    ffp_abort(
+      "`p` must contain numeric prior probabilities.",
+      class = "ffp_error_invalid_entropy_problem",
+      call = call
+    )
+  }
+
+  prior <- as.double(p)
+  n_scenarios <- length(prior)
+
+  validate_entropy_scenario_count(n_scenarios = n_scenarios, call = call)
+  validate_entropy_prior(prior = prior, n_scenarios = n_scenarios, call = call)
+
+  a_eq <- normalize_legacy_entropy_matrix(x = Aeq, n_scenarios = n_scenarios, arg = "Aeq", call = call)
+  b_eq <- normalize_legacy_entropy_rhs(x = beq, n_constraints = nrow(a_eq), arg = "beq", call = call)
+  a_ineq <- normalize_legacy_entropy_matrix(x = A, n_scenarios = n_scenarios, arg = "A", call = call)
+  b_ineq <- normalize_legacy_entropy_rhs(x = b, n_constraints = nrow(a_ineq), arg = "b", call = call)
+
+  metadata <- legacy_entropy_constraint_metadata(n_equalities = nrow(a_eq), n_inequalities = nrow(a_ineq))
+
+  constraints <- new_ffp_constraints(
+    n_scenarios = n_scenarios,
+    a_eq = a_eq,
+    b_eq = b_eq,
+    a_ineq = a_ineq,
+    b_ineq = b_ineq,
+    metadata = metadata
+  )
+
+  build_entropy_problem_from_constraints(prior = prior, constraints = constraints, call = call)
+}

@@ -7,19 +7,19 @@
 fit_to_moments(X, m, S)
 }
 \arguments{
-\item{X}{A \code{matrix} of size \code{TxN} with relevant the risk drivers.}
+\item{X}{A numeric matrix of size \verb{T x N} containing the scenario features.}
 
-\item{m}{A \code{matrix} of size \code{Nx1} given by \code{Double_Decay}
-with risk drivers location.}
+\item{m}{A numeric vector or matrix of length \code{N} containing the target
+posterior means.}
 
-\item{S}{A \code{matrix} of size \code{NxN} given by \code{Double_Decay}
-with the dispersion matrix of the risk drivers.}
+\item{S}{A numeric matrix of size \verb{N x N} containing the target posterior
+covariance matrix.}
 }
 \value{
-A \code{matrix} vector with the posterior probabilities.
+A numeric vector containing the posterior probabilities.
 }
 \description{
-Internal function that computes the flexible probabilities given by
-double-decay covariance matrix.
+Computes flexible probabilities that match target first and second moments
+while minimizing relative entropy from a uniform prior.
 }
 \keyword{internal}

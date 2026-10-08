@@ -234,29 +234,20 @@ validate_entropy_normalization <- function(x, call = rlang::caller_env()) {
 
 # Problem builder ---------------------------------------------------------
 
-build_entropy_problem <- function(model, constraints, call = rlang::caller_env()) {
-  validate_ffp_model(model = model, call = call)
+build_entropy_problem_from_constraints <- function(prior, constraints, call = rlang::caller_env()) {
 
-  if (is.null(model$prior)) {
-    ffp_abort(
-      c(
-        "An FFP model must have a prior before building the entropy problem.",
-        "i" = "Specify the prior with {.fn ffp_prior} before fitting the model."
-      ),
-      class = "ffp_error_missing_prior",
-      call = call
-    )
-  }
+  prior <- as.double(prior)
+  n_scenarios <- length(prior)
 
+  validate_entropy_scenario_count(n_scenarios = n_scenarios, call = call)
+  validate_entropy_prior(prior = prior, n_scenarios = n_scenarios, call = call)
   validate_ffp_constraints(constraints, call = call)
-
-  n_scenarios <- scenario_count(model$scenarios)
 
   if (constraints$n_scenarios != n_scenarios) {
     ffp_abort(
       c(
-        "The compiled constraints are incompatible with the model.",
-        "x" = paste0("The model contains ", n_scenarios, " scenario(s), but the constraints contain ", constraints$n_scenarios, ".")
+        "The constraints are incompatible with the prior.",
+        "x" = paste0("The prior contains ", n_scenarios, " scenario(s), but the constraints contain ", constraints$n_scenarios, ".")
       ),
       class = "ffp_error_invalid_entropy_problem",
       call = call
@@ -270,16 +261,42 @@ build_entropy_problem <- function(model, constraints, call = rlang::caller_env()
 
   b_eq <- c(constraints$b_eq, 1)
   normalization_row <- nrow(a_eq)
-  metadata <- new_entropy_problem_metadata(constraint_metadata = constraints$metadata, normalization_row = normalization_row)
+
+  metadata <- new_entropy_problem_metadata(
+    constraint_metadata = constraints$metadata,
+    normalization_row = normalization_row
+  )
 
   new_ffp_entropy_problem(
     n_scenarios = n_scenarios,
-    prior = model$prior,
+    prior = prior,
     a_eq = a_eq,
     b_eq = b_eq,
     a_ineq = constraints$a_ineq,
     b_ineq = constraints$b_ineq,
     metadata = metadata
+  )
+}
+
+build_entropy_problem <- function(model, constraints, call = rlang::caller_env()) {
+
+  validate_ffp_model(model = model, call = call)
+
+  if (is.null(model$prior)) {
+    ffp_abort(
+      c(
+        "An FFP model must have a prior before building the entropy problem.",
+        "i" = paste0("Specify the prior with {.fn ffp_prior} before fitting the model.")
+      ),
+      class = "ffp_error_missing_prior",
+      call = call
+    )
+  }
+
+  build_entropy_problem_from_constraints(
+    prior = model$prior,
+    constraints = constraints,
+    call = call
   )
 }
 

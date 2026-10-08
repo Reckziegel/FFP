@@ -1,11 +1,13 @@
 #' Relative Entropy
 #'
-#' Computes the relative entropy of two distributions.
+#' Computes the Kullback-Leibler divergence from a prior probability
+#' distribution to a posterior probability distribution.
 #'
 #' @param prior A prior probability distribution.
 #' @param posterior A posterior probability distribution.
 #'
-#' @return A \code{double} with the relative entropy.
+#' @return A non-negative numeric scalar containing the relative entropy.
+#'
 #' @export
 #'
 #' @examples
@@ -26,12 +28,9 @@ relative_entropy <- function(prior, posterior) {
     )
   }
 
-  prior     <- as_ffp(prior)
-  posterior <- as_ffp(posterior)
+  prior     <- as.double(as_ffp(prior))
+  posterior <- as.double(as_ffp(posterior))
 
-  prior     <- vctrs::vec_data(prior)
-  posterior <- vctrs::vec_data(posterior)
-
-  sum(posterior * (log(posterior) - log(prior)))
+  entropy_kl_divergence(posterior = posterior,prior = prior)
 
 }

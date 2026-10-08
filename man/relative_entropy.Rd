@@ -12,10 +12,11 @@ relative_entropy(prior, posterior)
 \item{posterior}{A posterior probability distribution.}
 }
 \value{
-A \code{double} with the relative entropy.
+A non-negative numeric scalar containing the relative entropy.
 }
 \description{
-Computes the relative entropy of two distributions.
+Computes the Kullback-Leibler divergence from a prior probability
+distribution to a posterior probability distribution.
 }
 \examples{
 set.seed(222)

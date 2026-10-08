@@ -7,18 +7,18 @@
 least_info_kernel(Y, y, h2)
 }
 \arguments{
-\item{Y}{A \code{matrix} with the macroeconomic indicators.}
+\item{Y}{A numeric matrix containing the scenario features.}
 
-\item{y}{A \code{numeric} scalar with the target to which \code{Y} is expected
-to be near by.}
+\item{y}{A numeric vector containing the target posterior means.}
 
-\item{h2}{A \code{matrix} with the covariance of the \code{Y} factor.}
+\item{h2}{A numeric covariance matrix. If \code{NULL}, only the posterior means
+are constrained.}
 }
 \value{
-A vector with the new probability distribution.
+A numeric vector containing the posterior probabilities.
 }
 \description{
-This is an internal function that uses the kernel-smoothing approach to compute
-the posterior probabilities that satisfies some macroeconomic statement.
+This is an internal function that uses the kernel-smoothing approach to
+compute posterior probabilities satisfying target first and second moments.
 }
 \keyword{internal}

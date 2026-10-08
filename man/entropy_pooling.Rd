@@ -10,7 +10,7 @@ entropy_pooling(
   b = NULL,
   Aeq = NULL,
   beq = NULL,
-  solver = c("nlminb", "solnl", "nloptr"),
+  solver = "nlminb",
   ...
 )
 }

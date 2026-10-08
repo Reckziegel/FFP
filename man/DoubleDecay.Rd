@@ -7,21 +7,21 @@
 DoubleDecay(x, decay_low, decay_high)
 }
 \arguments{
-\item{x}{A set of relevant risk drivers.}
+\item{x}{A numeric matrix containing the relevant risk drivers.}
 
-\item{decay_low}{A \code{numeric} value with the low decay (long half-life).}
+\item{decay_low}{A numeric decay rate used to estimate correlations.}
 
-\item{decay_high}{A \code{numeric} value with the high decay (short half-life).}
+\item{decay_high}{A numeric decay rate used to estimate volatilities.}
 }
 \value{
-A \code{list} with the posterior mean ans sigma.
+A list containing the target posterior mean and covariance matrix.
 }
 \description{
-This function computes the covariance matrix using two different decay factors.
+This function computes the covariance matrix using two different decay
+factors.
 }
 \details{
-A common practice is to estimate the covariance of the risk drivers using a high
-decay (short half-life) for the volatilities and a low decay (long half-life)
-for the correlations.
+A common practice is to estimate covariance using a slower decay for
+correlations and a faster decay for volatilities.
 }
 \keyword{internal}

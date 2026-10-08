@@ -36,3 +36,148 @@ test_that("`view_on_correlation` works for tbl_df", {
   expect_length(vmean_tbl, 2L)
   expect_named(vmean_tbl, c("Aeq", "beq"))
 })
+
+
+test_that("view_on_correlation matches the FFP 2.0 correlation constraint", {
+  x <- matrix(
+    c(
+      -0.03,  0.01,
+      -0.01,  0.03,
+      0.00, -0.01,
+      0.02,  0.04,
+      0.04,  0.02
+    ),
+    ncol = 2,
+    byrow = TRUE
+  )
+
+  target <- matrix(
+    c(
+      1.0, 0.4,
+      0.4, 1.0
+    ),
+    nrow = 2,
+    byrow = TRUE
+  )
+
+  legacy <- view_on_correlation(
+    x = x,
+    cor = target
+  )
+
+  model <- ffp_model(x) |>
+    ffp_prior(
+      prior_uniform()
+    ) |>
+    ffp_view(
+      view_correlation(
+        x = x,
+        target = target
+      )
+    )
+
+  constraints <- compile_views(model)
+
+  expect_equal(
+    legacy$Aeq,
+    constraints$a_eq
+  )
+
+  expect_equal(
+    as.double(legacy$beq),
+    constraints$b_eq,
+    tolerance = 1e-15
+  )
+})
+
+
+test_that("view_on_correlation diagonal preserves reference second moments", {
+  x <- matrix(
+    c(
+      -2,  3,
+      -1,  1,
+      0, -1,
+      1,  0,
+      4,  2
+    ),
+    ncol = 2,
+    byrow = TRUE
+  )
+
+  result <- view_on_correlation(
+    x = x,
+    cor = diag(2)
+  )
+
+  expected_second_moments <- colMeans(
+    x^2
+  )
+
+  expect_equal(
+    result$beq[c(1, 3), 1],
+    expected_second_moments,
+    tolerance = 1e-15
+  )
+})
+
+
+test_that("view_on_correlation uses probability-weighted dispersion", {
+  x <- matrix(
+    c(
+      -2,  3,
+      -1,  1,
+      0, -1,
+      1,  0,
+      4,  2
+    ),
+    ncol = 2,
+    byrow = TRUE
+  )
+
+  target <- matrix(
+    c(
+      1.0, 0.5,
+      0.5, 1.0
+    ),
+    nrow = 2,
+    byrow = TRUE
+  )
+
+  prior <- rep(
+    1 / nrow(x),
+    nrow(x)
+  )
+
+  means <- colSums(
+    x * prior
+  )
+
+  sds <- sqrt(
+    colSums(
+      sweep(
+        x,
+        MARGIN = 2,
+        STATS = means,
+        FUN = "-"
+      )^2 *
+        prior
+    )
+  )
+
+  expected_cross_moment <- (
+    means[[1]] * means[[2]] +
+      sds[[1]] * sds[[2]] *
+      target[1, 2]
+  )
+
+  result <- view_on_correlation(
+    x = x,
+    cor = target
+  )
+
+  expect_equal(
+    result$beq[2, 1],
+    expected_cross_moment,
+    tolerance = 1e-15
+  )
+})

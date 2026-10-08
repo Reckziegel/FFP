@@ -37,3 +37,50 @@ test_that("`view_on_volatility` works for tbl_df", {
   expect_length(vmean_tbl, 2L)
   expect_named(vmean_tbl, c("Aeq", "beq"))
 })
+
+test_that("view_on_volatility matches the FFP 2.0 volatility constraint", {
+  x <- matrix(
+    c(
+      -0.02, 0.01,
+      0.00, 0.02,
+      0.01, 0.03,
+      0.03, 0.01,
+      0.02, 0.04
+    ),
+    ncol = 2,
+    byrow = TRUE
+  )
+
+  target <- c(
+    0.03,
+    0.04
+  )
+
+  legacy <- view_on_volatility(
+    x = x,
+    vol = target
+  )
+
+  model <- ffp_model(x) |>
+    ffp_prior(
+      prior_uniform()
+    ) |>
+    ffp_view(
+      view_volatility(
+        x = x,
+        target = target
+      )
+    )
+
+  constraints <- compile_views(model)
+
+  expect_equal(
+    legacy$Aeq,
+    constraints$a_eq
+  )
+
+  expect_equal(
+    as.double(legacy$beq),
+    constraints$b_eq
+  )
+})

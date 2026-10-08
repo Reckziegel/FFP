@@ -163,3 +163,306 @@ test_that("results are identical and don't depend on the class", {
   expect_equal(as.double(double_decay_tsm), as.double(double_decay_matm), tolerance = 0.0001)
   expect_equal(as.double(double_decay_xtsm), as.double(double_decay_tblm), tolerance = 0.0001)
 })
+
+
+# Double-decay moments ----------------------------------------------------
+
+test_that("DoubleDecay preserves the legacy moment construction", {
+  x <- matrix(
+    c(
+      0.01,  0.02,
+      -0.02,  0.01,
+      0.03, -0.01,
+      -0.01,  0.03,
+      0.02,  0.01,
+      0.00, -0.02
+    ),
+    ncol = 2,
+    byrow = TRUE
+  )
+
+  decay_low <- 0.0055
+  decay_high <- 0.0166
+
+  n_scenarios <- nrow(x)
+  ages <- n_scenarios - seq_len(n_scenarios)
+
+  correlation_weights <- exp(
+    -decay_low * ages
+  )
+
+  correlation_weights <- (
+    correlation_weights /
+      sum(correlation_weights)
+  )
+
+  correlation_second_moment <- crossprod(
+    x,
+    sweep(
+      x,
+      MARGIN = 1,
+      STATS = correlation_weights,
+      FUN = "*"
+    )
+  )
+
+  expected_correlation <- stats::cov2cor(
+    correlation_second_moment
+  )
+
+  volatility_weights <- exp(
+    -decay_high * ages
+  )
+
+  volatility_weights <- (
+    volatility_weights /
+      sum(volatility_weights)
+  )
+
+  volatility_second_moment <- crossprod(
+    x,
+    sweep(
+      x,
+      MARGIN = 1,
+      STATS = volatility_weights,
+      FUN = "*"
+    )
+  )
+
+  expected_volatility <- sqrt(
+    diag(volatility_second_moment)
+  )
+
+  expected_covariance <- (
+    diag(expected_volatility) %*%
+      expected_correlation %*%
+      diag(expected_volatility)
+  )
+
+  result <- DoubleDecay(
+    x = x,
+    decay_low = decay_low,
+    decay_high = decay_high
+  )
+
+  expect_equal(
+    as.double(result$m),
+    c(0, 0),
+    tolerance = 1e-12
+  )
+
+  expect_equal(
+    result$s,
+    expected_covariance,
+    tolerance = 1e-12
+  )
+})
+
+
+test_that("DoubleDecay uses the FFP 2.0 exponential-decay core", {
+  x <- xm_mat
+
+  moments <- DoubleDecay(
+    x = x,
+    decay_low = slow,
+    decay_high = fast
+  )
+
+  correlation_probabilities <- exp_decay_probabilities(
+    n_scenarios = nrow(x),
+    half_life = log(2) / slow
+  )
+
+  correlation_second_moment <- crossprod(
+    x,
+    sweep(
+      x,
+      MARGIN = 1,
+      STATS = correlation_probabilities,
+      FUN = "*"
+    )
+  )
+
+  correlation <- stats::cov2cor(
+    correlation_second_moment
+  )
+
+  volatility_probabilities <- exp_decay_probabilities(
+    n_scenarios = nrow(x),
+    half_life = log(2) / fast
+  )
+
+  volatility_second_moment <- crossprod(
+    x,
+    sweep(
+      x,
+      MARGIN = 1,
+      STATS = volatility_probabilities,
+      FUN = "*"
+    )
+  )
+
+  volatility <- sqrt(
+    diag(volatility_second_moment)
+  )
+
+  expected_covariance <- (
+    diag(volatility) %*%
+      correlation %*%
+      diag(volatility)
+  )
+
+  expect_identical(
+    moments$s,
+    expected_covariance
+  )
+})
+
+
+# Posterior moments -------------------------------------------------------
+
+test_that("double_decay matches its target posterior moments", {
+  result <- double_decay(
+    xm_mat,
+    slow = slow,
+    fast = fast
+  )
+
+  probabilities <- as.double(result)
+
+  target <- DoubleDecay(
+    x = xm_mat,
+    decay_low = slow,
+    decay_high = fast
+  )
+
+  actual_mean <- drop(
+    crossprod(
+      probabilities,
+      xm_mat
+    )
+  )
+
+  centered <- sweep(
+    xm_mat,
+    MARGIN = 2,
+    STATS = actual_mean,
+    FUN = "-"
+  )
+
+  actual_covariance <- crossprod(
+    centered,
+    sweep(
+      centered,
+      MARGIN = 1,
+      STATS = probabilities,
+      FUN = "*"
+    )
+  )
+
+  expect_equal(
+    actual_mean,
+    as.double(target$m),
+    tolerance = 1e-8
+  )
+
+  expect_equal(
+    actual_covariance,
+    target$s,
+    tolerance = 1e-8
+  )
+})
+
+
+test_that("double_decay returns valid probabilities", {
+  result <- double_decay(
+    xm_mat,
+    slow = slow,
+    fast = fast
+  )
+
+  probabilities <- as.double(result)
+
+  expect_true(
+    all(is.finite(probabilities))
+  )
+
+  expect_true(
+    all(probabilities >= 0)
+  )
+
+  expect_equal(
+    sum(probabilities),
+    1,
+    tolerance = 1e-10
+  )
+})
+
+
+# Legacy metadata ---------------------------------------------------------
+
+test_that("double_decay preserves legacy metadata", {
+  result <- double_decay(
+    xu,
+    slow = slow,
+    fast = fast
+  )
+
+  expect_identical(
+    attr(
+      result,
+      "fn",
+      exact = TRUE
+    ),
+    "double_decay"
+  )
+
+  user_call <- attr(
+    result,
+    "user_call",
+    exact = TRUE
+  )
+
+  expect_true(
+    is.call(user_call)
+  )
+
+  expect_match(
+    paste(
+      deparse(user_call),
+      collapse = ""
+    ),
+    "double_decay"
+  )
+})
+
+
+test_that("double_decay remains compatible with bind_probs", {
+  result <- double_decay(
+    xu,
+    slow = slow,
+    fast = fast
+  )
+
+  bound <- bind_probs(result)
+
+  expect_s3_class(
+    bound,
+    "tbl_df"
+  )
+
+  expect_equal(
+    bound$probs,
+    as.double(result)
+  )
+
+  expect_true(
+    all(
+      grepl(
+        "double_decay",
+        as.character(bound$fn),
+        fixed = TRUE
+      )
+    )
+  )
+})

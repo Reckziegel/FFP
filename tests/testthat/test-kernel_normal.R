@@ -163,3 +163,172 @@ test_that("results are identical and don't depend on the class", {
   expect_equal(as.double(kernel_normal_tblm), as.double(kernel_normal_matm))
   expect_equal(as.double(kernel_normal_dfm), as.double(kernel_normal_tsm))
 })
+
+# FFP 2.0 core equivalence ------------------------------------------------
+
+test_that("univariate kernel_normal matches the FFP 2.0 core", {
+  expected <- kernel_conditioning_probabilities(
+    values = as.double(xu),
+    target = muu,
+    bandwidth = sqrt(volu)
+  )
+
+  expect_identical(
+    as.double(kernel_normal_dbl),
+    expected
+  )
+})
+
+
+test_that("kernel_normal maps sigma to squared bandwidth", {
+  sigma <- 4
+
+  result <- kernel_normal(
+    c(-2, 0, 2),
+    mean = 0,
+    sigma = sigma
+  )
+
+  expected <- kernel_conditioning_probabilities(
+    values = c(-2, 0, 2),
+    target = 0,
+    bandwidth = 2
+  )
+
+  expect_identical(
+    as.double(result),
+    expected
+  )
+})
+
+
+test_that("univariate kernel_normal preserves symmetry around the mean", {
+  result <- kernel_normal(
+    c(-2, -1, 0, 1, 2),
+    mean = 0,
+    sigma = 1
+  )
+
+  probabilities <- as.double(result)
+
+  expect_equal(
+    probabilities[[1]],
+    probabilities[[5]]
+  )
+
+  expect_equal(
+    probabilities[[2]],
+    probabilities[[4]]
+  )
+
+  expect_gt(
+    probabilities[[3]],
+    probabilities[[2]]
+  )
+})
+
+
+# Multivariate legacy behavior --------------------------------------------
+
+test_that("multivariate kernel_normal preserves Gaussian kernel semantics", {
+  x <- matrix(
+    c(
+      -1, -1,
+      0,  0,
+      1,  1
+    ),
+    ncol = 2,
+    byrow = TRUE
+  )
+
+  mean <- c(0, 0)
+  sigma <- diag(2)
+
+  expected <- mvtnorm::dmvnorm(
+    x = x,
+    mean = mean,
+    sigma = sigma
+  )
+
+  expected <- expected / sum(expected)
+
+  result <- kernel_normal(
+    x,
+    mean = mean,
+    sigma = sigma
+  )
+
+  expect_equal(
+    as.double(result),
+    expected
+  )
+})
+
+
+# Legacy metadata ---------------------------------------------------------
+
+test_that("kernel_normal preserves legacy metadata", {
+  result <- kernel_normal(
+    xu,
+    mean = muu,
+    sigma = volu
+  )
+
+  expect_identical(
+    attr(
+      result,
+      "fn",
+      exact = TRUE
+    ),
+    "kernel_normal"
+  )
+
+  user_call <- attr(
+    result,
+    "user_call",
+    exact = TRUE
+  )
+
+  expect_true(
+    is.call(user_call)
+  )
+
+  expect_match(
+    paste(
+      deparse(user_call),
+      collapse = ""
+    ),
+    "kernel_normal"
+  )
+})
+
+
+test_that("kernel_normal remains compatible with bind_probs", {
+  result <- kernel_normal(
+    xu,
+    mean = muu,
+    sigma = volu
+  )
+
+  bound <- bind_probs(result)
+
+  expect_s3_class(
+    bound,
+    "tbl_df"
+  )
+
+  expect_equal(
+    bound$probs,
+    as.double(result)
+  )
+
+  expect_true(
+    all(
+      grepl(
+        "kernel_normal",
+        as.character(bound$fn),
+        fixed = TRUE
+      )
+    )
+  )
+})

@@ -2,7 +2,7 @@
 % Please edit documentation in R/entropy_pooling.R
 \name{entropy_pooling}
 \alias{entropy_pooling}
-\title{Numerical Entropy Minimization}
+\title{Entropy Pooling}
 \usage{
 entropy_pooling(
   p,
@@ -15,36 +15,58 @@ entropy_pooling(
 )
 }
 \arguments{
-\item{p}{A vector of prior probabilities.}
+\item{p}{A numeric vector of prior probabilities.}
 
-\item{A}{The linear inequality constraint (left-hand side).}
+\item{A}{Optional matrix defining linear inequality constraints.}
 
-\item{b}{The linear inequality constraint (right-hand side).}
+\item{b}{Optional numeric vector containing the right-hand side of the
+inequality constraints.}
 
-\item{Aeq}{The linear equality constraint (left-hand side).}
+\item{Aeq}{Optional matrix defining linear equality constraints.}
 
-\item{beq}{The linear equality constraint (right-hand side).}
+\item{beq}{Optional numeric vector containing the right-hand side of the
+equality constraints.}
 
-\item{solver}{A \code{character}. One of: "nlminb", "solnl" or "nloptr".}
+\item{solver}{Legacy solver identifier retained for backwards compatibility.
+One of \code{"nlminb"}, \code{"solnl"}, or \code{"nloptr"}. Entropy Pooling is now solved
+by the unified FFP solver regardless of this value.}
 
-\item{...}{Further arguments passed to one of the solvers.}
+\item{...}{Legacy arguments retained for backwards compatibility.}
 }
 \value{
-A vector of posterior probabilities.
+An \code{ffp} vector containing the posterior probabilities.
 }
 \description{
-This function solves the entropy minimization problem with equality and inequality
-constraints. The solution is a vector of posterior probabilities that distorts
-the least the prior (equal-weights probabilities) given the constraints (views on
-the market).
+Solves the relative-entropy minimization problem under linear equality and
+inequality constraints.
 }
 \details{
-When imposing views constraints there is no need to specify the non-negativity
-constraint for probabilities, which is done automatically by \code{entropy_pooling}.
+Given prior probabilities \eqn{q}, \code{entropy_pooling()} finds posterior
+probabilities \eqn{p} that minimize the Kullback-Leibler divergence
 
-For the arguments accepted in \code{...}, please see the documentation of
-\code{\link[stats]{nlminb}}, \code{\link[NlcOptim]{solnl}}, \code{\link[nloptr]{nloptr}}
-and the examples bellow.
+\deqn{
+  \sum_t p_t \log(p_t / q_t)
+}
+
+subject to the supplied views,
+
+\deqn{
+  A_{eq} p = b_{eq}
+}
+
+and
+
+\deqn{
+  A p \le b,
+}
+
+together with non-negativity and normalization of the posterior
+probabilities.
+
+\code{entropy_pooling()} is the low-level matrix interface retained for
+compatibility with earlier versions of the package. New workflows should
+generally use \code{\link[=ffp_model]{ffp_model()}}, \code{\link[=ffp_prior]{ffp_prior()}}, \code{\link[=ffp_view]{ffp_view()}}, and \code{\link[=ffp_fit]{ffp_fit()}},
+which provide a higher-level interface to the same Entropy Pooling core.
 }
 \examples{
 # setup
@@ -61,41 +83,10 @@ prior <- rep(1 / n, n)
 views <- view_on_mean(x = ret, mean = mean)
 
 # Optimization
-ep <- entropy_pooling(
+full_posterior <- entropy_pooling(
  p      = prior,
  Aeq    = views$Aeq,
- beq    = views$beq,
- solver = "nlminb"
+ beq    = views$beq
 )
-ep
-
-### Using the ... argument to control the optimization parameters
-
-# nlminb
-ep <- entropy_pooling(
- p      = prior,
- Aeq    = views$Aeq,
- beq    = views$beq,
- solver = "nlminb",
- control = list(
-     eval.max = 1000,
-     iter.max = 1000,
-     trace    = TRUE
-   )
-)
-ep
-
-# nloptr
-ep <- entropy_pooling(
- p      = prior,
- Aeq    = views$Aeq,
- beq    = views$beq,
- solver = "nloptr",
- control = list(
-     xtol_rel = 1e-10,
-     maxeval  = 1000,
-     check_derivatives = TRUE
-   )
-)
-ep
+full_posterior
 }

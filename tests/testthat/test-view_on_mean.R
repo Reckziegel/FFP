@@ -36,3 +36,46 @@ test_that("`view_on_mean` works for tbl_df", {
   expect_length(vmean_tbl, 2L)
   expect_named(vmean_tbl, c("Aeq", "beq"))
 })
+
+test_that("view_on_mean matches the FFP 2.0 mean constraint", {
+  x <- matrix(
+    c(
+      -0.02, 0.01,
+      0.00, 0.02,
+      0.01, 0.03,
+      0.03, 0.01
+    ),
+    ncol = 2,
+    byrow = TRUE
+  )
+
+  target <- c(0.01, 0.02)
+
+  legacy <- view_on_mean(
+    x = x,
+    mean = target
+  )
+
+  model <- ffp_model(x) |>
+    ffp_prior(
+      prior_uniform()
+    ) |>
+    ffp_view(
+      view_mean(
+        x = x,
+        target = target
+      )
+    )
+
+  constraints <- compile_views(model)
+
+  expect_equal(
+    legacy$Aeq,
+    constraints$a_eq
+  )
+
+  expect_equal(
+    as.double(legacy$beq),
+    constraints$b_eq
+  )
+})

@@ -36,3 +36,56 @@ test_that("`view_on_covariance` works for tbl_df", {
   expect_length(vmean_tbl, 2L)
   expect_named(vmean_tbl, c("Aeq", "beq"))
 })
+
+test_that("view_on_covariance matches the FFP 2.0 covariance constraint", {
+  x <- matrix(
+    c(
+      -0.02, 0.01,
+      0.00, 0.02,
+      0.01, 0.03,
+      0.03, 0.01,
+      0.02, 0.04
+    ),
+    ncol = 2,
+    byrow = TRUE
+  )
+
+  target_mean <- colMeans(x)
+
+  target_covariance <- matrix(
+    c(
+      0.0004, 0.0001,
+      0.0001, 0.0003
+    ),
+    ncol = 2
+  )
+
+  legacy <- view_on_covariance(
+    x = x,
+    mean = target_mean,
+    sigma = target_covariance
+  )
+
+  model <- ffp_model(x) |>
+    ffp_prior(
+      prior_uniform()
+    ) |>
+    ffp_view(
+      view_covariance(
+        x = x,
+        target = target_covariance
+      )
+    )
+
+  constraints <- compile_views(model)
+
+  expect_equal(
+    legacy$Aeq,
+    constraints$a_eq
+  )
+
+  expect_equal(
+    as.double(legacy$beq),
+    constraints$b_eq
+  )
+})

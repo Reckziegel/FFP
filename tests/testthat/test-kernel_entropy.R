@@ -161,3 +161,270 @@ test_that("results are identical and don't depend on the class", {
   expect_equal(as.double(kernel_entropy_tblm), as.double(kernel_entropy_matm))
   expect_equal(as.double(kernel_entropy_dfm), as.double(kernel_entropy_tsm))
 })
+
+
+# FFP 2.0 core ------------------------------------------------------------
+
+test_that("mean-only kernel entropy matches the FFP 2.0 public workflow", {
+  x <- c(
+    -2,
+    -1,
+    0,
+    1,
+    2
+  )
+
+  target_mean <- 0.35
+
+  legacy <- kernel_entropy(
+    x,
+    mean = target_mean
+  )
+
+  fit <- ffp_model(x) |>
+    ffp_prior(
+      prior_uniform()
+    ) |>
+    ffp_view(
+      view_mean(
+        x = x,
+        target = target_mean
+      )
+    ) |>
+    ffp_fit()
+
+  expect_equal(
+    as.double(legacy),
+    fit$posterior,
+    tolerance = 1e-8
+  )
+})
+
+
+test_that("kernel entropy matches target mean and variance", {
+  x <- c(
+    -2,
+    -1,
+    0,
+    1,
+    2
+  )
+
+  reference_probabilities <- c(
+    0.08,
+    0.12,
+    0.20,
+    0.25,
+    0.35
+  )
+
+  target_mean <- sum(
+    reference_probabilities * x
+  )
+
+  target_variance <- sum(
+    reference_probabilities *
+      (x - target_mean)^2
+  )
+
+  result <- kernel_entropy(
+    x,
+    mean = target_mean,
+    sigma = target_variance
+  )
+
+  probabilities <- as.double(result)
+
+  actual_mean <- sum(
+    probabilities * x
+  )
+
+  actual_variance <- sum(
+    probabilities *
+      (x - actual_mean)^2
+  )
+
+  expect_equal(
+    sum(probabilities),
+    1,
+    tolerance = 1e-10
+  )
+
+  expect_equal(
+    actual_mean,
+    target_mean,
+    tolerance = 1e-8
+  )
+
+  expect_equal(
+    actual_variance,
+    target_variance,
+    tolerance = 1e-8
+  )
+})
+
+
+test_that("multivariate kernel entropy matches target moments", {
+  x <- matrix(
+    c(
+      -2.0, -1.0,
+      -1.0,  0.5,
+      0.0,  1.0,
+      1.0, -1.0,
+      2.0,  0.5,
+      0.5,  2.0
+    ),
+    ncol = 2,
+    byrow = TRUE
+  )
+
+  reference_probabilities <- c(
+    0.10,
+    0.15,
+    0.20,
+    0.25,
+    0.10,
+    0.20
+  )
+
+  target_mean <- drop(
+    crossprod(
+      reference_probabilities,
+      x
+    )
+  )
+
+  centered <- sweep(
+    x,
+    MARGIN = 2,
+    STATS = target_mean,
+    FUN = "-"
+  )
+
+  weighted_centered <- sweep(
+    centered,
+    MARGIN = 1,
+    STATS = reference_probabilities,
+    FUN = "*"
+  )
+
+  target_covariance <- crossprod(
+    centered,
+    weighted_centered
+  )
+
+  result <- kernel_entropy(
+    x,
+    mean = target_mean,
+    sigma = target_covariance
+  )
+
+  probabilities <- as.double(result)
+
+  actual_mean <- drop(
+    crossprod(
+      probabilities,
+      x
+    )
+  )
+
+  actual_centered <- sweep(
+    x,
+    MARGIN = 2,
+    STATS = actual_mean,
+    FUN = "-"
+  )
+
+  actual_weighted_centered <- sweep(
+    actual_centered,
+    MARGIN = 1,
+    STATS = probabilities,
+    FUN = "*"
+  )
+
+  actual_covariance <- crossprod(
+    actual_centered,
+    actual_weighted_centered
+  )
+
+  expect_equal(
+    actual_mean,
+    target_mean,
+    tolerance = 1e-8
+  )
+
+  expect_equal(
+    actual_covariance,
+    target_covariance,
+    tolerance = 1e-8
+  )
+})
+
+
+# Legacy metadata ---------------------------------------------------------
+
+test_that("kernel_entropy preserves legacy metadata", {
+  result <- kernel_entropy(
+    xu,
+    mean = muu,
+    sigma = volu
+  )
+
+  expect_identical(
+    attr(
+      result,
+      "fn",
+      exact = TRUE
+    ),
+    "kernel_entropy"
+  )
+
+  user_call <- attr(
+    result,
+    "user_call",
+    exact = TRUE
+  )
+
+  expect_true(
+    is.call(user_call)
+  )
+
+  expect_match(
+    paste(
+      deparse(user_call),
+      collapse = ""
+    ),
+    "kernel_entropy"
+  )
+})
+
+
+test_that("kernel_entropy remains compatible with bind_probs", {
+  result <- kernel_entropy(
+    xu,
+    mean = muu,
+    sigma = volu
+  )
+
+  bound <- bind_probs(result)
+
+  expect_s3_class(
+    bound,
+    "tbl_df"
+  )
+
+  expect_equal(
+    bound$probs,
+    as.double(result)
+  )
+
+  expect_true(
+    all(
+      grepl(
+        "kernel_entropy",
+        as.character(bound$fn),
+        fixed = TRUE
+      )
+    )
+  )
+})

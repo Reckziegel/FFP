@@ -1,26 +1,48 @@
-#' Numerical Entropy Minimization
+#' Entropy Pooling
 #'
-#' This function solves the entropy minimization problem with equality and inequality
-#' constraints. The solution is a vector of posterior probabilities that distorts
-#' the least the prior (equal-weights probabilities) given the constraints (views on
-#' the market).
+#' Solves the relative-entropy minimization problem under linear equality and
+#' inequality constraints.
 #'
-#' When imposing views constraints there is no need to specify the non-negativity
-#' constraint for probabilities, which is done automatically by `entropy_pooling`.
+#' Given prior probabilities \eqn{q}, `entropy_pooling()` finds posterior
+#' probabilities \eqn{p} that minimize the Kullback-Leibler divergence
 #'
-#' For the arguments accepted in \code{...}, please see the documentation of
-#' \code{\link[stats]{nlminb}}, \code{\link[NlcOptim]{solnl}}, \code{\link[nloptr]{nloptr}}
-#' and the examples bellow.
+#' \deqn{
+#'   \sum_t p_t \log(p_t / q_t)
+#' }
 #'
-#' @param p A vector of prior probabilities.
-#' @param A The linear inequality constraint (left-hand side).
-#' @param b The linear inequality constraint (right-hand side).
-#' @param Aeq The linear equality constraint (left-hand side).
-#' @param beq The linear equality constraint (right-hand side).
-#' @param solver A \code{character}. One of: "nlminb", "solnl" or "nloptr".
-#' @param ... Further arguments passed to one of the solvers.
+#' subject to the supplied views,
 #'
-#' @return A vector of posterior probabilities.
+#' \deqn{
+#'   A_{eq} p = b_{eq}
+#' }
+#'
+#' and
+#'
+#' \deqn{
+#'   A p \le b,
+#' }
+#'
+#' together with non-negativity and normalization of the posterior
+#' probabilities.
+#'
+#' `entropy_pooling()` is the low-level matrix interface retained for
+#' compatibility with earlier versions of the package. New workflows should
+#' generally use [ffp_model()], [ffp_prior()], [ffp_view()], and [ffp_fit()],
+#' which provide a higher-level interface to the same Entropy Pooling core.
+#'
+#' @param p A numeric vector of prior probabilities.
+#' @param A Optional matrix defining linear inequality constraints.
+#' @param b Optional numeric vector containing the right-hand side of the
+#'   inequality constraints.
+#' @param Aeq Optional matrix defining linear equality constraints.
+#' @param beq Optional numeric vector containing the right-hand side of the
+#'   equality constraints.
+#' @param solver Legacy solver identifier retained for backwards compatibility.
+#'   One of `"nlminb"`, `"solnl"`, or `"nloptr"`. Entropy Pooling is now solved
+#'   by the unified FFP solver regardless of this value.
+#' @param ... Legacy arguments retained for backwards compatibility.
+#'
+#' @return An `ffp` vector containing the posterior probabilities.
 #' @export
 #'
 #' @examples
@@ -38,201 +60,21 @@
 #' views <- view_on_mean(x = ret, mean = mean)
 #'
 #' # Optimization
-#' ep <- entropy_pooling(
+#' full_posterior <- entropy_pooling(
 #'  p      = prior,
 #'  Aeq    = views$Aeq,
-#'  beq    = views$beq,
-#'  solver = "nlminb"
+#'  beq    = views$beq
 #' )
-#' ep
-#'
-#' ### Using the ... argument to control the optimization parameters
-#'
-#' # nlminb
-#' ep <- entropy_pooling(
-#'  p      = prior,
-#'  Aeq    = views$Aeq,
-#'  beq    = views$beq,
-#'  solver = "nlminb",
-#'  control = list(
-#'      eval.max = 1000,
-#'      iter.max = 1000,
-#'      trace    = TRUE
-#'    )
-#' )
-#' ep
-#'
-#' # nloptr
-#' ep <- entropy_pooling(
-#'  p      = prior,
-#'  Aeq    = views$Aeq,
-#'  beq    = views$beq,
-#'  solver = "nloptr",
-#'  control = list(
-#'      xtol_rel = 1e-10,
-#'      maxeval  = 1000,
-#'      check_derivatives = TRUE
-#'    )
-#' )
-#' ep
+#' full_posterior
 entropy_pooling <- function(p, A = NULL, b = NULL, Aeq = NULL, beq = NULL, solver = "nlminb", ...) {
 
-  call   <- rlang::caller_env()
-  solver <- rlang::arg_match(solver, c("nlminb", "solnl", "nloptr"))
+  call <- rlang::caller_env()
+  rlang::arg_match(solver, c("nlminb", "solnl", "nloptr"))
 
-  problem <- build_legacy_entropy_problem(p = p, A = A, b = b, Aeq = Aeq,beq = beq, call = call)
+  problem  <- build_legacy_entropy_problem(p = p, A = A, b = b, Aeq = Aeq, beq = beq, call = call)
+  solution <- solve_entropy_problem(problem = problem, call = call)
 
-  if (solver == "nlminb" && nrow(problem$a_ineq) > 0L) {
-    cli::cli_abort(
-      c(
-        "x" = "Inequalities can only be solved with {.fn solnl} or {.fn nloptr}.",
-        "i" = "Use {.code solver = \"solnl\"} or {.code solver = \"nloptr\"} for inequality constraints."
-        )
-      )
-  }
-
-  p <- matrix(problem$prior, ncol = 1)
-  A <- problem$a_ineq
-  b <- matrix(problem$b_ineq, ncol = 1)
-  Aeq <- problem$a_eq
-  beq <- matrix(problem$b_eq, ncol = 1)
-  K_  <- nrow(A)
-  K   <- nrow(Aeq)
-  A_  <- t(A)
-  b_  <- t(b)
-  Aeq_ <- t(Aeq)
-  beq_ <- t(beq)
-
-  x0 <- matrix(0, nrow = K_ + K, ncol = 1)
-
-  # Equalities Constraint
-  if (!K_) {
-
-    if (solver == "nlminb") {
-
-      # objective and gradient
-      objective <- function(v, p, Aeq, beq, Aeq_, beq_){
-        x <- exp(log(p) - 1 - Aeq_ %*% v)
-        x[x < 10e-33] <- 10e-33
-        L <- crossprod(x, log(x) - log(p) + Aeq_ %*% v) - beq_ %*% v
-        -L
-      }
-      gradient <- function(v, p, Aeq, beq, Aeq_, beq_){
-        x <- exp(log(p) - 1 - Aeq_ %*% v)
-        beq - Aeq %*% x
-      }
-
-      p_ <- ep_nlminb(p = p, Aeq = Aeq, beq = beq, Aeq_ = Aeq_, beq_ = beq_, objective = objective, gradient = gradient, ...)
-
-      # Solving equalities constraint with solnl
-    } else if (solver == "solnl") {
-
-      nestedfunU_solnl <- function(v, p, Aeq_, beq_) {
-        x  <- exp(log(p) - 1 - Aeq_ %*% v)
-        x[x < 10e-33] <- 10e-33
-        L <- crossprod(x, log(x) - log(p) + Aeq_ %*% v) - beq_ %*% v
-        -L
-      }
-
-      ep_solnl <- ep_solnl(
-        x0  = x0,
-        fn  = nestedfunU_solnl,
-        ... = ...,
-        p   = p, Aeq_ = Aeq_, beq_ = beq_,
-        tolX = 1e-10, tolFun = 1e-10, tolCon = 1e-10, maxIter = 10000
-      )
-      v  <- ep_solnl$par
-      p_ <- exp(log(p) - 1 - Aeq_ %*% v)
-
-      # Solving equalities contraint with nloptr
-    } else {
-
-      ep_nloptr <- nloptr::auglag(
-        x0 = x0,
-        fn = function(v) {
-          x <- exp(log(p) - 1 - Aeq_ %*% v)
-          x[x < 10e-33] <- 10e-33
-          L <- crossprod(x, log(x) - log(p) + Aeq_ %*% v) - beq_ %*% v
-          -L
-        },
-        gr = function(v) {
-          x <- exp(log(p) - 1 - Aeq_ %*% v)
-          beq - Aeq %*% x
-        },
-        localsolver = "SLSQP", ...)
-
-      v <- ep_nloptr$par
-      p_ <- exp(log(p) - 1 - Aeq_ %*% v)
-
-    }
-
-    # Inequalities can only be solved with `solnl` or `nloptr`
-  } else {
-
-    InqMat <- -diag(1, K_ + K)
-    InqMat <- InqMat[-c(K_ + 1:nrow(InqMat)), ]
-    InqVec <- matrix(0, K_, 1)
-
-    # Solving inequalities with solnl
-    if (solver == "solnl") {
-
-      nestedfunC_solnl <- function(lv, K_, p, A_, Aeq_, .A, .b, .Aeq, .beq) {
-        lv <- as.matrix(lv)
-        l  <- lv[1:K_, , drop = FALSE]
-        v  <- lv[(K_ + 1):length(lv), , drop = FALSE]
-        x  <- exp(log(p) - 1 - A_ %*% l - Aeq_ %*% v)
-        x[x < 10e-33] <- 10e-33
-        L  <- crossprod(x, log(x) - log(p)) + crossprod(l, .A %*% x - .b) + crossprod(v, .Aeq %*% x - .beq)
-        - L
-      }
-
-      ep_solnl <- ep_solnl(
-        x0 = x0,
-        fn = nestedfunC_solnl,
-        K_ = K_, A_ = A_, Aeq_ = Aeq_, p = p, .A = A, .b = b, .Aeq = Aeq, .beq = beq,
-        A  = if (is.null(dim(InqMat))) matrix(InqMat, nrow = 1) else as.matrix(InqMat),
-        b  = InqVec,
-        tolX = 1e-10, tolFun = 1e-10, tolCon = 1e-10,maxIter = 10000, ... = ...
-      )
-
-      lv <- matrix(ep_solnl$par , ncol = 1)
-      l  <- lv[1:K_, , drop = FALSE]
-      v  <- lv[(K_ + 1):nrow(lv), , drop = FALSE]
-      p_ <- exp(log(p) - 1 - A_ %*% l - Aeq_ %*% v)
-
-      # Solving inequalities with nloptr
-    } else {
-
-      ep_nloptr <- nloptr::slsqp(
-        x0 = x0,
-        fn = function(lv) {
-          lv <- as.matrix(lv)
-          l  <- lv[1:K_ , , drop = FALSE]
-          v  <- lv[(K_ + 1):length(lv) , , drop = FALSE]
-          x  <- exp(log(p) - 1 - A_ %*% l - Aeq_ %*% v)
-          x[x <= 10e-33] <- 10e-33
-          L <- crossprod(x, log(x) - log(p)) + crossprod(l, A %*% x - b) + crossprod(v, Aeq %*% x - beq)
-          - L
-        },
-        ...)
-      lv <- matrix(ep_nloptr$par, ncol = 1)
-      l  <- lv[1:K_ , , drop = FALSE]
-      v  <- lv[(K_ + 1):nrow(lv) , , drop = FALSE]
-      p_ <- exp(log(p) - 1 - A_ %*% l - Aeq_ %*% v)
-
-    }
-
-  }
-
-  if (any(p_ < 0)) {
-    p_[p_ < 0] <- 1e-32
-  }
-  if (sum(p_) < 0.9999 || sum(p_) > 1.0001) {
-    p_ <- p_ / sum(p_)
-  }
-
-  new_ffp(as.double(p_))
-
+  new_ffp(solution$posterior)
 }
 
 #' @keywords internal

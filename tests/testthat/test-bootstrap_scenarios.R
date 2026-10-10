@@ -1,141 +1,302 @@
-set.seed(123)
-# data
-xu <- stats::rnorm(500)
-xm <- matrix(stats::rnorm(1000), ncol = 2)
-index <- seq(Sys.Date(), Sys.Date() + 499, "day")
-prob <- exp_decay(xu, 0.001)
+test_that("bootstrap_scenarios returns one row per draw", {
+  x <- matrix(
+    c(
+      1, 10,
+      2, 20,
+      3, 30
+    ),
+    ncol = 2,
+    byrow = TRUE,
+    dimnames = list(
+      NULL,
+      c(
+        "equity",
+        "bonds"
+      )
+    )
+  )
 
-# Univariate
-xu_vec <- xu
-xu_mat <- as.matrix(xu)
-xu_ts <- stats::as.ts(xu)
-xu_xts <- xts::xts(xu, index)
-xu_df <- as.data.frame(xu)
-xu_tbl <- tibble::tibble(index = index, x = xu)
+  p <- as_ffp(
+    c(
+      0.2,
+      0.3,
+      0.5
+    )
+  )
 
-# Multivariate
-xm_vec <- xm
-xm_mat <- as.matrix(xm)
-xm_ts <- stats::as.ts(xm)
-xm_xts <- xts::xts(xm, index)
-xm_df <- as.data.frame(xm)
-xm_tbl <- tibble::tibble(index = index, x = xm)
+  set.seed(123)
 
-# works on different classes ----------------------------------------------
+  result <- bootstrap_scenarios(
+    x = x,
+    p = p,
+    n = 25
+  )
 
-# doubles
-bootstrap_dbl <- bootstrap_scenarios(xu_vec, prob, 5)
-test_that("works on doubles", {
-  # type
-  expect_type(bootstrap_dbl, "list")
-  expect_s3_class(bootstrap_dbl, "tbl_df")
-  # size
-  expect_equal(ncol(bootstrap_dbl), 1L)
-  expect_equal(nrow(bootstrap_dbl), 5L)
+  expect_s3_class(
+    result,
+    "tbl_df"
+  )
+
+  expect_identical(
+    dim(result),
+    c(
+      25L,
+      2L
+    )
+  )
+
+  expect_identical(
+    names(result),
+    c(
+      "equity",
+      "bonds"
+    )
+  )
 })
 
-# matrices
-bootstrap_matu <- bootstrap_scenarios(xu_mat, prob, 5)
-test_that("works on univariate matrices", {
-  # type
-  expect_type(bootstrap_matu, "list")
-  expect_s3_class(bootstrap_matu, "tbl_df")
-  # size
-  expect_equal(ncol(bootstrap_matu), 1L)
-  expect_equal(nrow(bootstrap_matu), 5L)
+test_that("bootstrap_scenarios respects zero and unit probabilities", {
+  x <- data.frame(
+    equity = c(
+      -0.10,
+      0.02,
+      0.10
+    ),
+    bonds = c(
+      0.05,
+      0.01,
+      -0.03
+    )
+  )
+
+  p <- as_ffp(
+    c(
+      0,
+      1,
+      0
+    )
+  )
+
+  result <- bootstrap_scenarios(
+    x = x,
+    p = p,
+    n = 20
+  )
+
+  expect_identical(
+    result$equity,
+    rep(
+      0.02,
+      20
+    )
+  )
+
+  expect_identical(
+    result$bonds,
+    rep(
+      0.01,
+      20
+    )
+  )
 })
 
-bootstrap_matm <- bootstrap_scenarios(xm_mat, prob, 5)
-test_that("works on multivariate matrices", {
-  # type
-  expect_type(bootstrap_matm, "list")
-  expect_s3_class(bootstrap_matm, "tbl_df")
-  # size
-  expect_equal(ncol(bootstrap_matm), 2L)
-  expect_equal(nrow(bootstrap_matm), 5L)
+test_that("bootstrap_scenarios preserves complete joint scenarios", {
+  x <- data.frame(
+    equity = c(
+      -0.10,
+      0.00,
+      0.10
+    ),
+    regime = c(
+      "stress",
+      "neutral",
+      "growth"
+    ),
+    recession = c(
+      TRUE,
+      FALSE,
+      FALSE
+    )
+  )
+
+  p <- as_ffp(
+    c(
+      0,
+      1,
+      0
+    )
+  )
+
+  result <- bootstrap_scenarios(
+    x = x,
+    p = p,
+    n = 10
+  )
+
+  expect_identical(
+    names(result),
+    c(
+      "equity",
+      "regime",
+      "recession"
+    )
+  )
+
+  expect_identical(
+    result$equity,
+    rep(
+      0,
+      10
+    )
+  )
+
+  expect_identical(
+    result$regime,
+    rep(
+      "neutral",
+      10
+    )
+  )
+
+  expect_identical(
+    result$recession,
+    rep(
+      FALSE,
+      10
+    )
+  )
 })
 
-# ts
-bootstrap_tsu <- bootstrap_scenarios(xu_ts, prob, 5)
-test_that("works on univariate ts", {
-  # type
-  expect_type(bootstrap_tsu, "list")
-  expect_s3_class(bootstrap_tsu, "tbl_df")
-  # size
-  expect_equal(ncol(bootstrap_tsu), 1L)
-  expect_equal(nrow(bootstrap_tsu), 5L)
+test_that("bootstrap_scenarios does not bootstrap the scenario index as a variable", {
+  x <- data.frame(
+    date = as.Date("2026-01-01") + 0:2,
+    equity = c(
+      -0.10,
+      0.00,
+      0.10
+    ),
+    bonds = c(
+      0.03,
+      0.02,
+      0.01
+    )
+  )
+
+  p <- as_ffp(
+    c(
+      0.2,
+      0.3,
+      0.5
+    )
+  )
+
+  result <- bootstrap_scenarios(
+    x = x,
+    p = p,
+    n = 10
+  )
+
+  expect_identical(
+    names(result),
+    c(
+      "equity",
+      "bonds"
+    )
+  )
 })
 
-bootstrap_tsm <- bootstrap_scenarios(xm_ts, prob, 5)
-test_that("works on multivariate ts", {
-  # type
-  expect_type(bootstrap_tsm, "list")
-  expect_s3_class(bootstrap_tsm, "tbl_df")
-  # size
-  expect_equal(ncol(bootstrap_tsm), 2L)
-  expect_equal(nrow(bootstrap_tsm), 5L)
+test_that("bootstrap_scenarios uses posterior probabilities from ffp_fit", {
+  scenarios <- data.frame(
+    equity = c(
+      -0.08,
+      -0.03,
+      0.01,
+      0.04,
+      0.06
+    )
+  )
+
+  fit <- ffp_model(scenarios) |>
+    ffp_prior(
+      prior_uniform()
+    ) |>
+    ffp_view(
+      view_mean(
+        equity,
+        target = 0.02
+      )
+    ) |>
+    ffp_fit()
+
+  set.seed(123)
+
+  direct <- bootstrap_scenarios(
+    x = fit$model$scenarios,
+    p = as_ffp(
+      fit$posterior
+    ),
+    n = 50
+  )
+
+  set.seed(123)
+
+  fitted <- bootstrap_scenarios(
+    fit,
+    n = 50
+  )
+
+  expect_identical(
+    fitted,
+    direct
+  )
 })
 
-# xts
-bootstrap_xtsu <- bootstrap_scenarios(xu_xts, prob, 5)
-test_that("works on univariate xts", {
-  # type
-  expect_type(bootstrap_xtsu, "list")
-  expect_s3_class(bootstrap_xtsu, "tbl_df")
-  # size
-  expect_equal(ncol(bootstrap_xtsu), 1L)
-  expect_equal(nrow(bootstrap_xtsu), 5L)
-})
+test_that("bootstrap_scenarios uses the effective opinion-pooled posterior", {
+  scenarios <- data.frame(
+    equity = c(
+      -0.08,
+      -0.03,
+      0.01,
+      0.04,
+      0.06
+    )
+  )
 
-bootstrap_xtsm <- bootstrap_scenarios(xm_xts, prob, 5)
-test_that("works on multivariate xts", {
-  # type
-  expect_type(bootstrap_xtsm, "list")
-  expect_s3_class(bootstrap_xtsm, "tbl_df")
-  # size
-  expect_equal(ncol(bootstrap_xtsm), 2L)
-  expect_equal(nrow(bootstrap_xtsm), 5L)
-})
+  fit <- ffp_model(scenarios) |>
+    ffp_prior(
+      prior_uniform()
+    ) |>
+    ffp_view(
+      view_mean(
+        equity,
+        target = 0.02
+      )
+    ) |>
+    ffp_fit()
 
-# data.frame
-bootstrap_dfu <- bootstrap_scenarios(xu_df, prob, 5)
-test_that("works on univariate data.frames", {
-  # type
-  expect_type(bootstrap_dfu, "list")
-  expect_s3_class(bootstrap_dfu, "tbl_df")
-  # size
-  expect_equal(ncol(bootstrap_dfu), 1L)
-  expect_equal(nrow(bootstrap_dfu), 5L)
-})
+  pooled <- ffp_opinion_pooling(
+    fit,
+    confidence = 0.40
+  )
 
-bootstrap_dfm <- bootstrap_scenarios(xm_df, prob, 5)
-test_that("works on multivariate data.frames", {
-  # type
-  expect_type(bootstrap_dfm, "list")
-  expect_s3_class(bootstrap_dfm, "tbl_df")
-  # size
-  expect_equal(ncol(bootstrap_dfm), 2L)
-  expect_equal(nrow(bootstrap_dfm), 5L)
-})
+  set.seed(321)
 
-# tbl
-bootstrap_tblu <- bootstrap_scenarios(xu_tbl, prob, 5)
-test_that("works on univariate on tibbles", {
-  # type
-  expect_type(bootstrap_tblu, "list")
-  expect_s3_class(bootstrap_tblu, "tbl_df")
-  # size
-  expect_equal(ncol(bootstrap_tblu), 1L)
-  expect_equal(nrow(bootstrap_tblu), 5L)
-})
+  direct <- bootstrap_scenarios(
+    x = pooled$fit$model$scenarios,
+    p = as_ffp(
+      pooled$posterior
+    ),
+    n = 50
+  )
 
-bootstrap_tblm <- bootstrap_scenarios(xm_tbl, prob, 5)
-test_that("works on multivariate tibbles", {
-  # type
-  expect_type(bootstrap_tblm, "list")
-  expect_s3_class(bootstrap_tblm, "tbl_df")
-  # size
-  expect_equal(ncol(bootstrap_tblm), 2L)
-  expect_equal(nrow(bootstrap_tblm), 5L)
-})
+  set.seed(321)
 
+  result <- bootstrap_scenarios(
+    pooled,
+    n = 50
+  )
+
+  expect_identical(
+    result,
+    direct
+  )
+})

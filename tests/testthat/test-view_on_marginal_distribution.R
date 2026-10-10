@@ -38,3 +38,63 @@ test_that("`view_on_marginal_distribution` works for tbl_df", {
   expect_length(vmean_tbl, 2L)
   expect_named(vmean_tbl, c("Aeq", "beq"))
 })
+
+test_that("view_on_marginal_distribution preserves legacy moment constraints", {
+  x <- matrix(
+    c(
+      -2,  1,
+      -1,  2,
+      0, -1,
+      1,  0,
+      2,  3
+    ),
+    ncol = 2,
+    byrow = TRUE
+  )
+
+  simul <- matrix(
+    c(
+      -1.5,  0.5,
+      -0.5,  1.5,
+      0.5, -0.5,
+      1.5,  0.5,
+      2.5,  2.0
+    ),
+    ncol = 2,
+    byrow = TRUE
+  )
+
+  probabilities <- c(
+    0.10,
+    0.15,
+    0.20,
+    0.25,
+    0.30
+  )
+
+  result <- view_on_marginal_distribution(
+    x = x,
+    simul = simul,
+    p = probabilities
+  )
+
+  expected_a_eq <- rbind(
+    t(x),
+    t(x)^2
+  )
+
+  expected_b_eq <- rbind(
+    t(simul) %*% probabilities,
+    t(simul^2) %*% probabilities
+  )
+
+  expect_equal(
+    result$Aeq,
+    expected_a_eq
+  )
+
+  expect_equal(
+    result$beq,
+    expected_b_eq
+  )
+})

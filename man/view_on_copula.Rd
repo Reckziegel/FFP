@@ -59,7 +59,7 @@ Helper to construct constraints on copulas for entropy programming.
   views <- view_on_copula(x = u, simul = simul_cop, p = prior)
   views
 
-  ep <- entropy_pooling(p = prior, Aeq = views$Aeq, beq = views$beq, solver = "nloptr")
+  ep <- entropy_pooling(p = prior, Aeq = views$Aeq, beq = views$beq)
   autoplot(ep)
 }
 }

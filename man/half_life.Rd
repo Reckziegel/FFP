@@ -2,23 +2,35 @@
 % Please edit documentation in R/transformations.R
 \name{half_life}
 \alias{half_life}
-\title{Half-Life Calculation}
+\title{Convert an Exponential Decay Rate to Half-Life}
 \usage{
 half_life(lambda)
 }
 \arguments{
-\item{lambda}{A number.}
+\item{lambda}{A single finite positive number giving the exponential decay
+rate.}
 }
 \value{
-A single number with the half-life in days.
+A single positive number containing the implied half-life in
+observations.
 }
 \description{
-Compute the implied half-life of a decay parameter.
+Converts an exponential decay rate into its implied half-life.
+}
+\details{
+The relationship between the decay rate \eqn{\lambda} and half-life is
+
+\deqn{
+  HL = \frac{\log(2)}{\lambda}.
+}
+
+The result is expressed in observations. Its interpretation therefore
+depends on the frequency of the scenario data. For daily data, for example,
+a half-life of 42 corresponds to approximately 42 trading observations.
 }
 \examples{
 half_life(0.0166)
-half_life(0.01)
 }
 \seealso{
-\code{\link{exp_decay}} \code{\link{double_decay}}
+\code{\link[=exp_decay]{exp_decay()}}, \code{\link[=prior_exp_decay]{prior_exp_decay()}}, \code{\link[=double_decay]{double_decay()}}
 }

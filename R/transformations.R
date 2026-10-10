@@ -1,19 +1,36 @@
-#' Half-Life Calculation
+#' Convert an Exponential Decay Rate to Half-Life
 #'
-#' Compute the implied half-life of a decay parameter.
+#' Converts an exponential decay rate into its implied half-life.
 #'
-#' @param lambda A number.
+#' The relationship between the decay rate \eqn{\lambda} and half-life is
 #'
-#' @return A single number with the half-life in days.
+#' \deqn{
+#'   HL = \frac{\log(2)}{\lambda}.
+#' }
 #'
-#' @seealso \code{\link{exp_decay}} \code{\link{double_decay}}
+#' The result is expressed in observations. Its interpretation therefore
+#' depends on the frequency of the scenario data. For daily data, for example,
+#' a half-life of 42 corresponds to approximately 42 trading observations.
+#'
+#' @param lambda A single finite positive number giving the exponential decay
+#'   rate.
+#'
+#' @return A single positive number containing the implied half-life in
+#'   observations.
+#'
+#' @seealso [exp_decay()], [prior_exp_decay()], [double_decay()]
 #'
 #' @export
 #'
 #' @examples
 #' half_life(0.0166)
-#' half_life(0.01)
 half_life <- function(lambda) {
-  vctrs::vec_assert(lambda, numeric(), 1)
-  round(log(2) / lambda)
+
+  valid <- is.numeric(lambda) && is.null(dim(lambda)) && length(lambda) == 1L && !is.na(lambda) && is.finite(lambda)
+
+  if (!valid) cli::cli_abort("{.arg lambda} must be a single finite number.")
+  if (lambda <= 0) cli::cli_abort("{.arg lambda} must be strictly positive.")
+
+  log(2) / as.double(lambda)
 }
+

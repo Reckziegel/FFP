@@ -1,91 +1,77 @@
-#' Stack Flexible Probabilities
+#' Bind Flexible Probability Distributions
 #'
-#' This function mimics `dplyr` \code{\link[dplyr]{bind}}. It's useful if you
-#' have different `ffp` objects and want to stack them in the `tidy` (long) format.
+#' Stacks flexible probability distributions in long format for comparison,
+#' visualization, and tabular analysis.
 #'
-#' @param ... \code{ffp} objects to combine.
+#' All distributions must refer to scenario supports of the same size.
 #'
-#' @return A tidy \code{tibble} with numeric probability values suitable for visualization
-#' and tabular analysis.
+#' @param ... Objects of class `ffp`. Inputs can be named to identify the
+#'   corresponding probability distributions in the output.
 #'
-#' The output contains three columns:
-#' \itemize{
-#'   \item `rowid` (an \code{integer}) with the row number of each realization;
-#'   \item `probs` (a \code{numeric} vector) with probability weights extracted from the `ffp` objects;
-#'   \item `fn` (a \code{factor}) that keeps track of which `ffp` input each row comes from.
-#' }
+#' @return A tibble with one row per scenario and probability distribution,
+#'   containing:
 #'
-#' @details
-#' The `probs` column is extracted as numeric data to enable direct use with ggplot2 and
-#' other tabular visualization and analysis tools. Once `ffp` objects are reshaped to tidy format,
-#' they cease to represent a single probability distribution and instead represent structured
-#' tabular data where the numeric probability values are ordinary columns.
-#'
-#' @seealso \code{\link{crisp}} \code{\link{exp_decay}} \code{\link{kernel_normal}}
-#' \code{\link{kernel_entropy}} \code{\link{double_decay}}
+#' - `scenario`: scenario position;
+#' - `distribution`: distribution identifier;
+#' - `probability`: scenario probability.
 #'
 #' @export
-#'
-#' @examples
-#' library(ggplot2)
-#' library(dplyr, warn.conflicts = FALSE)
-#'
-#' x <- exp_decay(EuStockMarkets, lambda = 0.001)
-#' y <- exp_decay(EuStockMarkets, lambda = 0.002)
-#'
-#' bind_probs(x, y)
-#'
-#' bind_probs(x, y) |>
-#'   ggplot(aes(x = rowid, y = probs, color = fn)) +
-#'   geom_line() +
-#'   scale_color_viridis_d() +
-#'   theme(legend.position="bottom")
 bind_probs <- function(...) {
-
     dots <- rlang::list2(...)
-    dots <- purrr::keep(dots, inherits, "ffp")
 
-    # TODO add a warning when a list is discarded.
-
-    if (is_empty(dots)) {
-        cli::cli_abort("objects to bind must be of class {.cls ffp}.")
+    if (length(dots) == 0L) {
+        cli::cli_abort("{.fn bind_probs} requires at least one {.cls ffp} object.")
     }
 
-    unique_rows <- unique(purrr::map_dbl(dots, vctrs::vec_size))
-    if (length(unique_rows) > 1) {
-        cli::cli_abort(c(
-            "Arguments to bind must have the same size (rows).",
-            "x" = "Got {length(unique_rows)} different sizes: {.val {unique_rows}}"
-        ))
-    }
+    valid <- vapply(dots, is_ffp, logical(1))
 
-    # attr_fn   <- purrr::map(purrr::map(dots, attributes), 1)
-    # attr_list <- purrr::map(purrr::map(dots, attributes), 2) |> purrr::map(as.list)
-    # attr_nms  <- purrr::map(attr_list, names) |> purrr::map(3)
-    # attr_vl   <- purrr::map(attr_list, 3)
-    # fn <- paste0(as.character(attr_fn), ": ", as.character(attr_nms), " = ", as.vector(attr_vl))
-    fn <- as.character(purrr::map(purrr::map(dots, attributes), "user_call"))
-    fn <- stringr::str_remove(fn, ".numeric") |>
-        stringr::str_remove(pattern = ".matrix") |>
-        stringr::str_remove(pattern = ".ts") |>
-        stringr::str_remove(pattern = ".xts") |>
-        stringr::str_remove(pattern = ".tbl_df") |>
-        stringr::str_remove(pattern = ".data.frame")
-    fn <- rep(fn, each = unique_rows)
+    if (!all(valid)) {
+        invalid <- which(!valid)
 
-    seq_to_add  <- rep(1:length(dots), each = unique_rows)
-
-    purrr::map(dots, tibble::as_tibble) |>
-        purrr::map(tibble::rowid_to_column) |>
-        dplyr::bind_rows() |>
-        dplyr::rename(probs = "value") |>
-        dplyr::mutate(
-            probs = vctrs::vec_data(probs),
-            fn = as.factor(fn)
+        cli::cli_abort(
+            c(
+                "All inputs to {.fn bind_probs} must be {.cls ffp} objects.",
+                "x" = "Invalid input position(s): {.val {invalid}}.",
+                "i" = paste0(
+                    "Use {.fn ffp_probabilities} to inspect probabilities ",
+                    "from fitted FFP objects."
+                )
+            )
         )
+    }
 
+    sizes <- vapply(dots, vctrs::vec_size, integer(1))
+
+    if (length(unique(sizes)) != 1L) {
+        cli::cli_abort(
+            c(
+                "Probability distributions must have the same number of scenarios.",
+                "x" = "Received sizes: {.val {sizes}}."
+            )
+        )
+    }
+
+    labels  <- rlang::names2(dots)
+    unnamed <- !nzchar(labels)
+    labels[unnamed] <- paste0("distribution_", which(unnamed))
+
+    if (anyDuplicated(labels)) {
+        cli::cli_abort("Probability distribution names must be unique.")
+    }
+
+    tables <- Map(
+        function(probability, label) {
+            tibble::tibble(
+                scenario     = seq_len(vctrs::vec_size(probability)),
+                distribution = label,
+                probability  = vctrs::vec_data(probability)
+            )
+        },
+        dots,
+        labels
+    )
+
+    dplyr::bind_rows(tables)
 }
-
-
 
 

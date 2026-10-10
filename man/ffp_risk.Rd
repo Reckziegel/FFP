@@ -3,12 +3,15 @@
 \name{ffp_risk}
 \alias{ffp_risk}
 \alias{ffp_risk.default}
+\alias{ffp_risk.ffp_opinion_pool}
 \alias{ffp_risk.ffp_fit}
 \title{Tail Risk Under Flexible Probabilities}
 \usage{
 ffp_risk(x, ...)
 
 \method{ffp_risk}{default}(x, p = NULL, confidence = 0.99, ...)
+
+\method{ffp_risk}{ffp_opinion_pool}(x, confidence = 0.99, ...)
 
 \method{ffp_risk}{ffp_fit}(x, confidence = 0.99, ...)
 }

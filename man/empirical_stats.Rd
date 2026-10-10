@@ -5,8 +5,8 @@
 \alias{empirical_stats.default}
 \alias{empirical_stats.numeric}
 \alias{empirical_stats.matrix}
-\alias{empirical_stats.xts}
 \alias{empirical_stats.ts}
+\alias{empirical_stats.xts}
 \alias{empirical_stats.data.frame}
 \alias{empirical_stats.tbl_df}
 \title{Summary Statistics for Empirical Distributions}
@@ -19,57 +19,46 @@ empirical_stats(x, p, level = 0.01)
 
 \method{empirical_stats}{matrix}(x, p, level = 0.01)
 
-\method{empirical_stats}{xts}(x, p, level = 0.01)
-
 \method{empirical_stats}{ts}(x, p, level = 0.01)
+
+\method{empirical_stats}{xts}(x, p, level = 0.01)
 
 \method{empirical_stats}{data.frame}(x, p, level = 0.01)
 
 \method{empirical_stats}{tbl_df}(x, p, level = 0.01)
 }
 \arguments{
-\item{x}{A time series defining the scenario-probability distribution.}
+\item{x}{A time series or tabular object defining the scenario distribution.}
 
-\item{p}{An object of the \code{ffp} class.}
+\item{p}{An object of class \code{ffp}.}
 
-\item{level}{A number with the desired probability level. The default is
-\code{level = 0.01}.}
+\item{level}{A single number strictly between 0 and 1 defining the
+lower-tail probability used for Value-at-Risk and Expected Shortfall.}
 }
 \value{
-A tidy \code{tibble} with 3 columns:
+A tibble with one row per variable and the columns:
 \itemize{
-\item stat: a column with \code{Mu}, \code{Std}, \code{Skew}, \code{Kurt}, \code{VaR} and \code{CVaR}.
-\item name: the asset names.
-\item value: the computed value for each statistic.
+\item \code{variable}: variable name;
+\item \code{mean}: probability-weighted mean;
+\item \code{sd}: probability-weighted standard deviation;
+\item \code{skewness}: probability-weighted skewness;
+\item \code{kurtosis}: probability-weighted kurtosis;
+\item \code{value_at_risk}: lower-tail quantile reported using a loss convention;
+\item \code{expected_shortfall}: lower-tail expected shortfall reported using a
+loss convention.
 }
 }
 \description{
-Computes the mean, standard deviation, skewness, kurtosis, Value-at-Risk (VaR) and
-Conditional Value-at-Risk CVaR) under flexible probabilities.
+Computes marginal distribution statistics under flexible probabilities.
 }
 \details{
-The data in \code{x} and \code{p} are expected to have the same number of rows
-(size).
+\code{empirical_stats()} is the compatibility interface for the original FFP API.
+The statistics are computed using the FFP 2.0 distributional core.
 }
 \examples{
-library(dplyr, warn.conflicts = FALSE)
-library(ggplot2)
-
 ret <- diff(log(EuStockMarkets))
 
-# with equal weights (standard scenario)
-ew  <- rep(1 / nrow(ret), nrow(ret))
-empirical_stats(x = ret, p = as_ffp(ew)) |>
-  ggplot(aes(x = name, y = value)) +
-  geom_col() +
-  facet_wrap(~stat, scales = "free") +
-  labs(x = NULL, y = NULL)
+p <- exp_decay(ret, lambda = 0.015)
 
-# with ffp
-exp_smooth <- exp_decay(ret, 0.015)
-empirical_stats(ret, exp_smooth) |>
-  ggplot(aes(x = name, y = value)) +
-  geom_col() +
-  facet_wrap(~stat, scales = "free") +
-  labs(x = NULL, y = NULL)
+empirical_stats(x = ret,p = p)
 }

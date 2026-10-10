@@ -42,6 +42,7 @@
 ffp <- function(x = double(), ...) {
   x <- vctrs::vec_cast(x, double())
   validate_probabilities(x, tolerance = 0.001)
+  x <- x / sum(x)
   new_ffp(x, ...)
 }
 
@@ -66,6 +67,7 @@ as_ffp.default <- function(x) {
   x <- vctrs::vec_cast(x, double())
   tolerance <- sqrt(.Machine$double.eps)
   validate_probabilities(x, tolerance = tolerance)
+  x <- x / sum(x)
   new_ffp(x)
 }
 
@@ -98,8 +100,15 @@ NULL
 methods::setOldClass(c("ffp", "vctrs_vctr"))
 
 
-#' @rdname ffp-vctrs
-#' @export
+#' Low-level constructor for ffp vectors
+#'
+#' @param x A double vector.
+#' @param ... Additional attributes passed to `vctrs::new_vctr()`.
+#'
+#' @return An object of class `ffp`.
+#'
+#' @keywords internal
+#' @noRd
 new_ffp <- function(x = double(), ...) {
   vctrs::vec_assert(x, double())
   vctrs::new_vctr(x, class = "ffp",...)
@@ -148,6 +157,7 @@ vec_cast.ffp.ffp <- function(x, to, ...) {
 vec_cast.ffp.double <- function(x, to, ...) {
   tolerance <- sqrt(.Machine$double.eps)
   validate_probabilities(x, tolerance = tolerance)
+  x <- x / sum(x)
   new_ffp(x)
 }
 

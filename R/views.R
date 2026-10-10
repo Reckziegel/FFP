@@ -485,8 +485,7 @@ construct_view_on_volatility <- function(x, vol) {
 #' ep <- entropy_pooling(
 #'   p = prior,
 #'   A = views$A,
-#'   b = views$b,
-#'   solver = "nloptr"
+#'   b = views$b
 #' )
 #'
 #' autoplot(ep)
@@ -684,7 +683,7 @@ construct_view_on_rank <- function(x, rank) {
 #'   views <- view_on_copula(x = u, simul = simul_cop, p = prior)
 #'   views
 #'
-#'   ep <- entropy_pooling(p = prior, Aeq = views$Aeq, beq = views$beq, solver = "nloptr")
+#'   ep <- entropy_pooling(p = prior, Aeq = views$Aeq, beq = views$beq)
 #'   autoplot(ep)
 #' }
 view_on_copula <- function(x, simul, p) {
@@ -733,48 +732,79 @@ view_on_copula.tbl_df <- function(x, simul, p) {
 #' @keywords internal
 construct_view_on_copula <- function(x, simul, p) {
 
+  assertthat::assert_that(assertthat::are_equal(NCOL(x), NCOL(simul)))
   assertthat::assert_that(assertthat::are_equal(NROW(simul), NROW(p)))
 
-  N <- NCOL(simul)
+  probabilities <- as.double(p)
+  n_features <- NCOL(x)
 
-  Aeq <- NULL
-  beq <- NULL
+  # Copula marginals are uniform on [0, 1].
+  first_moment_constraints <- t(x)
+  first_moment_targets <- rep(1 / 2, n_features)
 
-  # first moment
-  Aeq <- rbind(Aeq, t(x))
-  beq <- as.matrix(c(beq, rep(1 / 2, NCOL(x))))
+  pairs <- matrix_constraint_pairs(n_features)
+  second_moment_constraints <- second_moment_constraint_matrix(feature_values = x, pairs = pairs)
+  simulated_second_moments  <- second_moment_constraint_matrix(feature_values = simul, pairs = pairs)
+  second_moment_targets <- drop(simulated_second_moments %*% probabilities)
 
-  # second moment
-  #Aeq <- rbind(Aeq, t(x) ^ 2)
-  #beq <- as.matrix(c(beq, rep(1 / 3, NCOL(x))))
+  Aeq <- rbind(first_moment_constraints, second_moment_constraints)
+  beq <- c(first_moment_targets, second_moment_targets)
 
-  # cross moments
-  for (k in 1:N) {
-    for (l in k:N) {
-      Aeq <- rbind(Aeq, t(x[ , k] * x[ , l]))
-      beq <- rbind(beq, t(simul[ , k] * simul[ , l]) %*% p)
-    }
+  if (n_features > 2L) {
+    triples <- third_moment_constraint_indices(n_features)
+    third_moment_constraints <- third_moment_constraint_matrix(feature_values = x, indices = triples)
+    simulated_third_moments  <- third_moment_constraint_matrix(feature_values = simul,indices = triples)
+    third_moment_targets <- drop(simulated_third_moments %*% probabilities)
+
+    Aeq <- rbind(Aeq, third_moment_constraints)
+    beq <- c(beq, third_moment_targets)
   }
 
-  if (N > 2) {
-    # order 3
-    for (k in 1:N) {
-      for (l in k:N) {
-        for (i in l:k) {
-          Aeq <- rbind(Aeq, t(x[ , k] * x[ , l] * x[ , i]))
-          beq <- rbind(beq, t(simul[ , k] * simul[ , l] * simul[ , i]) %*% p)
-        }
-      }
-    }
-  }
+  beq <- matrix(beq, ncol = 1)
 
   vctrs::new_list_of(
     x = list(Aeq = Aeq, beq = beq),
     .ptype = double(),
-    class  = "ffp_views",
-    type   = "view_on_copula"
+    class = "ffp_views",
+    type = "view_on_copula"
   )
+}
 
+third_moment_constraint_indices <- function(n_features) {
+  indices <- list()
+  position <- 1L
+
+  for (k in seq_len(n_features)) {
+    for (l in seq.int(k, n_features)) {
+      for (i in seq.int(l, k)) {
+        indices[[position]] <- c(k, l, i)
+        position <- position + 1L
+      }
+    }
+  }
+
+  indices <- matrix(unlist(indices), ncol = 3, byrow = TRUE)
+  colnames(indices) <- c("first", "second", "third")
+  indices
+}
+
+
+third_moment_constraint_matrix <- function(feature_values, indices) {
+  n_scenarios <- nrow(feature_values)
+
+  constraints <- vapply(
+    seq_len(nrow(indices)),
+    function(i) {
+      feature_values[, indices[i, "first"]] * feature_values[, indices[i, "second"]] * feature_values[, indices[i, "third"]]
+    },
+    numeric(n_scenarios)
+  )
+  constraints <- t(constraints)
+
+  storage.mode(constraints) <- "double"
+  dimnames(constraints) <- NULL
+
+  constraints
 }
 
 # Views on Marginal Distributions -----------------------------------------
@@ -812,7 +842,7 @@ construct_view_on_copula <- function(x, simul, p) {
 #' views <- view_on_marginal_distribution(x = ret, simul = simul, p = prior)
 #' views
 #'
-#' ep <- entropy_pooling(p = prior, Aeq = views$Aeq, beq = views$beq, solver = "nlminb")
+#' ep <- entropy_pooling(p = prior, Aeq = views$Aeq, beq = views$beq)
 #' autoplot(ep)
 #'
 #' # location matches
@@ -867,37 +897,29 @@ view_on_marginal_distribution.tbl_df <- function(x, simul, p) {
 
 #' @keywords internal
 construct_view_on_marginal_distribution <- function(x, simul, p) {
-
   assertthat::assert_that(assertthat::are_equal(NCOL(x), NCOL(simul)))
-  assertthat::assert_that(assertthat::are_equal(NROW(p), NROW(simul)))
 
-  Aeq <- NULL
-  beq <- NULL
+  probabilities <- as.double(p)
+  n_features    <- NCOL(x)
 
-  # Location
-  Aeq <- rbind(Aeq, t(x))
-  beq <- rbind(beq, t(simul) %*% p)
-
-  # Dispersion
-  Aeq <- rbind(Aeq, t(x) ^ 2)
-  beq <- rbind(beq, t(simul ^ 2) %*% p)
-
-  # Skewness
-  #Aeq <- rbind(Aeq, t(x) ^ 3)
-  #beq <- rbind(beq, (t(simul) ^ 3) %*% p)
-
-  # Kurtosis
-  #Aeq <- rbind(Aeq, t(x) ^ 4)
-  #beq <- rbind(beq, (t(simul) ^ 4) %*% p)
-
-
-  vctrs::new_list_of(
-    x      = list(Aeq = Aeq, beq = beq),
-    .ptype = double(),
-    class  = "ffp_views",
-    type   = "view_on_marginal_distribution"
+  target_means <- reference_feature_means(feature_values = simul, prior = probabilities)
+  target_second_moments <- vapply(
+    seq_len(n_features),
+    function(i) {
+      reference_second_moment(x = simul[, i], prior = probabilities)
+    },
+    numeric(1)
   )
 
+  Aeq <- rbind(t(x), t(x)^2)
+  beq <- matrix(c(target_means, target_second_moments), ncol = 1)
+
+  vctrs::new_list_of(
+    x = list(Aeq = Aeq, beq = beq),
+    .ptype = double(),
+    class = "ffp_views",
+    type = "view_on_marginal_distribution"
+  )
 }
 
 
@@ -992,43 +1014,27 @@ view_on_joint_distribution.tbl_df <- function(x, simul, p) {
 
 #' @keywords internal
 construct_view_on_joint_distribution <- function(x, simul, p) {
-
   assertthat::assert_that(assertthat::are_equal(NCOL(x), NCOL(simul)))
 
-  N <- NCOL(x)
+  probabilities <- as.double(p)
+  n_features    <- NCOL(x)
 
-  Aeq <- NULL
-  beq <- NULL
+  target_means <- reference_feature_means(feature_values = simul, prior = probabilities)
+  pairs <- matrix_constraint_pairs(n_features)
 
-  # order 1
-  Aeq <- rbind(Aeq , t(x))
-  beq <- rbind(beq, t(simul) %*% p)
+  scenario_second_moments  <- second_moment_constraint_matrix(feature_values = x, pairs = pairs)
+  simulated_second_moments <- second_moment_constraint_matrix(feature_values = simul, pairs = pairs)
+  target_second_moments    <- drop(simulated_second_moments %*% probabilities)
 
-  # order 2
-  for (k in 1:N) {
-    for (l in k:N) {
-      Aeq <- rbind(Aeq, t(x[ , k] * x[ , l]))
-      beq <- rbind(beq, t(simul[ , k] * simul[ , l]) %*% p)
-    }
-  }
-
-  # order 3
-  # for (k in 1:N) {
-  #   for (l in k:N) {
-  #     for (i in l:k) {
-  #       Aeq <- rbind(Aeq, t(x[ , k] * x[ , l] * x[ , i]))
-  #       beq <- rbind(beq, t(simul[ , k] * simul[ , l] * simul[ , i]) %*% p)
-  #     }
-  #   }
-  # }
+  Aeq <- rbind(t(x), scenario_second_moments)
+  beq <- matrix(c(target_means, target_second_moments), ncol = 1)
 
   vctrs::new_list_of(
-    x      = list(Aeq = Aeq, beq = beq),
+    x = list(Aeq = Aeq, beq = beq),
     .ptype = double(),
-    class  = "ffp_views",
-    type   = "view_on_joint_distribution"
+    class = "ffp_views",
+    type = "view_on_joint_distribution"
   )
-
 }
 
 
@@ -1073,19 +1079,132 @@ construct_view_on_joint_distribution <- function(x, simul, p) {
 #' autoplot(ep)
 bind_views <- function(...) {
 
-  dots <- rlang::list2(...)
-  dots <- purrr::keep(dots, inherits, "ffp_views")
+  call <- rlang::caller_env()
 
-  .Aeq <- do.call(rbind, purrr::map(dots, "Aeq"))
-  .beq <- do.call(rbind, purrr::map(purrr::map(dots, "beq"), ~ if (is.null(.x)) .x else as.matrix(.x)))
-  .A   <- do.call(rbind, purrr::map(dots, "A"))
-  .b   <- do.call(rbind, purrr::map(purrr::map(dots, "b"),   ~ if (is.null(.x)) .x else as.matrix(.x)))
+  views <- rlang::list2(...) |>
+    purrr::keep(inherits, "ffp_views")
+
+  if (length(views) == 0L) {
+    ffp_abort(
+      "`bind_views()` requires at least one {.cls ffp_views} object.",
+      class = "ffp_error_invalid_constraints",
+      call = call
+    )
+  }
+
+  constraints <- lapply(
+    seq_along(views),
+    function(i) {
+      constraint <- legacy_view_to_constraints(view = views[[i]], call = call)
+      set_constraint_view_index(constraints = constraint, view_index = i, call = call)
+    }
+  )
+
+  combined <- bind_ffp_constraints(constraints = constraints,call = call)
+
+  Aeq <- if (nrow(combined$a_eq) == 0L) NULL else combined$a_eq
+  beq <- if (length(combined$b_eq) == 0L) NULL else matrix(combined$b_eq, ncol = 1)
+  A   <- if (nrow(combined$a_ineq) == 0L) NULL else combined$a_ineq
+  b   <- if (length(combined$b_ineq) == 0L) NULL else matrix(combined$b_ineq, ncol = 1)
 
   vctrs::new_list_of(
-    x      = list(Aeq = .Aeq, beq = .beq, A = .A, b = .b),
+    x = list(Aeq = Aeq, beq = beq, A = A, b = b),
     .ptype = double(),
-    class  = "ffp_views",
-    type   = "multiple_views")
+    class = "ffp_views",
+    type = "multiple_views"
+  )
+}
 
+legacy_view_component <- function(view, name) {
+  if (!name %in% names(view)) {
+    return(NULL)
+  }
+  view[[name]]
+}
+
+legacy_view_scenario_count <- function(view, call = rlang::caller_env()) {
+
+  a_eq   <- legacy_view_component(view, "Aeq")
+  a_ineq <- legacy_view_component(view, "A")
+
+  candidates <- c(
+    if (!is.null(a_eq)) {
+      ncol(a_eq)
+    },
+    if (!is.null(a_ineq)) {
+      ncol(a_ineq)
+    }
+  )
+
+  if (length(candidates) == 0L) {
+    ffp_abort(
+      "A legacy view must contain equality or inequality constraints.",
+      class = "ffp_error_invalid_constraints",
+      call = call
+    )
+  }
+
+  if (length(unique(candidates)) != 1L) {
+    ffp_abort(
+      "Equality and inequality constraints must share the same scenario support.",
+      class = "ffp_error_invalid_constraints",
+      call = call
+    )
+  }
+
+  as.integer(candidates[[1]])
+}
+
+
+legacy_view_to_constraints <- function(view, call = rlang::caller_env()) {
+
+  if (!inherits(view, "ffp_views")) {
+    ffp_abort(
+      "`view` must inherit from {.cls ffp_views}.",
+      class = "ffp_error_invalid_constraints",
+      call = call
+    )
+  }
+
+  n_scenarios <- legacy_view_scenario_count(view = view, call = call)
+
+  a_eq <- normalize_legacy_entropy_matrix(
+    x = legacy_view_component(view, "Aeq"),
+    n_scenarios = n_scenarios,
+    arg = "Aeq",
+    call = call
+  )
+
+  b_eq <- normalize_legacy_entropy_rhs(
+    x = legacy_view_component(view, "beq"),
+    n_constraints = nrow(a_eq),
+    arg = "beq",
+    call = call
+  )
+
+  a_ineq <- normalize_legacy_entropy_matrix(
+    x = legacy_view_component(view, "A"),
+    n_scenarios = n_scenarios,
+    arg = "A",
+    call = call
+  )
+
+  b_ineq <- normalize_legacy_entropy_rhs(
+    x = legacy_view_component(view, "b"),
+    n_constraints = nrow(a_ineq),
+    arg = "b",
+    call = call
+  )
+
+  metadata <- legacy_entropy_constraint_metadata(n_equalities = nrow(a_eq), n_inequalities = nrow(a_ineq))
+
+  new_ffp_constraints(
+    n_scenarios = n_scenarios,
+    a_eq = a_eq,
+    b_eq = b_eq,
+    a_ineq = a_ineq,
+    b_ineq = b_ineq,
+    metadata = metadata
+  )
 }
 

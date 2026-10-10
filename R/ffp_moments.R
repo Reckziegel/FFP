@@ -70,14 +70,76 @@ ffp_moments.tbl_df <- function(x, p = NULL) {
   ffp_moments_(x = as.matrix(x), p = as_ffp(p))
 }
 
+#' @export
+#' @noRd
+ffp_moments.ffp_fit <- function(x, p = NULL) {
+
+  validate_ffp_fit(x)
+
+  if (!is.null(p)) {
+    cli::cli_abort(
+      c(
+        "{.arg p} must not be supplied for an {.cls ffp_fit} object.",
+        "i" = paste0(
+          "The posterior probabilities are obtained directly ",
+          "from the fitted object."
+        )
+      )
+    )
+  }
+  ffp_moments(x = x$model$scenarios, p = x$posterior)
+}
+
+#' @export
+#' @noRd
+ffp_moments.ffp_opinion_pool <- function(x, p = NULL) {
+  validate_ffp_opinion_pool(x)
+
+  if (!is.null(p)) {
+    cli::cli_abort(
+      c(
+        "{.arg p} must not be supplied for an {.cls ffp_opinion_pool} object.",
+        "i" = paste0(
+          "The confidence-weighted posterior probabilities are obtained ",
+          "directly from the opinion-pool object."
+        )
+      )
+    )
+  }
+
+  ffp_moments(x = x$fit$model$scenarios, p = x$posterior)
+}
+
 #' @keywords internal
-ffp_moments_ <- function(x, p = NULL) {
+weighted_moments <- function(x, p, call = rlang::caller_env()) {
 
-  p <- vctrs::vec_data(p)
-  mom <- stats::cov.wt(x = x, wt = p, method = "ML")
+  x <- as.matrix(x)
+  probabilities <- as.double(p)
 
-  list(mu = mom$center, sigma = mom$cov)
+  validate_reference_prior(prior = probabilities,n_scenarios = nrow(x), call = call)
 
+  probabilities <- probabilities / sum(probabilities)
+  mu <- reference_feature_means(feature_values = x, prior = probabilities, call = call)
+
+  centered <- sweep(x, MARGIN = 2, STATS = mu, FUN = "-")
+  weighted_centered <- sweep(centered, MARGIN = 1, STATS = probabilities, FUN = "*")
+
+  sigma <- crossprod(centered, weighted_centered)
+  sigma <- (sigma + t(sigma)) / 2
+
+  variable_names <- colnames(x)
+
+  if (!is.null(variable_names)) {
+    names(mu) <- variable_names
+    dimnames(sigma) <- list(variable_names, variable_names)
+  }
+
+  list(mu = mu, sigma = sigma)
+}
+
+#' @keywords internal
+ffp_moments_ <- function(x, p) {
+  weighted_moments(x = x,p = p)
 }
 
 

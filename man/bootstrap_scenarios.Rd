@@ -6,44 +6,43 @@
 \alias{bootstrap_scenarios.matrix}
 \alias{bootstrap_scenarios.ts}
 \alias{bootstrap_scenarios.xts}
-\alias{bootstrap_scenarios.tbl}
 \alias{bootstrap_scenarios.data.frame}
-\title{Flexible Probabilities Driven Bootstrap}
+\alias{bootstrap_scenarios.tbl}
+\alias{bootstrap_scenarios.ffp_fit}
+\alias{bootstrap_scenarios.ffp_opinion_pool}
+\title{Bootstrap Scenarios with Flexible Probabilities}
 \usage{
-bootstrap_scenarios(x, p, n)
+bootstrap_scenarios(x, ...)
 
-\method{bootstrap_scenarios}{numeric}(x, p, n)
+\method{bootstrap_scenarios}{numeric}(x, p, n, ...)
 
-\method{bootstrap_scenarios}{matrix}(x, p, n)
+\method{bootstrap_scenarios}{matrix}(x, p, n, ...)
 
-\method{bootstrap_scenarios}{ts}(x, p, n)
+\method{bootstrap_scenarios}{ts}(x, p, n, ...)
 
-\method{bootstrap_scenarios}{xts}(x, p, n)
+\method{bootstrap_scenarios}{xts}(x, p, n, ...)
 
-\method{bootstrap_scenarios}{tbl}(x, p, n)
+\method{bootstrap_scenarios}{data.frame}(x, p, n, ...)
 
-\method{bootstrap_scenarios}{data.frame}(x, p, n)
+\method{bootstrap_scenarios}{tbl}(x, p, n, ...)
+
+\method{bootstrap_scenarios}{ffp_fit}(x, n, p = NULL, ...)
+
+\method{bootstrap_scenarios}{ffp_opinion_pool}(x, n, p = NULL, ...)
 }
 \arguments{
-\item{x}{A time series defining the scenario-probability distribution.}
+\item{x}{Scenario data, an \code{ffp_fit} object, or an
+\code{ffp_opinion_pool} object.}
 
-\item{p}{An object of the \code{ffp} class.}
+\item{...}{Arguments passed to methods.}
 
-\item{n}{An \code{integer} scalar with the number of scenarios to be generated.}
+\item{p}{An object of class \code{ffp}.}
+
+\item{n}{A positive integer giving the number of bootstrap draws.}
 }
 \value{
-A \code{tibble} with the number of rows equal to \code{n}.
+A tibble containing the resampled joint scenarios.
 }
 \description{
-Resamples historical scenarios with flexible probabilities.
-}
-\details{
-The argument \code{x} is supposed to have the same size of \code{p}.
-}
-\examples{
-set.seed(123)
-ret <- diff(log(EuStockMarkets))
-ew  <- rep(1 / nrow(ret), nrow(ret))
-
-bootstrap_scenarios(x = ret, p = as_ffp(ew), n = 10)
+Resamples joint scenarios according to flexible probabilities.
 }

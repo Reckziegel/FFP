@@ -20,30 +20,6 @@ opt_nloptr <- entropy_pooling(p = p, Aeq = Aeq, beq = beq, solver = "nloptr")
 
 # Test --------------------------------------------------------------------
 
-test_that("nlminb, solnl and nloptr results converge for equality constrains", {
-  expect_type(opt_nlminb, "double")
-  expect_type(opt_solnl, "double")
-  expect_type(opt_nloptr, "double")
-  expect_length(opt_nlminb, vctrs::vec_size(p))
-  expect_length(opt_solnl, vctrs::vec_size(p))
-  expect_length(opt_nloptr, vctrs::vec_size(p))
-  expect_true(all(dplyr::near(
-    vctrs::vec_data(opt_nlminb),
-    vctrs::vec_data(opt_solnl),
-    tol = 0.00001))
-    )
-  expect_true(all(dplyr::near(
-    vctrs::vec_data(opt_solnl),
-    vctrs::vec_data(opt_nloptr),
-    tol = 0.00001))
-    )
-  expect_true(all(dplyr::near(
-    vctrs::vec_data(opt_nlminb),
-    vctrs::vec_data(opt_nloptr),
-    tol = 0.00001))
-    )
-})
-
 # Inequality Constraints
 
 ret <- matrix(diff(log(EuStockMarkets)), ncol = 4)

@@ -11,8 +11,6 @@
 #'
 #' @return A numeric vector containing the posterior probabilities.
 #'
-#' @export
-#'
 #' @keywords internal
 fit_to_moments <- function(X, m, S) {
   moment_entropy_probabilities(

@@ -131,13 +131,81 @@ ffp_stats_change <- function(prior, posterior) {
 
 #' @export
 print.ffp_stats <- function(x, ...) {
+  if (identical(x$type, "opinion_pool")) {
+    return(ffp_stats_print_opinion_pool(x))
+  }
+
   if (identical(x$type, "comparison")) {
-    return(
-      ffp_stats_print_comparison(x)
-    )
+    return(ffp_stats_print_comparison(x))
   }
 
   ffp_stats_print_single(x)
+}
+
+ffp_stats_print_opinion_pool <- function(x) {
+  effective <- x$effective_scenarios
+
+  prior <- effective[effective$distribution == "prior", , drop = FALSE]
+  full_confidence <- effective[effective$distribution == "full_confidence", , drop = FALSE]
+  posterior <- effective[effective$distribution == "posterior", , drop = FALSE]
+
+  cli::cli_text("<{.cls ffp_stats}>")
+  cli::cli_text(
+    "Prior -> full confidence -> posterior empirical distribution"
+  )
+  cli::cli_text("")
+
+  cli::cli_dl(
+    c(
+      "Scenarios" = format(
+        x$n_scenarios,
+        big.mark = ",",
+        scientific = FALSE
+      ),
+      "Variables" = format(
+        x$n_variables,
+        big.mark = ",",
+        scientific = FALSE
+      ),
+      "Confidence" = sprintf(
+        "%.1f%%",
+        100 * x$confidence
+      ),
+      "Tail probability" = sprintf(
+        "%.1f%%",
+        100 * x$prob
+      )
+    )
+  )
+
+  cli::cli_text("")
+  cli::cli_text("{.strong Effective scenarios}")
+
+  cli::cli_dl(
+    c(
+      "Prior ENS" = sprintf(
+        "%.1f (%.1f%%)",
+        prior$ens,
+        100 * prior$scenario_share
+      ),
+      "Full-confidence ENS" = sprintf(
+        "%.1f (%.1f%%)",
+        full_confidence$ens,
+        100 * full_confidence$scenario_share
+      ),
+      "Posterior ENS" = sprintf(
+        "%.1f (%.1f%%)",
+        posterior$ens,
+        100 * posterior$scenario_share
+      ),
+      "ENS retained" = sprintf(
+        "%.1f%%",
+        100 * x$ens_retained
+      )
+    )
+  )
+
+  invisible(x)
 }
 
 ffp_stats_print_single <- function(x) {
@@ -338,7 +406,9 @@ ffp_stats_prepare_probabilities <- function(p, n_scenarios) {
 
 
 ffp_stats_validate_prob <- function(prob) {
-  if (!is.numeric(prob) || length(prob) != 1L || !is.finite(prob)) {
+  valid <- is.numeric(prob) && is.null(dim(prob)) && length(prob) == 1L && !is.na(prob) && is.finite(prob)
+
+  if (!valid) {
     cli::cli_abort(
       "{.arg prob} must be a single finite number."
     )
@@ -528,63 +598,60 @@ ffp_stats_summary_variable <- function(object, variable) {
   statistic_names <- ffp_stats_statistic_names()
 
   if (identical(object$type, "single")) {
-    values <- object$statistics[
-      object$statistics$variable == variable,
-      statistic_names,
-      drop = FALSE
-    ]
+    values <- object$statistics[object$statistics$variable == variable, statistic_names, drop = FALSE]
+    return(tibble::tibble(statistic = statistic_names, value = unname(as.numeric(values[1, ]))))
+  }
+
+  if (identical(object$type, "opinion_pool")) {
+    prior            <- object$prior[object$prior$variable == variable, statistic_names, drop = FALSE]
+    full_confidence  <- object$full_confidence[object$full_confidence$variable == variable, statistic_names, drop = FALSE]
+    posterior        <- object$posterior[object$posterior$variable == variable, statistic_names, drop = FALSE]
+    full_confidence_change <- object$full_confidence_change[object$full_confidence_change$variable == variable, statistic_names, drop = FALSE]
+    posterior_change <- object$posterior_change[object$posterior_change$variable == variable, statistic_names, drop = FALSE]
 
     return(
       tibble::tibble(
         statistic = statistic_names,
-        value = unname(
-          as.numeric(values[1, ])
-        )
+        prior = unname(as.numeric(prior[1, ])),
+        full_confidence = unname(as.numeric(full_confidence[1, ])),
+        posterior = unname(as.numeric(posterior[1, ])),
+        full_confidence_change = unname(as.numeric(full_confidence_change[1, ])),
+        posterior_change = unname(as.numeric(posterior_change[1, ]))
       )
     )
   }
 
-  prior <- object$prior[
-    object$prior$variable == variable,
-    statistic_names,
-    drop = FALSE
-  ]
-
-  posterior <- object$posterior[
-    object$posterior$variable == variable,
-    statistic_names,
-    drop = FALSE
-  ]
-
-  change <- object$change[
-    object$change$variable == variable,
-    statistic_names,
-    drop = FALSE
-  ]
+  prior     <- object$prior[object$prior$variable == variable, statistic_names, drop = FALSE]
+  posterior <- object$posterior[object$posterior$variable == variable, statistic_names, drop = FALSE]
+  change    <- object$change[object$change$variable == variable, statistic_names, drop = FALSE]
 
   tibble::tibble(
     statistic = statistic_names,
-    prior = unname(
-      as.numeric(prior[1, ])
-    ),
-    posterior = unname(
-      as.numeric(posterior[1, ])
-    ),
-    change = unname(
-      as.numeric(change[1, ])
-    )
+    prior = unname(as.numeric(prior[1, ])),
+    posterior = unname(as.numeric(posterior[1, ])),
+    change = unname(as.numeric(change[1, ]))
   )
 }
 
-ffp_stats_summary_statistic <- function(
-    object,
-    statistic
-) {
+ffp_stats_summary_statistic <- function(object, statistic) {
   if (identical(object$type, "single")) {
     return(
       tibble::tibble(
         variable = object$statistics$variable,
         value = object$statistics[[statistic]]
+      )
+    )
+  }
+
+  if (identical(object$type, "opinion_pool")) {
+    return(
+      tibble::tibble(
+        variable = object$prior$variable,
+        prior = object$prior[[statistic]],
+        full_confidence = object$full_confidence[[statistic]],
+        posterior = object$posterior[[statistic]],
+        full_confidence_change = object$full_confidence_change[[statistic]],
+        posterior_change = object$posterior_change[[statistic]]
       )
     )
   }
@@ -686,4 +753,100 @@ ffp_stats.ffp_fit <- function(x, prob = 0.01, ...) {
     posterior = x$posterior,
     prob = prob
   )
+}
+
+#' @rdname ffp_stats
+#'
+#' @export
+ffp_stats.ffp_opinion_pool <- function(x, prob = 0.01, ...) {
+  validate_ffp_opinion_pool(x)
+
+  ffp_stats_opinion_pool(
+    x = x$fit$model$scenarios,
+    prior = x$prior,
+    full_confidence = x$full_confidence_posterior,
+    posterior = x$posterior,
+    confidence = x$confidence,
+    prob = prob
+  )
+}
+
+ffp_stats_opinion_pool <- function(x, prior, full_confidence, posterior, confidence, prob = 0.01) {
+  x    <- ffp_stats_prepare_data(x)
+  prob <- ffp_stats_validate_prob(prob)
+
+  n_scenarios <- nrow(x)
+  n_variables <- ncol(x)
+
+  prior           <- ffp_stats_prepare_probabilities(p = prior, n_scenarios = n_scenarios)
+  full_confidence <- ffp_stats_prepare_probabilities(p = full_confidence, n_scenarios = n_scenarios)
+  posterior       <- ffp_stats_prepare_probabilities(p = posterior, n_scenarios = n_scenarios)
+
+  prior_stats <- ffp_stats_compute(x = x, p = prior,prob = prob)
+
+  full_confidence_stats <- ffp_stats_compute(x = x, p = full_confidence, prob = prob)
+  posterior_stats       <- ffp_stats_compute(x = x, p = posterior, prob = prob)
+
+  new_ffp_stats_opinion_pool(
+    prior = prior_stats,
+    full_confidence = full_confidence_stats,
+    posterior = posterior_stats,
+    prior_p = prior,
+    full_confidence_p = full_confidence,
+    posterior_p = posterior,
+    confidence = confidence,
+    prob = prob,
+    n_scenarios = n_scenarios,
+    n_variables = n_variables
+  )
+}
+
+new_ffp_stats_opinion_pool <- function(prior, full_confidence, posterior, prior_p, full_confidence_p, posterior_p, confidence, prob, n_scenarios, n_variables) {
+
+  prior_ens           <- ens(prior_p)
+  full_confidence_ens <- ens(full_confidence_p)
+  posterior_ens       <- ens(posterior_p)
+
+  structure(
+    list(
+      type = "opinion_pool",
+      prior = prior,
+      full_confidence = full_confidence,
+      posterior = posterior,
+      full_confidence_change = ffp_stats_change(prior = prior, posterior = full_confidence),
+      posterior_change = ffp_stats_change(prior = prior, posterior = posterior),
+      effective_scenarios = tibble::tibble(
+        distribution = c("prior", "full_confidence", "posterior"),
+        ens = c(prior_ens, full_confidence_ens, posterior_ens),
+        scenario_share = c(prior_ens, full_confidence_ens, posterior_ens) / n_scenarios),
+      full_confidence_ens_retained = full_confidence_ens / prior_ens,
+      ens_retained = posterior_ens / prior_ens,
+      confidence = confidence,
+      n_scenarios = n_scenarios,
+      n_variables = n_variables,
+      prob = prob
+    ),
+    class = "ffp_stats"
+  )
+}
+
+#' @importFrom tibble as_tibble
+#' @export
+as_tibble.ffp_stats <- function(x, ...) {
+  if (identical(x$type, "single")) {
+    return(tibble::as_tibble(x$statistics))
+  }
+
+  if (identical(x$type, "opinion_pool")) {
+    prior <- dplyr::mutate(x$prior, distribution = "prior", .after = "variable")
+    full_confidence <- dplyr::mutate(x$full_confidence, distribution = "full_confidence", .after = "variable")
+    posterior <- dplyr::mutate(x$posterior, distribution = "posterior", .after = "variable")
+
+    return(dplyr::bind_rows(prior, full_confidence, posterior))
+  }
+
+  prior     <- dplyr::mutate(x$prior, distribution = "prior", .after = "variable")
+  posterior <- dplyr::mutate(x$posterior, distribution = "posterior", .after = "variable")
+
+  dplyr::bind_rows(prior, posterior)
 }

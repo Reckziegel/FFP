@@ -2,7 +2,6 @@
 % Please edit documentation in R/ffp-vctrs.R
 \name{ffp-vctrs}
 \alias{ffp-vctrs}
-\alias{new_ffp}
 \alias{vec_ptype_abbr.ffp}
 \alias{vec_ptype2.ffp.ffp}
 \alias{vec_ptype2.ffp.double}
@@ -16,8 +15,6 @@
 \alias{vec_arith.numeric.ffp}
 \title{Internal vctrs methods}
 \usage{
-new_ffp(x = double(), ...)
-
 \method{vec_ptype_abbr}{ffp}(x, ...)
 
 \method{vec_ptype2}{ffp.ffp}(x, y, ...)

@@ -38,3 +38,95 @@ test_that("`view_on_joint_distribution` works for tbl_df", {
   expect_length(vmean_tbl, 2L)
   expect_named(vmean_tbl, c("Aeq", "beq"))
 })
+
+test_that("view_on_joint_distribution preserves legacy joint moments", {
+  x <- matrix(
+    c(
+      -2,  1,
+      -1,  2,
+      0, -1,
+      1,  0,
+      2,  3
+    ),
+    ncol = 2,
+    byrow = TRUE
+  )
+
+  simul <- matrix(
+    c(
+      -1.5,  0.5,
+      -0.5,  1.5,
+      0.5, -0.5,
+      1.5,  0.5,
+      2.5,  2.0
+    ),
+    ncol = 2,
+    byrow = TRUE
+  )
+
+  probabilities <- c(
+    0.10,
+    0.15,
+    0.20,
+    0.25,
+    0.30
+  )
+
+  result <- view_on_joint_distribution(
+    x = x,
+    simul = simul,
+    p = probabilities
+  )
+
+  expected_a_eq <- rbind(
+    x[, 1],
+    x[, 2],
+    x[, 1]^2,
+    x[, 1] * x[, 2],
+    x[, 2]^2
+  )
+
+  expected_b_eq <- c(
+    sum(probabilities * simul[, 1]),
+    sum(probabilities * simul[, 2]),
+    sum(probabilities * simul[, 1]^2),
+    sum(probabilities * simul[, 1] * simul[, 2]),
+    sum(probabilities * simul[, 2]^2)
+  )
+
+  expect_equal(
+    result$Aeq,
+    expected_a_eq
+  )
+
+  expect_equal(
+    as.double(result$beq),
+    expected_b_eq
+  )
+})
+
+test_that("view_on_joint_distribution requires compatible simulated probabilities", {
+  x <- matrix(
+    seq_len(8),
+    ncol = 2
+  )
+
+  simul <- matrix(
+    seq_len(8),
+    ncol = 2
+  )
+
+  probabilities <- c(
+    0.2,
+    0.3,
+    0.5
+  )
+
+  expect_error(
+    view_on_joint_distribution(
+      x = x,
+      simul = simul,
+      p = probabilities
+    )
+  )
+})

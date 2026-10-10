@@ -4,6 +4,7 @@
 \alias{ffp_stats}
 \alias{ffp_stats.default}
 \alias{ffp_stats.ffp_fit}
+\alias{ffp_stats.ffp_opinion_pool}
 \title{Statistics Under Flexible Probabilities}
 \usage{
 ffp_stats(x, ...)
@@ -11,6 +12,8 @@ ffp_stats(x, ...)
 \method{ffp_stats}{default}(x, p = NULL, prob = 0.01, ...)
 
 \method{ffp_stats}{ffp_fit}(x, prob = 0.01, ...)
+
+\method{ffp_stats}{ffp_opinion_pool}(x, prob = 0.01, ...)
 }
 \arguments{
 \item{x}{For the \code{ffp_fit} method, a fitted Fully Flexible Probabilities

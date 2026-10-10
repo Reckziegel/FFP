@@ -23,13 +23,34 @@ test_that("ffp() preserves valid probabilities", {
 })
 
 
-test_that("ffp() accepts probabilities within its practical tolerance", {
-  x <- c(0.5, 0.5005)
+test_that("ffp() canonicalizes probabilities within its practical tolerance", {
+  x <- c(
+    0.5,
+    0.5005
+  )
 
-  result <- ffp(x)
+  result <- ffp(
+    x
+  )
 
-  expect_s3_class(result, "ffp")
-  expect_true(is_ffp(result))
+  expect_s3_class(
+    result,
+    "ffp"
+  )
+
+  expect_true(
+    is_ffp(result)
+  )
+
+  expect_equal(
+    sum(result),
+    1
+  )
+
+  expect_equal(
+    as.double(result),
+    x / sum(x)
+  )
 })
 
 
@@ -56,6 +77,38 @@ test_that("ffp() rejects invalid numeric probability vectors", {
   )
 })
 
+test_that("new_ffp() remains a low-level constructor", {
+  x <- new_ffp(
+    c(
+      0.2,
+      0.3,
+      0.5
+    )
+  )
+
+  expect_s3_class(
+    x,
+    "ffp"
+  )
+
+  expect_equal(
+    vctrs::vec_data(x),
+    c(
+      0.2,
+      0.3,
+      0.5
+    )
+  )
+})
+
+test_that("new_ffp() is not part of the public API", {
+  expect_false(
+    "new_ffp" %in% getNamespaceExports(
+      "ffp"
+    )
+  )
+})
+
 
 # is_ffp() -----------------------------------------------------------------
 
@@ -70,6 +123,55 @@ test_that("is_ffp() correctly identifies ffp objects", {
 
 
 # as_ffp() -----------------------------------------------------------------
+
+test_that("as_ffp() canonicalizes floating-point probability mass", {
+  x <- c(
+    0.2,
+    0.3,
+    0.5 + .Machine$double.eps
+  )
+
+  result <- as_ffp(
+    x
+  )
+
+  expect_s3_class(
+    result,
+    "ffp"
+  )
+
+  expect_equal(
+    sum(result),
+    1
+  )
+
+  expect_equal(
+    as.double(result),
+    x / sum(x)
+  )
+})
+
+test_that("ffp() rejects missing and non-finite probabilities", {
+  expect_error(
+    ffp(
+      c(
+        0.5,
+        NA_real_,
+        0.5
+      )
+    )
+  )
+
+  expect_error(
+    ffp(
+      c(
+        0.5,
+        Inf,
+        0.5
+      )
+    )
+  )
+})
 
 test_that("as_ffp() converts valid doubles to ffp", {
   x <- c(0.2, 0.3, 0.5)
@@ -509,202 +611,4 @@ test_that("long ffp vectors print without error", {
   )
 })
 
-
-# Probability-preserving combinations -------------------------------------
-
-test_that("average_ffp() preserves the probability invariant", {
-  p1 <- ffp(c(0.2, 0.3, 0.5))
-  p2 <- ffp(c(0.1, 0.4, 0.5))
-
-  result <- average_ffp(p1, p2)
-
-  expect_s3_class(result, "ffp")
-  expect_true(is_ffp(result))
-  expect_equal(sum(result), 1)
-
-  expect_equal(
-    as.double(result),
-    c(0.15, 0.35, 0.50)
-  )
-})
-
-
-test_that("combine_ffp() preserves the probability invariant", {
-  p1 <- ffp(c(0.2, 0.3, 0.5))
-  p2 <- ffp(c(0.1, 0.4, 0.5))
-
-  result <- combine_ffp(
-    p1 = p1,
-    p2 = p2,
-    weights = c(0.7, 0.3)
-  )
-
-  expect_s3_class(result, "ffp")
-  expect_true(is_ffp(result))
-  expect_equal(sum(result), 1)
-
-  expect_equal(
-    as.double(result),
-    c(0.17, 0.33, 0.50)
-  )
-})
-
-
-test_that("average_ffp() is equivalent to equal-weight combine_ffp()", {
-  p1 <- ffp(c(0.2, 0.3, 0.5))
-  p2 <- ffp(c(0.1, 0.4, 0.5))
-
-  averaged <- average_ffp(p1, p2)
-
-  combined <- combine_ffp(
-    p1 = p1,
-    p2 = p2,
-    weights = c(0.5, 0.5)
-  )
-
-  expect_equal(
-    as.double(averaged),
-    as.double(combined)
-  )
-
-  expect_s3_class(averaged, "ffp")
-  expect_s3_class(combined, "ffp")
-})
-
-
-test_that("average_ffp() works with a single distribution", {
-  p <- ffp(c(0.2, 0.3, 0.5))
-
-  result <- average_ffp(p)
-
-  expect_s3_class(result, "ffp")
-  expect_equal(as.double(result), as.double(p))
-})
-
-
-test_that("average_ffp() requires at least one ffp object", {
-  expect_error(
-    average_ffp(),
-    "At least one"
-  )
-})
-
-
-test_that("average_ffp() rejects non-ffp inputs", {
-  p <- ffp(c(0.2, 0.3, 0.5))
-
-  expect_error(
-    average_ffp(p, c(0.1, 0.4, 0.5)),
-    "must be.*ffp"
-  )
-})
-
-
-test_that("average_ffp() requires distributions of equal length", {
-  p1 <- ffp(c(0.2, 0.3, 0.5))
-  p2 <- ffp(c(0.4, 0.6))
-
-  expect_error(
-    average_ffp(p1, p2),
-    "same length"
-  )
-})
-
-
-test_that("combine_ffp() requires at least one ffp object", {
-  expect_error(
-    combine_ffp(weights = numeric()),
-    "At least one"
-  )
-})
-
-
-test_that("combine_ffp() rejects non-ffp inputs", {
-  p1 <- ffp(c(0.2, 0.3, 0.5))
-  p2 <- c(0.1, 0.4, 0.5)
-
-  expect_error(
-    combine_ffp(
-      p1 = p1,
-      p2 = p2,
-      weights = c(0.5, 0.5)
-    ),
-    "must be.*ffp"
-  )
-})
-
-
-test_that("combine_ffp() requires numeric weights", {
-  p1 <- ffp(c(0.2, 0.3, 0.5))
-  p2 <- ffp(c(0.1, 0.4, 0.5))
-
-  expect_error(
-    combine_ffp(
-      p1 = p1,
-      p2 = p2,
-      weights = c("0.5", "0.5")
-    ),
-    "numeric"
-  )
-})
-
-
-test_that("combine_ffp() requires one weight per distribution", {
-  p1 <- ffp(c(0.2, 0.3, 0.5))
-  p2 <- ffp(c(0.1, 0.4, 0.5))
-
-  expect_error(
-    combine_ffp(
-      p1 = p1,
-      p2 = p2,
-      weights = 1
-    ),
-    "Number of weights"
-  )
-})
-
-
-test_that("combine_ffp() rejects negative weights", {
-  p1 <- ffp(c(0.2, 0.3, 0.5))
-  p2 <- ffp(c(0.1, 0.4, 0.5))
-
-  expect_error(
-    combine_ffp(
-      p1 = p1,
-      p2 = p2,
-      weights = c(1.2, -0.2)
-    ),
-    "non-negative"
-  )
-})
-
-
-test_that("combine_ffp() requires weights that sum to one", {
-  p1 <- ffp(c(0.2, 0.3, 0.5))
-  p2 <- ffp(c(0.1, 0.4, 0.5))
-
-  expect_error(
-    combine_ffp(
-      p1 = p1,
-      p2 = p2,
-      weights = c(0.6, 0.6)
-    ),
-    "sum to 1"
-  )
-})
-
-
-test_that("combine_ffp() requires distributions of equal length", {
-  p1 <- ffp(c(0.2, 0.3, 0.5))
-  p2 <- ffp(c(0.4, 0.6))
-
-  expect_error(
-    combine_ffp(
-      p1 = p1,
-      p2 = p2,
-      weights = c(0.5, 0.5)
-    ),
-    "same length"
-  )
-})
 

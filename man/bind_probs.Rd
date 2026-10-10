@@ -2,50 +2,27 @@
 % Please edit documentation in R/bind_probs.R
 \name{bind_probs}
 \alias{bind_probs}
-\title{Stack Flexible Probabilities}
+\title{Bind Flexible Probability Distributions}
 \usage{
 bind_probs(...)
 }
 \arguments{
-\item{...}{\code{ffp} objects to combine.}
+\item{...}{Objects of class \code{ffp}. Inputs can be named to identify the
+corresponding probability distributions in the output.}
 }
 \value{
-A tidy \code{tibble} with numeric probability values suitable for visualization
-and tabular analysis.
-
-The output contains three columns:
+A tibble with one row per scenario and probability distribution,
+containing:
 \itemize{
-\item \code{rowid} (an \code{integer}) with the row number of each realization;
-\item \code{probs} (a \code{numeric} vector) with probability weights extracted from the \code{ffp} objects;
-\item \code{fn} (a \code{factor}) that keeps track of which \code{ffp} input each row comes from.
+\item \code{scenario}: scenario position;
+\item \code{distribution}: distribution identifier;
+\item \code{probability}: scenario probability.
 }
 }
 \description{
-This function mimics \code{dplyr} \code{\link[dplyr]{bind}}. It's useful if you
-have different \code{ffp} objects and want to stack them in the \code{tidy} (long) format.
+Stacks flexible probability distributions in long format for comparison,
+visualization, and tabular analysis.
 }
 \details{
-The \code{probs} column is extracted as numeric data to enable direct use with ggplot2 and
-other tabular visualization and analysis tools. Once \code{ffp} objects are reshaped to tidy format,
-they cease to represent a single probability distribution and instead represent structured
-tabular data where the numeric probability values are ordinary columns.
-}
-\examples{
-library(ggplot2)
-library(dplyr, warn.conflicts = FALSE)
-
-x <- exp_decay(EuStockMarkets, lambda = 0.001)
-y <- exp_decay(EuStockMarkets, lambda = 0.002)
-
-bind_probs(x, y)
-
-bind_probs(x, y) |>
-  ggplot(aes(x = rowid, y = probs, color = fn)) +
-  geom_line() +
-  scale_color_viridis_d() +
-  theme(legend.position="bottom")
-}
-\seealso{
-\code{\link{crisp}} \code{\link{exp_decay}} \code{\link{kernel_normal}}
-\code{\link{kernel_entropy}} \code{\link{double_decay}}
+All distributions must refer to scenario supports of the same size.
 }

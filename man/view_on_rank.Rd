@@ -70,8 +70,7 @@ views
 ep <- entropy_pooling(
   p = prior,
   A = views$A,
-  b = views$b,
-  solver = "nloptr"
+  b = views$b
 )
 
 autoplot(ep)

@@ -53,6 +53,82 @@ ffp_risk.default <- function(x, p = NULL, confidence = 0.99, ...) {
   )
 }
 
+#' @rdname ffp_risk
+#'
+#' @export
+ffp_risk.ffp_opinion_pool <- function(x, confidence = 0.99, ...) {
+  validate_ffp_opinion_pool(x)
+
+  ffp_risk_opinion_pool(
+    x = x$fit$model$scenarios,
+    prior = x$prior,
+    full_confidence = x$full_confidence_posterior,
+    posterior = x$posterior,
+    opinion_confidence = x$confidence,
+    confidence = confidence
+  )
+}
+
+ffp_risk_opinion_pool <- function(x, prior, full_confidence, posterior, opinion_confidence, confidence = 0.99) {
+  x <- ffp_stats_prepare_data(x)
+
+  confidence <- ffp_risk_validate_confidence(confidence)
+
+  n_scenarios <- nrow(x)
+  n_variables <- ncol(x)
+
+  prior           <- ffp_stats_prepare_probabilities(p = prior,n_scenarios = n_scenarios)
+  full_confidence <- ffp_stats_prepare_probabilities(p = full_confidence, n_scenarios = n_scenarios)
+  posterior       <- ffp_stats_prepare_probabilities(p = posterior, n_scenarios = n_scenarios)
+
+  prior_risk           <- ffp_risk_compute(x = x, p = prior, confidence = confidence)
+  full_confidence_risk <- ffp_risk_compute(x = x, p = full_confidence, confidence = confidence)
+  posterior_risk       <- ffp_risk_compute(x = x, p = posterior, confidence = confidence)
+
+  new_ffp_risk_opinion_pool(
+    prior = prior_risk,
+    full_confidence = full_confidence_risk,
+    posterior = posterior_risk,
+    prior_p = prior,
+    full_confidence_p = full_confidence,
+    posterior_p = posterior,
+    opinion_confidence = opinion_confidence,
+    confidence = confidence,
+    n_scenarios = n_scenarios,
+    n_variables = n_variables
+  )
+}
+
+new_ffp_risk_opinion_pool <- function(prior, full_confidence, posterior, prior_p, full_confidence_p, posterior_p, opinion_confidence, confidence, n_scenarios, n_variables) {
+
+  prior_ens           <- ens(prior_p)
+  full_confidence_ens <- ens(full_confidence_p)
+  posterior_ens       <- ens(posterior_p)
+
+  structure(
+    list(
+      type = "opinion_pool",
+      prior = prior,
+      full_confidence = full_confidence,
+      posterior = posterior,
+      full_confidence_change = ffp_risk_change(prior = prior, posterior = full_confidence),
+      posterior_change = ffp_risk_change(prior = prior, posterior = posterior),
+      effective_scenarios = tibble::tibble(
+        distribution = c("prior", "full_confidence", "posterior"),
+        ens = c(prior_ens, full_confidence_ens, posterior_ens),
+        scenario_share = c(prior_ens, full_confidence_ens, posterior_ens) / n_scenarios),
+      full_confidence_ens_retained = full_confidence_ens / prior_ens,
+      ens_retained = posterior_ens / prior_ens,
+      confidence = confidence,
+      opinion_confidence = opinion_confidence,
+      tail_probability = 1 - confidence,
+      n_scenarios = n_scenarios,
+      n_variables = n_variables
+    ),
+    class = "ffp_risk"
+  )
+}
+
 ffp_risk_compute <- function(x, p, confidence) {
 
   p <- vctrs::vec_data(p)
@@ -75,7 +151,9 @@ ffp_risk_compute <- function(x, p, confidence) {
 }
 
 ffp_risk_validate_confidence <- function(confidence) {
-  if (!is.numeric(confidence) || length(confidence) != 1L || !is.finite(confidence)) {
+  valid <- is.numeric(confidence) && is.null(dim(confidence)) && length(confidence) == 1L && !is.na(confidence) && is.finite(confidence)
+
+  if (!valid) {
     cli::cli_abort(
       "{.arg confidence} must be a single finite number."
     )
@@ -200,7 +278,15 @@ as_tibble.ffp_risk <- function(x, ...) {
     return(tibble::as_tibble(x$risk))
   }
 
-  prior <- dplyr::mutate( x$prior, distribution = "prior", .after = "variable")
+  if (identical(x$type, "opinion_pool")) {
+    prior <- dplyr::mutate(x$prior, distribution = "prior", .after = "variable")
+    full_confidence <- dplyr::mutate(x$full_confidence, distribution = "full_confidence", .after = "variable")
+    posterior <- dplyr::mutate(x$posterior, distribution = "posterior", .after = "variable")
+
+    return(dplyr::bind_rows(prior, full_confidence, posterior))
+  }
+
+  prior     <- dplyr::mutate(x$prior, distribution = "prior", .after = "variable")
   posterior <- dplyr::mutate(x$posterior, distribution = "posterior", .after = "variable")
 
   dplyr::bind_rows(prior, posterior)
@@ -208,9 +294,14 @@ as_tibble.ffp_risk <- function(x, ...) {
 
 #' @export
 print.ffp_risk <- function(x, ...) {
+  if (identical(x$type, "opinion_pool")) {
+    return(ffp_risk_print_opinion_pool(x))
+  }
+
   if (identical(x$type, "comparison")) {
     return(ffp_risk_print_comparison(x))
   }
+
   ffp_risk_print_single(x)
 }
 
@@ -249,6 +340,54 @@ ffp_risk_print_comparison <- function(x) {
     "Posterior ENS" = sprintf("%.1f", x$effective_scenarios$ens[x$effective_scenarios$distribution == "posterior"]),
     "ENS retained" = sprintf("%.1f%%", 100 * x$ens_retained)
   ))
+
+  invisible(x)
+}
+
+ffp_risk_print_opinion_pool <- function(x) {
+  cli::cli_text("{.cls ffp_risk}")
+  cli::cli_text(
+    paste0(
+      "Prior -> full confidence -> posterior tail risk at ",
+      "{sprintf('%.1f%%', 100 * x$confidence)} confidence"
+    )
+  )
+  cli::cli_text(
+    "Opinion confidence: {sprintf('%.1f%%', 100 * x$opinion_confidence)}"
+  )
+  cli::cli_text("")
+
+  print(
+    tibble::as_tibble(x)
+  )
+
+  cli::cli_text("")
+  cli::cli_dl(
+    c(
+      "Prior ENS" = sprintf(
+        "%.1f",
+        x$effective_scenarios$ens[
+          x$effective_scenarios$distribution == "prior"
+        ]
+      ),
+      "Full-confidence ENS" = sprintf(
+        "%.1f",
+        x$effective_scenarios$ens[
+          x$effective_scenarios$distribution == "full_confidence"
+        ]
+      ),
+      "Posterior ENS" = sprintf(
+        "%.1f",
+        x$effective_scenarios$ens[
+          x$effective_scenarios$distribution == "posterior"
+        ]
+      ),
+      "ENS retained" = sprintf(
+        "%.1f%%",
+        100 * x$ens_retained
+      )
+    )
+  )
 
   invisible(x)
 }

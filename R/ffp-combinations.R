@@ -1,136 +1,137 @@
-#' Combine Flexible Probabilities
+#' Combine Flexible Probability Distributions
 #'
-#' Functions to combine multiple `ffp` vectors while preserving the probability
-#' distribution invariant.
+#' Combines already-realized flexible probability distributions through
+#' arithmetic or weighted averaging.
 #'
-#' @param ... For `average_ffp()`: ffp objects of the same length.
-#'   For `combine_ffp()`: named arguments `p1`, `p2`, ... representing ffp vectors.
-#' @param weights Numeric vector of weights (must be non-negative and sum to 1).
-#'   For `average_ffp()`, weights are implicitly uniform.
+#' `average_ffp()` assigns equal weight to each supplied distribution.
 #'
-#' @return An `ffp` object representing the combined/averaged probability distribution.
+#' `combine_ffp()` assigns user-supplied non-negative weights that sum to one.
 #'
-#' @details
-#' These functions implement valid probability combinations:
+#' @param ... Objects of class `ffp` with the same number of scenarios.
+#' @param weights A numeric vector containing one non-negative weight per
+#'   probability distribution. The weights must sum to one.
 #'
-#' - **`average_ffp()`**: Computes the arithmetic mean of multiple probability distributions.
-#'   Equivalent to `combine_ffp()` with equal weights. The result is always a valid
-#'   probability distribution.
-#'
-#' - **`combine_ffp()`**: Computes a weighted average of probability distributions.
-#'   Weights must sum to 1. Commonly used for:
-#'   - Combining expert opinions (weights = expert confidence)
-#'   - View mixing in entropy pooling
-#'   - Scenario resampling with belief updates
+#' @return An object of class `ffp`.
 #'
 #' @export
+#'
 #' @examples
-#' # Two probability distributions
-#' p1 <- ffp(c(0.2, 0.3, 0.5))
-#' p2 <- ffp(c(0.1, 0.4, 0.5))
+#' p1 <- as_ffp(c(0.2, 0.3, 0.5))
+#' p2 <- as_ffp(c(0.1, 0.4, 0.5))
 #'
-#' # Equal-weight average
 #' average_ffp(p1, p2)
-#'
-#' # Weighted combination (70% p1, 30% p2)
-#' combine_ffp(p1 = p1, p2 = p2, weights = c(0.7, 0.3))
+#' combine_ffp(p1, p2, weights = c(0.7, 0.3))
 average_ffp <- function(...) {
-  dots <- list(...)
-  n <- length(dots)
+  probabilities   <- collect_ffp_distributions(...)
+  n_distributions <- length(probabilities)
+  weights         <- rep(1 / n_distributions, n_distributions)
 
-  if (n == 0) {
-    cli::cli_abort("At least one {.cls ffp} object must be provided.")
-  }
-
-  # Check all are ffp
-  for (i in seq_along(dots)) {
-    if (!is_ffp(dots[[i]])) {
-      cli::cli_abort(c(
-        "All arguments must be {.cls ffp} objects.",
-        "x" = "Argument {i} is class {.cls {class(dots[[i]])}} instead."
-      ))
-    }
-  }
-
-  # Check all have same size
-  sizes <- purrr::map_int(dots, vctrs::vec_size)
-  if (!all(sizes == sizes[1])) {
-    cli::cli_abort(c(
-      "All {.cls ffp} objects must have the same length.",
-      "x" = "Got sizes: {.val {unique(sizes)}}"
-    ))
-  }
-
-  # Compute simple average directly
-  weights <- rep(1 / n, n)
-  result <- rep(0, sizes[1])
-  for (i in seq_along(dots)) {
-    result <- result + weights[i] * vctrs::vec_data(dots[[i]])
-  }
-
-  ffp(result)
+  combine_ffp_distributions(probabilities = probabilities,weights = weights)
 }
+
 
 #' @rdname average_ffp
 #' @export
 combine_ffp <- function(..., weights) {
-  dots <- list(...)
+  probabilities <- collect_ffp_distributions(...)
 
-  if (length(dots) == 0) {
-    cli::cli_abort("At least one {.cls ffp} object must be provided.")
+  if (missing(weights)) {
+    cli::cli_abort(
+      c(
+        "{.fn combine_ffp} requires {.arg weights}.",
+        "i" = paste0(
+          "Supply one non-negative weight per probability distribution, ",
+          "with the weights summing to 1."
+        )
+      )
+    )
   }
 
-  # Check all are ffp
-  for (i in seq_along(dots)) {
-    if (!is_ffp(dots[[i]])) {
-      cli::cli_abort(c(
-        "All arguments must be {.cls ffp} objects.",
-        "x" = "Argument {i} is class {.cls {class(dots[[i]])}} instead."
-      ))
-    }
+  weights <- validate_ffp_combination_weights(weights = weights, n_distributions = length(probabilities))
+
+  combine_ffp_distributions(probabilities = probabilities, weights = weights)
+}
+
+
+collect_ffp_distributions <- function(...) {
+  probabilities <- unname(rlang::list2(...))
+
+  if (length(probabilities) == 0L) {
+    cli::cli_abort("At least one {.cls ffp} object must be supplied.")
   }
 
-  # Check weights
-  if (!is.numeric(weights)) {
-    cli::cli_abort("{.arg weights} must be a numeric vector, not {.cls {class(weights)}}")
+  valid <- vapply(probabilities, is_ffp, logical(1))
+
+  if (!all(valid)) {
+    invalid <- which(!valid)
+
+    cli::cli_abort(
+      c(
+        "All supplied distributions must be {.cls ffp} objects.",
+        "x" = "Invalid input position(s): {.val {invalid}}."
+      )
+    )
   }
 
-  if (length(weights) != length(dots)) {
-    cli::cli_abort(c(
-      "Number of weights must match number of {.cls ffp} objects.",
-      "x" = "Got {length(weights)} weights but {length(dots)} objects."
-    ))
+  sizes <- vapply(probabilities, vctrs::vec_size, integer(1))
+
+  if (length(unique(sizes)) != 1L) {
+    cli::cli_abort(
+      c(
+        "All {.cls ffp} distributions must have the same number of scenarios.",
+        "x" = "Received sizes: {.val {sizes}}."
+      )
+    )
+  }
+
+  probabilities
+}
+
+
+validate_ffp_combination_weights <- function(weights, n_distributions, call = rlang::caller_env()) {
+  valid <- is.numeric(weights) && is.null(dim(weights)) && length(weights) == n_distributions && !anyNA(weights) && all(is.finite(weights))
+
+  if (!valid) {
+    ffp_abort(
+      c(
+        "{.arg weights} must be a finite numeric vector with one value per distribution.",
+        "i" = paste0("Expected ", n_distributions, " weight(s).")
+      ),
+      class = "ffp_error_invalid_combination_weights",
+      call = call
+    )
   }
 
   if (any(weights < 0)) {
-    cli::cli_abort(c(
+    ffp_abort(
       "{.arg weights} must be non-negative.",
-      "x" = "Found {sum(weights < 0)} negative weight(s)."
-    ))
+      class = "ffp_error_invalid_combination_weights",
+      call = call
+    )
   }
 
-  if (!dplyr::near(sum(weights), 1, tol = 0.001)) {
-    cli::cli_abort(c(
-      "{.arg weights} must sum to 1 (within tolerance 0.001).",
-      "i" = "Sum of weights: {.val {sum(weights)}}"
-    ))
+  total <- sum(weights)
+
+  if (!probability_sum_is_one(total)) {
+    ffp_abort(
+      c(
+        "{.arg weights} must sum to 1.",
+        "x" = paste0("Current sum is ", format(total, digits = 15, scientific = FALSE, trim = TRUE), ".")
+      ),
+      class = "ffp_error_invalid_combination_weights",
+      call = call
+    )
   }
 
-  # Check all have same size
-  sizes <- purrr::map_int(dots, vctrs::vec_size)
-  if (!all(sizes == sizes[1])) {
-    cli::cli_abort(c(
-      "All {.cls ffp} objects must have the same length.",
-      "x" = "Got sizes: {.val {unique(sizes)}}"
-    ))
-  }
+  canonicalize_probabilities(weights)
+}
 
-  # Compute weighted combination
-  result <- rep(0, sizes[1])
-  for (i in seq_along(dots)) {
-    result <- result + weights[i] * vctrs::vec_data(dots[[i]])
-  }
 
-  # Return as ffp (already validated to be valid probability)
-  ffp(result)
+combine_ffp_distributions <- function(probabilities, weights) {
+  probability_matrix <- do.call(cbind, lapply(probabilities, vctrs::vec_data))
+
+  combined <- as.vector(probability_matrix %*% weights)
+  combined <- canonicalize_probabilities(combined)
+
+  as_ffp(combined)
 }

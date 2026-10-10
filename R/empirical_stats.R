@@ -1,167 +1,118 @@
 #' Summary Statistics for Empirical Distributions
 #'
-#' Computes the mean, standard deviation, skewness, kurtosis, Value-at-Risk (VaR) and
-#' Conditional Value-at-Risk CVaR) under flexible probabilities.
+#' Computes marginal distribution statistics under flexible probabilities.
 #'
-#' The data in \code{x} and \code{p} are expected to have the same number of rows
-#' (size).
+#' `empirical_stats()` is the compatibility interface for the original FFP API.
+#' The statistics are computed using the FFP 2.0 distributional core.
 #'
-#' @param x A time series defining the scenario-probability distribution.
-#' @param p An object of the `ffp` class.
-#' @param level A number with the desired probability level. The default is
-#' `level = 0.01`.
+#' @param x A time series or tabular object defining the scenario distribution.
+#' @param p An object of class `ffp`.
+#' @param level A single number strictly between 0 and 1 defining the
+#'   lower-tail probability used for Value-at-Risk and Expected Shortfall.
 #'
-#' @return A tidy \code{tibble} with 3 columns:
-#'   * stat: a column with `Mu`, `Std`, `Skew`, `Kurt`, `VaR` and `CVaR`.
-#'   * name: the asset names.
-#'   * value: the computed value for each statistic.
+#' @return A tibble with one row per variable and the columns:
+#'
+#' - `variable`: variable name;
+#' - `mean`: probability-weighted mean;
+#' - `sd`: probability-weighted standard deviation;
+#' - `skewness`: probability-weighted skewness;
+#' - `kurtosis`: probability-weighted kurtosis;
+#' - `value_at_risk`: lower-tail quantile reported using a loss convention;
+#' - `expected_shortfall`: lower-tail expected shortfall reported using a
+#'   loss convention.
 #'
 #' @export
 #'
-#' @importFrom rlang .data
-#'
 #' @examples
-#' library(dplyr, warn.conflicts = FALSE)
-#' library(ggplot2)
-#'
 #' ret <- diff(log(EuStockMarkets))
 #'
-#' # with equal weights (standard scenario)
-#' ew  <- rep(1 / nrow(ret), nrow(ret))
-#' empirical_stats(x = ret, p = as_ffp(ew)) |>
-#'   ggplot(aes(x = name, y = value)) +
-#'   geom_col() +
-#'   facet_wrap(~stat, scales = "free") +
-#'   labs(x = NULL, y = NULL)
+#' p <- exp_decay(ret, lambda = 0.015)
 #'
-#' # with ffp
-#' exp_smooth <- exp_decay(ret, 0.015)
-#' empirical_stats(ret, exp_smooth) |>
-#'   ggplot(aes(x = name, y = value)) +
-#'   geom_col() +
-#'   facet_wrap(~stat, scales = "free") +
-#'   labs(x = NULL, y = NULL)
+#' empirical_stats(x = ret,p = p)
 empirical_stats <- function(x, p, level = 0.01) {
   UseMethod("empirical_stats", x)
 }
 
+
 #' @rdname empirical_stats
 #' @export
 empirical_stats.default <- function(x, p, level = 0.01) {
-  cli::cli_abort(c(
-    "empirical_stats() is not implemented for class {.cls {class(x)}}.",
-    "i" = "Supported classes: numeric, matrix, ts, xts, data.frame, tbl_df"
-  ))
+  cli::cli_abort(
+    c(
+      "{.fn empirical_stats} is not implemented for class {.cls {class(x)}}.",
+      "i" = paste0(
+        "Supported classes: {.cls numeric}, {.cls matrix}, {.cls ts}, ",
+        "{.cls xts}, {.cls data.frame}, {.cls tbl_df}."
+      )
+    )
+  )
 }
+
 
 #' @rdname empirical_stats
 #' @export
 empirical_stats.numeric <- function(x, p, level = 0.01) {
-  vctrs::vec_assert(level, double(), 1)
-  if (!inherits(p, "ffp")) cli::cli_abort("Argument {.arg p} must be of class {.cls ffp}")
-  assert_is_equal_size(x, p)
-
-  x <- as.matrix(x)
-
-  make_empirical_stats(x = x, p = as.matrix(p), level = level) |>
-    tidyr::pivot_longer(-stat) |>
-    dplyr::mutate(stat = forcats::fct_relevel(
-      stat,
-      "Mu", "Std", "Skew", "Kurt", "VaR", "CVaR"
-      )
-    )
-
+  legacy_empirical_stats(x = x, p = p, level = level)
 }
+
 
 #' @rdname empirical_stats
 #' @export
 empirical_stats.matrix <- function(x, p, level = 0.01) {
-  vctrs::vec_assert(level, double(), 1)
-  if (!inherits(p, "ffp")) cli::cli_abort("Argument {.arg p} must be of class {.cls ffp}")
-  assert_is_equal_size(x, p)
-
-  make_empirical_stats(x = x, p = as.matrix(p), level = level) |>
-    tidyr::pivot_longer(-stat) |>
-    dplyr::mutate(stat = forcats::fct_relevel(
-      stat,
-      "Mu", "Std", "Skew", "Kurt", "VaR", "CVaR"
-    )
-    )
+  legacy_empirical_stats(x = x, p = p, level = level)
 }
 
-#' @rdname empirical_stats
-#' @export
-empirical_stats.xts <- function(x, p, level = 0.01) {
-  vctrs::vec_assert(level, double(), 1)
-  if (!inherits(p, "ffp")) cli::cli_abort("Argument {.arg p} must be of class {.cls ffp}")
-  assert_is_equal_size(x, p)
-
-  x <- as.matrix(x)
-
-  make_empirical_stats(x = x, p = as.matrix(p), level = level) |>
-    tidyr::pivot_longer(-stat) |>
-    dplyr::mutate(stat = forcats::fct_relevel(
-      stat,
-      "Mu", "Std", "Skew", "Kurt", "VaR", "CVaR"
-    )
-    )
-}
 
 #' @rdname empirical_stats
 #' @export
 empirical_stats.ts <- function(x, p, level = 0.01) {
-  vctrs::vec_assert(level, double(), 1)
-  if (!inherits(p, "ffp")) cli::cli_abort("Argument {.arg p} must be of class {.cls ffp}")
-  assert_is_equal_size(x, p)
-
-  .x <- matrix(x, nrow = NROW(x), ncol = NCOL(x))
-  if (!is.null(colnames(x))) {
-    colnames(.x) <- colnames(x)
-  }
-
-  make_empirical_stats(x = .x, p = as.matrix(p), level = level) |>
-    tidyr::pivot_longer(-stat) |>
-    dplyr::mutate(stat = forcats::fct_relevel(
-      stat,
-      "Mu", "Std", "Skew", "Kurt", "VaR", "CVaR"
-    )
-    )
+  legacy_empirical_stats(x = x, p = p, level = level)
 }
+
+
+#' @rdname empirical_stats
+#' @export
+empirical_stats.xts <- function(x, p, level = 0.01) {
+  legacy_empirical_stats(x = x, p = p, level = level)
+}
+
 
 #' @rdname empirical_stats
 #' @export
 empirical_stats.data.frame <- function(x, p, level = 0.01) {
-  vctrs::vec_assert(level, double(), 1)
-  if (!inherits(p, "ffp")) cli::cli_abort("Argument {.arg p} must be of class {.cls ffp}")
-  assert_is_equal_size(x, p)
-
-  x <- as.matrix(x[purrr::map_lgl(x, is.numeric)])
-
-  make_empirical_stats(x = x, p = as.matrix(p), level = level) |>
-    tidyr::pivot_longer(-stat) |>
-    dplyr::mutate(stat = forcats::fct_relevel(
-      stat,
-      "Mu", "Std", "Skew", "Kurt", "VaR", "CVaR"
-    )
-    )
+  legacy_empirical_stats(x = x, p = p, level = level)
 }
+
 
 #' @rdname empirical_stats
 #' @export
 empirical_stats.tbl_df <- function(x, p, level = 0.01) {
-  vctrs::vec_assert(level, double(), 1)
-  if (!inherits(p, "ffp")) cli::cli_abort("Argument {.arg p} must be of class {.cls ffp}")
-  assert_is_equal_size(x, p)
+  legacy_empirical_stats(x = x, p = p, level = level)
+}
 
-  x <- as.matrix(x[purrr::map_lgl(x, is.numeric)])
 
-  make_empirical_stats(x = x, p = as.matrix(p), level = level) |>
-    tidyr::pivot_longer(-stat) |>
-    dplyr::mutate(stat = forcats::fct_relevel(
-      stat,
-      "Mu", "Std", "Skew", "Kurt", "VaR", "CVaR"
+legacy_empirical_stats <- function(x, p, level) {
+
+  if (!is_ffp(p)) {
+    cli::cli_abort(
+      "{.arg p} must be an {.cls ffp} object."
     )
-    )
+  }
+
+  level <- ffp_stats_validate_prob(level)
+
+  statistics <- ffp_stats(x = x, p = p, prob = level)$statistics
+
+  dplyr::transmute(
+    statistics,
+    variable = .data$variable,
+    mean     = .data$mean,
+    sd       = .data$sd,
+    skewness = .data$skewness,
+    kurtosis = .data$kurtosis,
+    value_at_risk      = -.data$quantile,
+    expected_shortfall = -.data$expected_shortfall
+  )
 }
 
 

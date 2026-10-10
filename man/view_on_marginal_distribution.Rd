@@ -60,7 +60,7 @@ simul <- bootstrap_scenarios(ret, as_ffp(prior), as.double(n))
 views <- view_on_marginal_distribution(x = ret, simul = simul, p = prior)
 views
 
-ep <- entropy_pooling(p = prior, Aeq = views$Aeq, beq = views$beq, solver = "nlminb")
+ep <- entropy_pooling(p = prior, Aeq = views$Aeq, beq = views$beq)
 autoplot(ep)
 
 # location matches

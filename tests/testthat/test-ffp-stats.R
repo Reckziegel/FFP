@@ -1146,3 +1146,147 @@ test_that("ffp_stats summaries work directly from fitted models", {
     "mean"
   )
 })
+
+make_opinion_pool_stats_test_object <- function(
+    confidence = 0.40
+) {
+  scenarios <- data.frame(
+    equity = c(
+      -0.08,
+      -0.03,
+      0.01,
+      0.04,
+      0.06
+    ),
+    bonds = c(
+      0.03,
+      0.02,
+      0.01,
+      0.00,
+      -0.01
+    )
+  )
+
+  fit <- ffp_model(scenarios) |>
+    ffp_prior(
+      prior_uniform()
+    ) |>
+    ffp_view(
+      view_mean(
+        equity,
+        target = 0.02
+      )
+    ) |>
+    ffp_fit()
+
+  ffp_opinion_pooling(
+    fit,
+    confidence = confidence
+  )
+}
+
+test_that("ffp_stats opinion pool preserves all three distributions", {
+  pooled <- make_opinion_pool_stats_test_object()
+
+  result <- ffp_stats(
+    pooled
+  )
+
+  fit_stats <- ffp_stats(
+    pooled$fit
+  )
+
+  posterior_stats <- ffp_stats(
+    x = pooled$fit$model$scenarios,
+    p = pooled$posterior
+  )
+
+  expect_equal(
+    result$prior,
+    fit_stats$prior
+  )
+
+  expect_equal(
+    result$full_confidence,
+    fit_stats$posterior
+  )
+
+  expect_equal(
+    result$posterior,
+    posterior_stats$statistics
+  )
+})
+
+test_that("ffp_stats opinion-pool changes use explicit reference distributions", {
+  pooled <- make_opinion_pool_stats_test_object()
+
+  stats <- ffp_stats(
+    pooled
+  )
+
+  statistic_names <- ffp_stats_statistic_names()
+
+  expect_equal(
+    as.matrix(
+      stats$full_confidence_change[
+        statistic_names
+      ]
+    ),
+    as.matrix(
+      stats$full_confidence[
+        statistic_names
+      ]
+    ) -
+      as.matrix(
+        stats$prior[
+          statistic_names
+        ]
+      )
+  )
+
+  expect_equal(
+    as.matrix(
+      stats$posterior_change[
+        statistic_names
+      ]
+    ),
+    as.matrix(
+      stats$posterior[
+        statistic_names
+      ]
+    ) -
+      as.matrix(
+        stats$prior[
+          statistic_names
+        ]
+      )
+  )
+})
+
+test_that("ffp_stats opinion pooling respects confidence boundaries", {
+  no_confidence <- make_opinion_pool_stats_test_object(
+    confidence = 0
+  )
+
+  full_confidence <- make_opinion_pool_stats_test_object(
+    confidence = 1
+  )
+
+  stats_zero <- ffp_stats(
+    no_confidence
+  )
+
+  stats_one <- ffp_stats(
+    full_confidence
+  )
+
+  expect_equal(
+    stats_zero$posterior,
+    stats_zero$prior
+  )
+
+  expect_equal(
+    stats_one$posterior,
+    stats_one$full_confidence
+  )
+})

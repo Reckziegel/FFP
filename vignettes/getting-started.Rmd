@@ -1,0 +1,954 @@
+---
+title: "Getting Started with Fully Flexible Probabilities"
+author: "Bernardo Reckziegel"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    toc_depth: 1
+vignette: >
+  %\VignetteIndexEntry{Getting Started with Fully Flexible Probabilities}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  message = FALSE,
+  warning = FALSE
+)
+```
+
+```{r setup}
+library(ffp)
+```
+
+## Fully Flexible Probabilities in one idea
+
+Portfolio managers and risk analysts are constantly asked to make decisions
+about distributions they cannot observe directly.
+
+What should expected returns look like if the investment outlook changes?
+How much risk should be assigned to a portfolio if volatility increases and
+correlations shrink to near 1? How should a signal affect the distribution 
+of a systematic strategy? How should the portfolio behave under a macroeconomic 
+regime that differs from the historical average?
+
+These questions arise naturally in asset management, trading desks, and other institutions
+that need to make decisions under uncertainty. In this context, the challenge is to translate
+the arriving information into a probability distribution that remains consistent with 
+the investors views.
+
+Entropy Pooling provides a framework for incorporating this information. 
+We begin with a prior distribution that represents the available
+scenarios and their probabilities. We then express the information we want to
+introduce as views on the posterior distribution. The posterior probabilities 
+are chosen so that the views are satisfied while
+the distribution remains as close as possible to the prior. Closeness is
+measured by relative entropy.
+
+Let $q = (q_1, \ldots, q_T)$ denote the prior probabilities and
+$p = (p_1, \ldots, p_T)$ the posterior probabilities. If
+$\mathcal{V}$ denotes the set of distributions consistent with the views, the
+full-confidence posterior is:
+
+$$
+p^\star
+=
+\arg\min_{p \in \mathcal{V}}
+\sum_{t=1}^{T}
+p_t
+\log\left(\frac{p_t}{q_t}\right),
+$$
+
+subject to:
+
+$$
+\sum_{t=1}^{T} p_t = 1,
+\qquad
+p_t \geq 0.
+$$
+
+The optimization therefore changes only what is necessary to incorporate the
+new information. The scenarios themselves are not modified. Instead,
+their probabilities are adjusted so that the resulting distribution reflects
+the views while preserving as much as possible the prior structure.
+
+This is what makes Fully Flexible Probabilities useful in practice. A view can
+refer to expected returns, event probabilities, quantiles, volatility,
+correlation, rankings, or other features of the distribution. 
+
+<!-- The same -->
+<!-- framework can also be used for market conditioning, stress testing, systematic -->
+<!-- signals and portfolio allocation. -->
+
+These ideas have been used in applications ranging from portfolio allocation
+and non-normal derivative portfolios, market conditioning, and stress testing (Meucci, 2008, 2010). Entropy Pooling has also been used to convert systematic signals into scenario probabilities for portfolio allocation (Georgelis and Nyberg, 2013).
+
+In this vignette, we will use a simple joint distribution to make this workflow explicit. We will start from a prior distribution, introduce two different views, inspect how the scenario probabilities change, add partial confidence, and finally use the posterior
+distribution to estimate the necessary inputs for portfolio optimization.
+
+## A joint distribution of economic scenarios
+
+To make these ideas concrete, we begin with 1000 simulated joint scenarios for equity returns, bond returns, and inflation. The example is intentionally simple: our objective is not to construct a realistic macroeconomic model, but to make it easy to see how information about one part of a joint distribution can change the probability assigned to entire dataset: 
+
+<!-- economic scenarios. -->
+
+<!-- Unlike the minimal example in the package README, the variables here are deliberately dependent. We generate three underlying shocks and let them affect the variables in different ways: -->
+
+```{r simulate}
+set.seed(123)
+
+n_scenarios <- 1000
+
+growth_shock    <- rnorm(n_scenarios)
+inflation_shock <- rnorm(n_scenarios)
+market_shock    <- rnorm(n_scenarios)
+
+scenarios <- tibble::tibble(
+  equity    = 0.006 + 0.030 * growth_shock - 0.010 * inflation_shock + 0.025 * market_shock,
+  bonds     = 0.002 - 0.006 * growth_shock - 0.012 * inflation_shock + 0.008 * market_shock,
+  inflation = 0.025 + 0.006 * growth_shock + 0.008 * inflation_shock
+)
+
+scenarios
+```
+
+<!-- The simulation is intentionally simple and is not meant to represent a complete economic model. Its purpose is to generate a joint distribution in which the variables share common sources of uncertainty. Stronger growth tends to support equity returns, while inflation shocks tend to hurt both equities and bonds. Because these realizations occur inside the same joint scenarios, information about one variable can eventually affect the posterior distribution of one another. -->
+
+The dependence can be inspected directly from the sample correlations:
+
+```{r correlations}
+stats::cor(scenarios)
+```
+
+<!-- This joint structure will become important once we start changing scenario probabilities. Entropy Pooling reweights entire rows of the scenario matrix, not individual marginal observations in isolation. -->
+
+## Define the scenario support
+
+The first step in an `ffp` analysis is to define the scenarios that form the support of the distribution:
+
+```{r model}
+model <- ffp_model(scenarios)
+model
+```
+
+At this stage, the model describes only what can happen. No probability distribution has yet been assigned to those scenarios. This separation is deliberate because scenario construction and probability assignment represent different parts of the modeling problem.
+
+Entropy Pooling will not generate new values for `equity`, `bonds`, or `inflation`. It works exclusively with the information supplied to `ffp_model()`. Consequently, the scenario set must contain the states of the world that are relevant to the analysis. Reweighting can make an existing scenario more or less likely, but it cannot create a scenario that is absent in history.
+
+## Choose a prior distribution
+
+We now decide how plausible the scenarios should be before introducing any views. For our first model, we use a uniform prior:
+
+```{r prior}
+model <- model |>
+  ffp_prior(
+    prior_uniform()
+  )
+model
+```
+
+With 1000 scenarios, every observation initially receives probability:
+
+$$
+q_t = \frac{1}{1000}.
+$$
+
+<!-- The scenario support and the prior therefore answer two different questions. The support determines which outcomes are available to the distribution, whereas the prior determines how plausible those outcomes are before any new information is incorporated. -->
+
+A uniform distribution is only one possible prior. `ffp` also supports time-decay (`prior_exp_decay()`), rolling-window (`prior_rolling_window()`), conditioning (`prior_crisp()`), custom (`prior_custom()`), and combined prior specifications (`prior_product()`, `prior_mixture_probabilities()`, etc). 
+
+We use uniform probabilities because they provide a transparent baseline from which the effects of the views can be isolated.
+
+## Understand the prior 
+
+Before changing the distribution, it is useful to understand the starting point. We can summarize the empirical prior directly with `ffp_stats`:
+
+```{r prior-stats}
+prior_stats <- ffp_stats(scenarios)
+prior_stats
+```
+
+For a more focused look at equity returns:
+
+```{r prior-equity}
+summary(prior_stats, variable = "equity")
+```
+
+## First view: expected equity returns
+
+Suppose the prior distribution implies an expected equity return of 0.6%, but we believe the appropriate expectation should instead be 1.5%. We can express this economic statement directly as a view:
+
+```{r first-view}
+model_1 <- model |>
+  ffp_view(
+    view_mean(equity, target = 0.015)
+  )
+model_1
+```
+
+Let $x_{t,e}$ denote the equity return in scenario $t$, let $q=(q_1,\ldots,q_T)$ denote the prior probabilities, and let $p=(p_1,\ldots,p_T)$ denote the posterior probabilities. The view requires:
+
+$$
+\sum_{t=1}^{T} p_t x_{t,e} = 0.015.
+$$
+
+We have specified a property of the posterior distribution, but we have not said which scenarios should receive more probability or how large any individual probability adjustment should be. That allocation of probability mass is determined by Entropy Pooling.
+
+## Fit the first posterior
+
+With one view, `ffp_fit()` solves the complete optimization problem:
+
+$$
+\begin{aligned}
+p^{(1)}
+=
+\arg\min_{p_1,\ldots,p_T}
+&\quad
+\sum_{t=1}^{T}
+p_t
+\log\left(\frac{p_t}{q_t}\right)
+\\[4pt]
+\text{subject to}
+&\quad
+\sum_{t=1}^{T} p_t = 1,
+\\
+&\quad
+p_t \geq 0,
+\qquad t=1,\ldots,T,
+\\
+&\quad
+\sum_{t=1}^{T}
+p_t x_{t,e}
+=
+0.015.
+\end{aligned}
+$$
+
+The objective is to minimize the relative entropy of the posterior probabilities with respect to the prior. Among all valid probability distributions that satisfy the equity view, Entropy Pooling therefore selects the one that introduces the smallest relative-entropy distortion from $q$.
+
+We solve this problem with:
+
+```{r first-fit}
+fit_1 <- ffp_fit(model_1)
+fit_1
+```
+
+The important distinction is that `ffp_fit()` changes the probability vector, not the scenario matrix. The same 1000 joint realizations remain untouched before and after fitting; only their relative importance changes.
+
+## What changed?
+
+We can inspect the largest probability adjustments together with the scenarios to which they belong:
+
+```{r first-probabilities}
+ffp_probabilities(fit_1) 
+```
+
+This representation makes the mechanism more explicit. Scenarios that help reconcile the prior distribution with the higher expected equity return tend to receive more probability. Because every row contains an equity return, a bond return, and an inflation realization, the reweighting applies to all three values simultaneously.
+
+We can now summarize the posterior distribution:
+
+```{r first-stats}
+stats_1 <- ffp_stats(fit_1)
+stats_1
+```
+
+The equity marginal reflects the view directly:
+
+```{r first-equity}
+summary(stats_1, variable = "equity")
+```
+
+The posterior expected equity return is approximately 1.5%, as required by the view. The effect of the probability update, however, is not restricted to `equity`. Because the variables belong to the same joint scenarios, the distributions of `inflation` and `bonds` may change even though neither was directly constrained.
+
+```{r first-inflation}
+summary(stats_1, variable = "inflation")
+```
+
+```{r first-bonds}
+summary(stats_1, variable = "bonds")
+```
+
+To see why this happens, imagine that scenarios with relatively strong equity returns also tend to contain particular inflation or bond realizations. When those rows receive additional posterior probability to satisfy the equity view, all variables observed in those rows receive the same additional probability. Entropy Pooling therefore retains the dependence encoded in the joint scenario matrix rather than modifying each marginal distribution independently.
+
+## Probability concentration
+
+The probability update can also concentrate the posterior distribution on a smaller subset of scenarios. `ffp_stats()` reports the Effective Number of Scenarios (ENS) for both, the prior and posterior, making this concentration visible alongside the changes in the distribution itself.
+
+For probabilities $p_1,\ldots,p_T$, `ffp` defines:
+
+$$
+ENS =
+\exp\left(
+  -\sum_{t=1}^{T} p_t \log p_t
+\right).
+$$
+
+Under a uniform distribution over 1000 scenarios, the ENS is 1000 because all scenarios receive the same weight. Once views are introduced, this quantity can fall as the posterior concentrates probability on scenarios that are more consistent with the information being imposed.
+
+A lower posterior ENS should not automatically be interpreted as a problem. It means that, given the information contained in the view, some scenarios have become more relevant than others. A strong view may produce substantial concentration, whereas a view already close to the prior distribution can have little effect.
+
+<!-- > **ENS measures probability concentration. It is not a formal measure of how restrictive a view is.** -->
+
+<!-- The distinction matters because numerical feasibility, economic informativeness, and probability concentration are related but conceptually different features of an FFP model. -->
+
+## Add a different kind of view
+
+So far, we have imposed a statement about an expected value. Fully Flexible Probabilities are not limited to returns, so we now add a qualitatively different piece of information. Suppose we believe that inflation above 4% should occur with probability of 5%.
+
+The second view is:
+
+$$
+P_p(\text{inflation} > 0.04) = 0.05.
+$$
+
+If $x_{t,\pi}$ denotes inflation in scenario $t$, this statement can be written directly in terms of scenario probabilities as:
+
+$$
+\sum_{t=1}^{T}
+p_t
+\mathbb{1}
+\left(
+x_{t,\pi} > 0.04
+\right)
+=
+0.05,
+$$
+
+where $\mathbb{1}(\cdot)$ is an indicator that equals one when the condition is true and zero otherwise.
+
+We add this requirement to the model that already contains the equity view:
+
+```{r second-view}
+model_2 <- model_1 |>
+  ffp_view(
+    view_probability(inflation > 0.04, target = 0.05)
+  )
+model_2
+```
+
+The second call to `ffp_view()` does not replace the first view. The model now contains both statements, and they will be imposed simultaneously into de model fit.
+
+## Refit with both views
+
+With both views present, the optimization problem becomes:
+
+$$
+\begin{aligned}
+p^{(2)}
+=
+\arg\min_{p_1,\ldots,p_T}
+&\quad
+\sum_{t=1}^{T}
+p_t
+\log\left(\frac{p_t}{q_t}\right)
+\\[4pt]
+\text{subject to}
+&\quad
+\sum_{t=1}^{T} p_t = 1,
+\\
+&\quad
+p_t \geq 0,
+\qquad t=1,\ldots,T,
+\\
+&\quad
+\sum_{t=1}^{T}
+p_t x_{t,e}
+=
+0.015,
+\\
+&\quad
+\sum_{t=1}^{T}
+p_t
+\mathbb{1}
+\left(
+x_{t,\pi} > 0.04
+\right)
+=
+0.05.
+\end{aligned}
+$$
+
+This formulation makes an important feature of the workflow explicit. The second model is not obtained by treating `fit_1$posterior` as a new prior and then imposing the inflation view sequentially. The prior remains $q$, while the set of constraints now contains **both** views. Entropy Pooling finds the single posterior distribution that simultaneously reconciles the original prior with the complete set of information.
+
+We fit this expanded problem exactly as before:
+
+```{r second-fit}
+fit_2 <- ffp_fit(model_2)
+fit_2
+```
+
+Its possible to inspect the resulting distribution with:
+
+```{r second-stats}
+stats_2 <- ffp_stats(fit_2)
+stats_2
+```
+
+The equity constraint remains part of the optimization problem:
+
+```{r second-equity}
+summary(stats_2, variable = "equity")
+```
+
+The inflation distribution now reflects the additional probability statement:
+
+```{r second-inflation}
+summary(stats_2, variable = "inflation")
+```
+
+Both constraints can also be checked directly from the fitted probabilities:
+
+```{r verify-both-views}
+c(
+  equity_mean = stats::weighted.mean(scenarios$equity, fit_2$posterior),
+  high_inflation_probability = sum(fit_2$posterior[scenarios$inflation > 0.04])
+)
+```
+
+The prior, the first model and the second model therefore use the same scenario matrix but represent different states of information. The first posterior incorporates only the equity view, while the second posterior is the minimum-relative-entropy distribution satisfying both the equity and inflation statements.
+
+This is the sense in which Fully Flexible Probabilities are flexible: a fixed set of scenarios can support increasingly rich information without requiring the underlying observations to be modified or regenerated.
+
+## Tail risk under the posterior
+
+Once the probabilities change, every distributional quantity implied by those probabilities can change as well. This includes tail risk, which can be evaluated directly from the fitted model:
+
+```{r posterior-risk}
+ffp_risk(fit_2, confidence = 0.99)
+```
+
+`ffp_risk()` reports Value at Risk (VaR) and Expected Shortfall (ES) using a loss convention. The important point here is not the choice of a particular risk measure, but the fact that Entropy Pooling produces a complete posterior empirical distribution. Once scenario probabilities are updated, the same posterior can be used to calculate location, dispersion, quantiles, tail risk, and other distributional quantities without constructing a separate model for each statistic.
+
+## Adding confidence to the views
+
+The posterior returned by `ffp_fit()` is a **full-confidence posterior**. In other words, the views are treated as statements that the fitted distribution must satisfy. In our two-view example, the full-confidence posterior is constructed so that the expected equity return is 1.5% and the probability of inflation above 4% is 5%, subject only to numerical precision.
+
+In practice, an investor may agree with the direction and magnitude of these views without wanting to assign them 100% confidence. `ffp_opinion_pooling()` provides a separate layer for this purpose.
+
+Let $p_{\mathrm{full}}$ denote the full-confidence posterior returned by `ffp_fit()` and let $c\in[0,1]$ denote the confidence assigned jointly to the views. The partial-confidence posterior is:
+
+$$
+p_c
+=
+(1-c)q
++
+c p_{\mathrm{full}}.
+$$
+
+Therefore, $c=0$ returns the prior exactly, while $c=1$ returns the full-confidence posterior. Intermediate values move every scenario probability the same fraction of the way from the prior toward the full-confidence posterior.
+
+Suppose we assign 75% confidence to the two views in `fit_2`:
+
+```{r opinion-pooling}
+pooled <- ffp_opinion_pooling(fit_2, confidence = 0.75)
+pooled
+```
+
+The resulting probability vector is available directly from the opinion-pool object:
+
+```{r pooled-probabilities}
+head(pooled$posterior)
+```
+
+It is useful to inspect what the original view quantities look like under these partially confident probabilities:
+
+```{r pooled-views}
+c(
+  equity_mean    = stats::weighted.mean(scenarios$equity,pooled$posterior),
+  high_inflation = sum(pooled$posterior[scenarios$inflation > 0.04])
+)
+```
+
+It's also possible to type:
+
+```{r}
+summary(pooled)
+```
+
+These quantities will generally lie between their prior values and their full-confidence targets. They are not expected to satisfy the original views exactly because partial confidence is intentionally relaxing our commitment to the full-confidence posterior through opinion pooling.
+
+This distinction is particularly important for interpreting the package. `ffp_fit()` solves the Entropy Pooling optimization problem under full confidence. `ffp_opinion_pooling()` subsequently combines that solution with the prior according to a modeling choice about confidence; it does not rerun the Entropy Pooling solver or change its numerical tolerances.
+
+In the remainder of the example, we will use the 75%-confidence posterior. This allows the downstream portfolio inputs to reflect both the information in the views and our uncertainty about imposing those views completely.
+
+## From posterior probabilities to conditional moments
+
+For asset allocation, a particularly useful representation of the final probability distribution is its expected return vector and covariance matrix. Our scenario matrix also contains `inflation`, which was useful for defining the state of the economy and expressing the second view, but we will assume inflation is not a tradable asset in the portfolio considered here.
+
+We therefore select only the two asset-return columns before calculating the moments:
+
+```{r asset-returns}
+asset_returns <- scenarios |>
+  dplyr::select(equity, bonds)
+```
+
+The posterior probabilities still reflect all the information used to construct the model, including the inflation view. We simply restrict the variables whose moments will be passed to the portfolio optimizer:
+
+```{r posterior-moments}
+moments <- ffp_moments(asset_returns, p = pooled$posterior)
+moments
+```
+
+For asset-return vector $r_t$, the probability-weighted expected return is:
+
+$$
+\mu_p
+=
+\sum_{t=1}^{T}
+p_t r_t,
+$$
+
+while the corresponding covariance matrix is
+
+$$
+\Sigma_p
+=
+\sum_{t=1}^{T}
+p_t
+(r_t - \mu_p)
+(r_t - \mu_p)'.
+$$
+
+In this example, $p$ is the 75%-confidence posterior from `ffp_opinion_pooling()`. Consequently, `moments$mu` contains only the expected returns of `equity` and `bonds`, while `moments$sigma` is the corresponding $2\times2$ covariance matrix. Inflation does not appear as an optimization asset, but its role in the views has already affected the probabilities used to calculate both quantities.
+
+This illustrates an important feature of scenario-based modeling: variables can be economically relevant for conditioning the distribution without needing to be decision variables in the subsequent optimization problem.
+
+## From views to an efficient frontier
+
+A standard mean-variance portfolio optimizer requires an expected return vector $\mu$ and a covariance matrix $\Sigma$. The two components returned by `ffp_moments()` provide exactly those inputs:
+
+```{r optimization-inputs}
+moments
+```
+
+A conventional efficient frontier built from historical data would typically use moments estimated under equal scenario probabilities. Here, the moments are instead calculated under a probability distribution that reflects the prior, two economic views, and a 75% confidence level assigned to those views.
+
+<!-- The economic sequence is therefore straightforward. We begin with joint scenarios describing asset returns and inflation, assign prior probabilities, and use Entropy Pooling to find the full-confidence probability distribution consistent with our views. Opinion pooling then reflects uncertainty about those views. Finally, `ffp_moments()` maps the resulting scenario distribution into the expected returns and covariance matrix required by a portfolio optimizer. -->
+
+Passing `moments$mu` and `moments$sigma` to a mean-variance optimization routine therefore produces an efficient frontier that is *conditional* on the information encoded by the `ffp` model. The scenarios themselves have never changed; what has changed is the probability with which each joint state contributes to the portfolio inputs.
+
+In applications where the prior and views represent investor beliefs, this provides a natural connection between Fully Flexible Probabilities and Bayesian-style asset allocation. `ffp` does not need to solve the portfolio problem itself for this connection to be useful: it describes the view-conditioned distribution, while an optimization package can take the resulting moments and solve the decision problem.
+
+## The complete workflow
+
+We introduced each component separately because the scenario support, prior, views, full-confidence posterior, partial confidence, and downstream moments represent distinct modeling decisions. Once those roles are understood, the specification of the full-confidence model itself can be written compactly:
+
+```{r complete-workflow}
+fit <- scenarios |>
+  ffp_model() |>
+  ffp_prior(
+    prior_uniform()
+  ) |>
+  ffp_view(
+    view_mean(equity, target = 0.015), 
+    view_probability(inflation > 0.04, target = 0.05)
+  ) |>
+  ffp_fit()
+```
+
+If the views are not held with complete confidence, the fitted distribution can then be combined with the prior before it is used downstream:
+
+```{r complete-pooling}
+pooled <- ffp_opinion_pooling(fit, confidence = 0.75)
+```
+
+For a portfolio containing only equity and bonds, the final optimization inputs follow directly from the partially confident scenario probabilities:
+
+```{r complete-moments}
+moments <- scenarios |>
+  dplyr::select(equity, bonds) |>
+  ffp_moments(p = pooled$posterior)
+
+moments$mu
+moments$sigma
+```
+
+The compact workflow therefore preserves the same conceptual sequence developed throughout the vignette: define the available scenarios, specify how plausible they are initially, express information as distributional views, obtain the minimum-relative-entropy full-confidence posterior, adjust that posterior for view confidence when appropriate, and finally use the resulting distribution for statistical analysis or economic decisions.
+
+## Where to go next
+
+This vignette started from a uniform prior and used two relatively simple but different views: one on an expected value and another on an event probability. The same workflow extends naturally to richer problems. Different `prior_*()` specifications can place more initial probability on recent or economically similar scenarios, while other `view_*()` functions can describe quantiles, volatility, covariance, correlation, ranking, and other properties of the posterior distribution.
+
+The next layers of the package address two related questions. First, `ffp_diagnostics()` helps determine whether the full-confidence Entropy Pooling problem has been solved satisfactorily and how its constraints behave. Second, `ffp_opinion_pooling()` allows the economic strength of the views to be treated separately from those numerical considerations. Together with `ffp_stats()`, `ffp_risk()`, and `ffp_moments()`, these tools turn the posterior scenario probabilities into a distribution that can be inspected, interpreted, and used directly in downstream decisions.
+
+## References
+
+Meucci, A. (2008). *Fully Flexible Views: Theory and Practice*. Risk, 21(10), 97-102.
+
+Meucci, A. (2010). *Historical Scenarios with Fully Flexible Probabilities*. GARP Risk Professional.
+
+Georgelis, N., & Nyberg, M. (2013). *A Scenario Based Allocation Model Using Entropy Pooling for Computing the Scenario Probabilities*. KTH.
+
+------------------------------------------------------------------------
+
+This vignette introduces **Fully Flexible Probabilities** (FFP) and the `ffp` package. It is designed for users new to the concepts and methods. If you want a practical walkthrough of entropy pooling workflows, see the vignette **Entropy Pooling in practice**.
+
+## Why Fully Flexible Probabilities?
+
+Imagine you work in finance and face this common situation: You have historical market data, but today you believe the market will behave differently than it did in the past. Perhaps you expect:
+
+- **Higher returns** in one asset class
+- **Lower volatility** due to changing market conditions
+- **Different correlation** patterns between assets
+- **Stronger dependence** in downturns
+
+Your historical data still contains valuable information about the relationships between variables, but you want to **reweight** the past scenarios to reflect your forward-looking views.
+
+This is what Fully Flexible Probabilities do: they let you adjust the probability of historical scenarios without discarding those scenarios. The framework preserves the joint structure of the data while incorporating your beliefs about the future.
+
+## The Core Idea
+
+The fundamental insight is simple:
+
+> **Assign new probabilities to historical scenarios to match your views, while changing the probability distribution as little as possible.**
+
+Let's denote:
+
+- $X$: The matrix of historical scenarios (rows = scenarios, columns = variables)
+- $p$: The original (prior) probability for each scenario
+- $q$: The new (posterior) probability for each scenario, adjusted to match your views
+
+The `ffp` package solves this mathematically using entropy pooling, an optimization approach that finds $q$ such that:
+
+1.  Your views are satisfied
+2.  The new probabilities are as "close" to the original ones as possible (in relative-entropy terms)
+3.  The resulting probabilities are valid (all non-negative, sum to 1)
+
+## A First Example
+
+Let's work with R's built-in `EuStockMarkets` dataset, which contains prices for four European stock indices.
+
+```{r}
+library(ffp)
+library(ggplot2)
+
+# Convert prices to log-returns
+x <- diff(log(EuStockMarkets))
+
+# Prior probabilities: equal weight to all scenarios
+prior <- rep(1 / nrow(x), nrow(x))
+
+head(x)
+dim(x)
+```
+
+Suppose you believe that the **FTSE will outperform its historical average by 20%**. How do you express this and find adjusted probabilities?
+
+### Step 1: Define the View
+
+Use `view_on_mean()` to express your belief about expected return:
+
+```{r view-creation}
+target_ftse_mean <- mean(x[, "FTSE"]) * 1.20
+
+view <- view_on_mean(
+  x = as.matrix(x[, "FTSE"]),
+  mean = target_ftse_mean
+)
+
+view
+```
+
+The `view` object contains the mathematical representation of your belief (matrices `Aeq` and `beq`) that the optimizer will use.
+
+### Step 2: Solve for Posterior Probabilities
+
+Pass the view to `entropy_pooling()`:
+
+```{r entropy-solve}
+posterior <- entropy_pooling(
+  p = prior,
+  Aeq = view$Aeq,
+  beq = view$beq,
+  solver = "nlminb"
+)
+
+posterior
+```
+
+The result is an `ffp` object: a vector of posterior probabilities, one for each historical scenario.
+
+### Step 3: Verify the Result
+
+Check that your view is satisfied:
+
+```{r verify-view}
+# Prior FTSE mean
+cat("Prior FTSE mean:      ", mean(x[, "FTSE"]), "\n")
+
+# Posterior FTSE mean (weighted by posterior probabilities)
+cat("Posterior FTSE mean:  ", ffp_moments(x, posterior)$mu["FTSE"], "\n")
+
+# Target
+cat("Target FTSE mean:     ", target_ftse_mean, "\n")
+```
+
+The posterior mean matches the target. The optimization successfully reweighted the historical scenarios to reflect your view.
+
+### Step 4: Visualize the Probabilities
+
+```{r plot-posterior, fig.width=7, fig.align='center'}
+autoplot(posterior)
+```
+
+The plot shows how the posterior probabilities are distributed across the historical scenarios. Notice:
+
+- **Color gradient**: Blue represents low probability, red represents high probability
+- **Peak marker**: The dashed line marks the scenario with maximum probability
+- **Statistics**: The subtitle reports mean, median, and standard deviation
+
+## What Is an `ffp` Object?
+
+An `ffp` is an R S3 class built on top of numeric vectors. It represents a **single probability distribution** for a set of scenarios.
+
+```{r ffp-basics}
+# It's a vector of probabilities
+class(posterior)
+length(posterior)
+sum(posterior)  # Always sums to 1
+
+# Extract as numeric if needed
+head(vctrs::vec_data(posterior))
+```
+
+Key properties:
+
+- **Always valid**: Sums to 1, all values non-negative
+- **Type-safe**: Arithmetic operations are restricted to prevent accidental misuse
+- **Works with ggplot2**: The `autoplot()` method provides publication-ready visualization
+
+## Common Workflows
+
+The `ffp` package supports different types of views. Here are the most common:
+
+### View on Expected Return (Means)
+
+```{r workflow-mean, eval=FALSE}
+# I believe the CAC will have an expected return of 0.001 (0.1%)
+view <- view_on_mean(
+  x = as.matrix(x[, "CAC"]),
+  mean = 0.001
+)
+
+posterior <- entropy_pooling(p = prior, Aeq = view$Aeq, beq = view$beq)
+```
+
+### View on Volatility
+
+```{r workflow-vol, eval=FALSE}
+# I believe CAC volatility will be 15% lower than historical
+view <- view_on_volatility(
+  x = as.matrix(x[, "CAC"]),
+  vol = sd(x[, "CAC"]) * 0.85
+)
+
+posterior <- entropy_pooling(p = prior, Aeq = view$Aeq, beq = view$beq)
+```
+
+### View on Relative Performance (Ranking)
+
+```{r workflow-rank, eval=FALSE}
+# I believe DAX will outperform SMI
+view <- view_on_rank(
+  x = x[, c("DAX", "SMI")],
+  rank = c(2, 1)  # SMI is worst (1), DAX is best (2)
+)
+
+posterior <- entropy_pooling(p = prior, A = view$A, b = view$b, solver = "nloptr")
+```
+
+Notice that ranking produces **inequality** constraints (`A`, `b`), not equality constraints. This requires a different solver.
+
+### View on Correlation
+
+```{r workflow-cor, eval=FALSE}
+# Increase correlation between FTSE and DAX to 0.90
+target_cor <- cor(x)
+target_cor["FTSE", "DAX"] <- 0.90
+target_cor["DAX", "FTSE"] <- 0.90
+
+view <- view_on_correlation(x = x, cor = target_cor)
+
+posterior <- entropy_pooling(p = prior, Aeq = view$Aeq, beq = view$beq)
+```
+
+## Combining Multiple Views
+
+Real applications usually involve **more than one view**. Use `bind_views()` to combine them:
+
+```{r combined-views}
+# View 1: FTSE mean 20% above historical
+view_ftse_mean <- view_on_mean(
+  x = as.matrix(x[, "FTSE"]),
+  mean = mean(x[, "FTSE"]) * 1.20
+)
+
+# View 2: CAC volatility 10% below historical
+view_cac_vol <- view_on_volatility(
+  x = as.matrix(x[, "CAC"]),
+  vol = sd(x[, "CAC"]) * 0.90
+)
+
+# Combine them
+views <- bind_views(view_ftse_mean, view_cac_vol)
+
+# Solve
+posterior_combined <- entropy_pooling(
+  p = prior,
+  Aeq = views$Aeq,
+  beq = views$beq,
+  solver = "nlminb"
+)
+```
+
+Verify both views are satisfied:
+
+```{r verify-combined}
+moments <- ffp_moments(x, posterior_combined)
+
+cat("FTSE mean:\n")
+cat("  Prior:     ", mean(x[, "FTSE"]), "\n")
+cat("  Posterior: ", moments$mu["FTSE"], "\n")
+cat("  Target:    ", mean(x[, "FTSE"]) * 1.20, "\n\n")
+
+cat("CAC volatility:\n")
+cat("  Prior:     ", sd(x[, "CAC"]), "\n")
+cat("  Posterior: ", sqrt(moments$sigma["CAC", "CAC"]), "\n")
+cat("  Target:    ", sd(x[, "CAC"]) * 0.90, "\n")
+```
+
+## Diagnostics: Did It Work?
+
+After solving entropy pooling, always check the result. The package provides several tools:
+
+### 1. Moments Check
+
+Did the views actually change the right moments?
+
+```{r diag-moments}
+ffp_moments(x, posterior_combined)
+```
+
+### 2. Relative Entropy
+
+How much did the probabilities move away from the prior? Larger values mean bigger changes.
+
+```{r diag-entropy}
+relative_entropy(prior = prior, posterior = vctrs::vec_data(posterior_combined))
+```
+
+### 3. Effective Number of Scenarios
+
+Did probability become too concentrated? This warns if few scenarios get very high weight.
+
+```{r diag-ens}
+c(
+  prior = ens(as_ffp(prior)),
+  posterior = ens(posterior_combined)
+)
+```
+
+Values close to the number of scenarios are good. Sharp drops suggest problematic concentration.
+
+### 4. Empirical Statistics
+
+What happened to the full empirical distribution (mean, std, skewness, kurtosis, VaR, CVaR)?
+
+```{r diag-stats}
+empirical_stats(x, posterior_combined)
+```
+
+## Partial Confidence in Views
+
+Sometimes you don't have full confidence in your views. The framework lets you express this by **blending the posterior with the prior**:
+
+$$p_{\text{blended}} = (1 - c) \times p + c \times q$$
+
+where $c \in [0, 1]$ is your confidence level.
+
+```{r partial-confidence}
+confidence <- 0.60
+
+posterior_blended <- as_ffp(
+  (1 - confidence) * prior + 
+    confidence * vctrs::vec_data(posterior_combined)
+)
+
+# Check: at confidence=0, we get the prior; at confidence=1, we get posterior
+cat("Prior FTSE mean:     ", mean(x[, "FTSE"]), "\n")
+cat("Blended FTSE mean:   ", ffp_moments(x, posterior_blended)$mu["FTSE"], "\n")
+cat("Posterior FTSE mean: ", ffp_moments(x, posterior_combined)$mu["FTSE"], "\n")
+```
+
+The blended distribution lies between the prior and posterior, reflecting your actual confidence level.
+
+## From Probabilities to Decisions
+
+Once you have posterior probabilities, you can use them throughout your analysis:
+
+### Compute Risk Statistics
+
+```{r use-stats}
+empirical_stats(x, posterior_combined)
+```
+
+### Resample Scenarios
+
+Generate new scenario samples using the posterior distribution:
+
+```{r use-resample}
+set.seed(42)
+
+resampled <- bootstrap_scenarios(
+  x = x,
+  p = posterior_combined,
+  n = 5000L
+)
+
+head(resampled)
+```
+
+This is useful when downstream applications expect scenario samples rather than explicit probability vectors.
+
+## When Should You Use FFP?
+
+Fully Flexible Probabilities are useful for:
+
+✓ **Stress testing**: Adjust historical scenarios to reflect stressed conditions\
+✓ **Forward-looking views**: Incorporate beliefs about future market behavior\
+✓ **Portfolio construction**: Optimize portfolios under your views\
+✓ **Risk aggregation**: Combine multiple perspectives on market evolution\
+✓ **Scenario analysis**: Move probabilities while preserving historical joint dependence\
+✓ **Non-normal distributions**: Work with empirical scenarios, not just parameter estimates
+
+They are **not** ideal for:
+
+✗ Replacing historical data with parametric models (when you have enough data)\
+✗ Situations requiring only small probabilistic adjustments (standard Bayesian updating may suffice)\
+✗ Applications where altering scenario probabilities is conceptually wrong
+
+## Key Takeaways
+
+1.  **FFP reweights scenarios**: You keep historical scenarios but change their probabilities
+2.  **Views are flexible**: Express beliefs on means, volatility, correlation, ranking, and more
+3.  **Entropy pooling optimizes**: Finds probabilities that satisfy views while minimizing distortion
+4.  **Always diagnose**: Check that views are satisfied and probabilities don't concentrate too much
+5.  **Blend when uncertain**: Use partial confidence to express less-than-certain views
+6.  **Use the output**: Apply posterior probabilities in portfolio construction, risk measurement, and resampling
+
+## Next Steps
+
+- **Entropy Pooling in Practice** vignette: Detailed workflow examples and all view types
+- **How does Entropy Pooling Work?** vignette: Mathematical foundations and theory
+- **Views** vignette: Deep dive into each view constructor with advanced examples
+- Function reference: `?ffp`, `?entropy_pooling`, `?view_on_mean`, and related functions
+
+## References
+
+Meucci, A. (2008). *Fully Flexible Views: Theory and Practice*. Risk, 21(10), 97–102.
+
+For theoretical background and mathematical details, see the companion vignettes and Meucci's original paper.

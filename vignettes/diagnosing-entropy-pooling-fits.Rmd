@@ -1,0 +1,648 @@
+---
+title: "Diagnosing Entropy Pooling Fits"
+author: "Bernardo Reckziegel"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    toc_depth: 2
+vignette: >
+  %\VignetteIndexEntry{Diagnosing Entropy Pooling Fits}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  message = FALSE,
+  warning = FALSE
+)
+```
+
+```{r setup}
+library(ffp)
+```
+
+## What diagnostics are for
+
+An Entropy Pooling model translates economic or statistical views into
+constraints on posterior scenario probabilities. Once the model is fitted,
+there are therefore two different questions to ask.
+
+The first is numerical: did the posterior probabilities satisfy the
+constraints that define the model? The second is economic: how did satisfying
+those constraints change the distribution?
+
+`ffp_diagnostics()` is designed for the first question. It connects the
+user-facing views to the mathematical constraints compiled by `ffp` and
+evaluates whether those constraints are satisfied by the fitted posterior.
+
+Distributional functions such as `ffp_stats()`, `ffp_risk()`, and
+`ffp_moments()` answer the second question. They describe the consequences of
+the posterior rather than the numerical quality of the fit.
+
+<!-- > **Diagnostics tell us whether the posterior solves the model we specified. -->
+<!-- > Statistics and risk measures tell us what that posterior means.** -->
+
+This distinction is especially useful because a view is not necessarily one
+mathematical constraint. A mean view produces one equality, whereas a quantile
+view generates two inequalities. Diagnostics allow us to move between these
+two levels without requiring users to work directly with constraint matrices.
+
+## A regular Entropy Pooling model
+
+We begin with a small scenario set so that the relationship between views and
+constraints remains transparent.
+
+```{r scenarios}
+scenarios <- tibble::tibble(
+  equity = c(-0.08, -0.03, 0.00, 0.04, 0.08)
+)
+scenarios
+```
+
+We assign a uniform prior and impose two views. The first raises the expected
+equity return to 2%. The second requires \(-3\%\) to belong to the set of
+posterior 20% quantiles.
+
+```{r regular-model}
+model <- scenarios |>
+  ffp_model() |>
+  ffp_prior(
+    prior_uniform()
+  ) |>
+  ffp_view(
+    view_mean(equity, target = 0.02),
+    view_quantile(equity, target = -0.03, level = 0.20)
+  )
+
+model
+```
+
+The full-confidence Entropy Pooling problem reads:
+
+$$
+\begin{aligned}
+\min_p
+&\quad
+\sum_{t=1}^{T}
+p_t
+\log\left(
+\frac{p_t}{q_t}
+\right)
+\\[4pt]
+\text{subject to}
+&\quad
+\sum_{t=1}^{T}
+p_t x_t
+=
+0.02,
+\\
+&\quad
+P_p(X < -0.03)
+\leq
+0.20,
+\\
+&\quad
+P_p(X > -0.03)
+\leq
+0.80,
+\\
+&\quad
+p_t \geq 0,
+\\
+&\quad
+\sum_{t=1}^{T} p_t = 1.
+\end{aligned}
+$$
+
+The model contains two semantic views but three mathematical constraints:
+one equality from `view_mean()` and two inequalities from
+`view_quantile()`.
+
+We can now fit the model:
+
+```{r regular-fit}
+fit <- ffp_fit(model)
+fit
+```
+
+A successful `<ffp_fit>` contains the posterior probabilities together with
+the prior, compiled constraints, solver result and original model. This makes
+it possible to diagnose the fitted model without reconstructing any of the
+original view information.
+
+## Start with the fit print
+
+Printing a fitted model provides a first numerical screening.
+
+The output contains the number of scenarios, number of semantic views, the solver
+status, the Kullback–Leibler (KL) divergence between posterior and prior, and the maximum
+numerical residual.
+
+The KL divergence is:
+
+$$
+D_{\mathrm{KL}}(p \Vert q)
+=
+\sum_{t=1}^{T}
+p_t
+\log\left(
+\frac{p_t}{q_t}
+\right).
+$$
+
+It measures how far the posterior probability distribution moved from the
+prior in relative-entropy terms. A larger KL divergence means that more
+probability distortion was required to satisfy the views, but it should not be
+interpreted as a generic goodness-of-fit statistic.
+
+The reported `Max residual` has a different purpose. It is the largest among
+the probability-normalization residual, the largest equality residual, and
+the largest inequality violation. It therefore summarizes numerical
+constraint satisfaction rather than the economic importance of the posterior
+update.
+
+The solver `Status` should also be interpreted narrowly. A successful
+optimization normally reports `converged`; when the prior already satisfies
+all constraints, the fit can instead report `prior_satisfies_constraints`.
+These are solver outcomes, not measures of how economically important the
+views are.
+
+## A compact summary
+
+`summary()` adds another useful layer without exposing every mathematical
+constraint.
+
+```{r fit-summary}
+summary(fit)
+```
+
+In addition to the information shown by `print(fit)`, the summary reports how
+many semantic views are satisfied, how many inequality constraints were
+compiled, and how many of those inequalities are numerically binding.
+
+This is often enough for a routine check. If all views are satisfied and the
+maximum residual is small relative to the tolerance used for fitting, the user
+can usually proceed to interpreting the posterior distribution.
+
+When more detail is needed, `ffp_diagnostics()` provides the mapping from views
+to their underlying constraints.
+
+## Diagnose the views
+
+By default, `ffp_diagnostics()` works at the same semantic level used to
+specify the model:
+
+```{r view-diagnostics}
+view_diagnostics <- ffp_diagnostics(fit)
+view_diagnostics
+```
+
+Each row corresponds to one view added through `ffp_view()`. The output reports
+the view method and expression together with the number of mathematical
+constraints generated by that view.
+
+For each semantic view, `max_error` is the largest equality residual or
+inequality violation generated by its constraints. The `status` is
+`satisfied` when every underlying constraint is satisfied within the numerical
+tolerance stored in the fit.
+
+This level is intended to answer a simple question: did the posterior satisfy 
+each view that I specified?
+
+In our example, the mean view corresponds to one equality, while the quantile
+view corresponds to two inequalities. The default diagnostic output preserves
+this distinction without requiring the user to inspect the constraint matrices
+directly.
+
+## Inspect the mathematical constraints
+
+Advanced diagnostics are available by requesting the constraint level.
+
+```{r constraint-diagnostics}
+constraint_diagnostics <- ffp_diagnostics(fit, level = "constraint")
+constraint_diagnostics
+```
+
+The output now contains one row for each compiled mathematical constraint.
+Besides metadata connecting each constraint to its semantic view, the table
+reports `lhs`, `rhs`, `gap`, and the diagnostic quantities appropriate for
+equalities and inequalities.
+
+This level is useful when a view expands into several constraints, when an
+inequality is close to binding, or when the user wants to inspect the exact
+linear representation solved by Entropy Pooling.
+
+It is important to remember that `lhs` and `rhs` refer to the **compiled
+constraint**. For views such as conditional probabilities, volatility,
+covariance, and correlation, the user-facing statement is transformed into an
+equivalent linear expression before optimization. The diagnostic values
+therefore need not look numerically identical to the original target supplied
+to the view constructor.
+
+## Equality constraints
+
+An equality constraint has the generic form
+
+$$
+a'p = b.
+$$
+
+For equalities, diagnostics report
+
+$$
+\text{gap}
+=
+a'p-b
+$$
+
+and
+
+$$
+\text{residual}
+=
+|a'p-b|.
+$$
+
+We can isolate the equality generated by our mean view.
+
+```{r equality-diagnostics}
+constraint_diagnostics |>
+  dplyr::filter(constraint_type == "equality") |>
+  dplyr::select(view_id, constraint:residual, satisfied)
+```
+
+The theoretical target is exact, but a numerical optimizer operates with
+finite precision. A residual such as \(10^{-10}\) or \(10^{-12}\) therefore
+does not mean that the model imposed only partial confidence in the view. It
+means that the numerical solution differs from the exact equality by that
+small amount.
+
+Equality constraints do not have a meaningful `binding` status in
+`ffp_diagnostics()`. They are either satisfied within tolerance or they are
+not, so `binding` is reported as `NA` for equalities.
+
+## Inequality constraints
+
+Inequalities are represented internally in the form
+
+$$
+a'p \leq b.
+$$
+
+Their diagnostics require a slightly different interpretation. The gap remains
+
+$$
+\text{gap}
+=
+a'p-b,
+$$
+
+but the slack is
+
+$$
+\text{slack}
+=
+b-a'p.
+$$
+
+The numerical violation is
+
+$$
+\text{violation}
+=
+\max(a'p-b,0).
+$$
+
+The two inequalities generated by our quantile view can be inspected directly.
+
+```{r inequality-diagnostics}
+constraint_diagnostics |>
+  dplyr::filter(constraint_type == "inequality") |>
+  dplyr::select(view_id, constraint:residual, satisfied)
+```
+
+A positive slack is not a problem. It means that the inequality is satisfied
+with room to spare. An inequality becomes numerically binding when the absolute
+slack is sufficiently close to zero under the `constraint_tolerance` stored in
+the fitted model.
+
+This distinction is particularly useful for quantile and ranking views. A
+quantile target produces two inequalities, but the posterior does not need to
+make both of them binding. One side may determine the solution while the other
+remains satisfied with positive slack.
+
+## Numerical tolerance
+
+Entropy Pooling views describe mathematical properties of the posterior, but
+those properties must ultimately be verified numerically.
+
+The tolerance used by the fitted model is stored with the solver result.
+
+```{r stored-tolerance}
+fit$solver$control$constraint_tolerance
+```
+
+`ffp_diagnostics()` uses this stored value rather than the current package
+default. The diagnostic interpretation of a fitted object therefore remains
+consistent with the numerical settings under which that object was created.
+
+For example, an inequality with a very small positive slack may be classified
+as binding under a looser tolerance but non-binding under a stricter one. The
+underlying posterior and economic view have not changed; only the numerical
+definition of "close enough to the boundary" differs.
+
+Advanced users can change the numerical controls when fitting:
+
+```{r solver-control, eval = FALSE}
+control <- entropy_solver_control(constraint_tolerance = 1e-9)
+
+fit <- ffp_fit(model, control = control)
+```
+
+<!-- The important distinction is conceptual: -->
+
+<!-- > **View confidence is a modeling choice. Solver tolerance is a numerical -->
+<!-- > choice. They are not the same thing.** -->
+
+`ffp_fit()` imposes views with full confidence. Partial confidence is introduced
+separately with `ffp_opinion_pooling()` rather than by loosening solver
+tolerances.
+
+## Regular, boundary, and infeasible problems
+
+Constraint diagnostics apply to a successfully fitted `<ffp_fit>` object.
+However, some combinations of scenario support, prior probabilities and views
+cannot be represented by the regular dual Entropy Pooling solution.
+
+It is useful to distinguish three broad cases:
+
+| Case | Interpretation |
+|---|---|
+| Regular | A feasible solution exists in the relevant interior of the prior support |
+| Boundary | A feasible solution exists, but it requires probabilities on a boundary that the current dual solver cannot attain exactly |
+| Infeasible | No probability distribution can satisfy all constraints simultaneously |
+
+The distinction between boundary and infeasible is fundamental. A boundary
+problem has a mathematically valid probability solution. An infeasible problem
+does not.
+
+The current solver identifies these situations while fitting and raises a
+specific error rather than returning an invalid or misleading `<ffp_fit>`.
+
+### A regular solution
+
+Our first example is regular. The desired mean and quantile can be achieved
+without forcing a positive-prior scenario to have exactly zero probability.
+
+The dual optimizer therefore returns a valid posterior and
+`ffp_diagnostics()` can subsequently evaluate its view and constraint
+satisfaction.
+
+Regular should not be interpreted as "small posterior change." A regular
+problem can still produce a substantial KL divergence or a concentrated
+posterior. The classification concerns the geometry and feasibility of the
+constraint problem, not the economic magnitude of the update.
+
+## Boundary solutions
+
+A simple way to understand a boundary problem is to consider a mean view at
+the extreme of the scenario support.
+
+The largest equity return in our scenario set is
+
+```{r support-maximum}
+max(scenarios$equity)
+```
+
+Now suppose the full-confidence view requires the posterior expected return to
+equal this maximum.
+
+```{r boundary-model}
+boundary_model <- scenarios |>
+  ffp_model() |>
+  ffp_prior(
+    prior_uniform()
+  ) |>
+  ffp_view(
+    view_mean(equity, target = max(scenarios$equity))
+  )
+```
+
+For any probability distribution over these scenarios,
+
+$$
+E_p[X]
+\leq
+\max_t X_t.
+$$
+
+Equality can hold only if all posterior probability is assigned to scenarios
+at the maximum. Every lower-return scenario must therefore receive zero
+posterior probability.
+
+The optimization problem is mathematically feasible, but its solution lies on
+a face of the probability simplex. Because the uniform prior assigns positive
+probability to every scenario, the current dual solver cannot attain this
+solution exactly while maintaining its positive-probability representation.
+
+`ffp_fit()` detects this geometry and reports it explicitly.
+
+```{r boundary-fit, error = TRUE}
+ffp_fit(boundary_model)
+```
+
+The important interpretation is: the view is feasible, but satisfying it 
+exactly requires a boundary posterior.
+
+This is different from numerical non-convergence and different from an
+infeasible economic view. Changing optimizer iterations or arbitrarily relaxing
+tolerances is therefore not the natural first response. The user should first
+consider whether an exact full-confidence corner solution is really the
+intended model.
+
+### Prior-support boundaries
+
+A second kind of boundary arises when the prior assigns exactly zero
+probability to a scenario but a view would require that scenario to receive
+positive posterior probability.
+
+Consider:
+
+```{r prior-support-model}
+support_scenarios <- tibble::tibble(
+  event = c(TRUE, FALSE, FALSE)
+)
+
+support_model <- support_scenarios |>
+  ffp_model() |>
+  ffp_prior(
+    prior_custom(c(0, 0.50, 0.50))
+  ) |>
+  ffp_view(
+    view_probability(event, target = 0.20)
+  )
+```
+
+The only scenario in which `event` is true has zero prior probability. The view
+therefore requires positive posterior probability at a point outside the
+positive support of the prior.
+
+```{r prior-support-fit, error = TRUE}
+ffp_fit(support_model)
+```
+
+This problem is feasible if we consider the scenario set alone, but it is not
+feasible within the support of the current prior. Under KL-based Entropy
+Pooling, a zero prior probability is therefore a substantive modeling choice,
+not merely a very small weight.
+
+## Infeasible views
+
+An infeasible problem is different because no probability distribution on the
+available scenarios can satisfy the views.
+
+Suppose we require an expected equity return above the maximum available
+scenario:
+
+```{r infeasible-model}
+infeasible_model <- scenarios |>
+  ffp_model() |>
+  ffp_prior(
+    prior_uniform()
+  ) |>
+  ffp_view(
+    view_mean(equity, target = 0.10)
+  )
+```
+
+Every probability-weighted mean over a fixed one-dimensional support must
+satisfy:
+
+$$
+\min_t X_t
+\leq
+E_p[X]
+\leq
+\max_t X_t.
+$$
+
+Our scenarios have a maximum equity return of 8%, so a full-confidence target
+of 10% cannot be obtained by any non-negative probability vector summing to
+one.
+
+`ffp_fit()` therefore identifies the Entropy Pooling problem as infeasible:
+
+```{r infeasible-fit, error = TRUE}
+ffp_fit(infeasible_model)
+```
+
+No `<ffp_fit>` object exists in this case, so there is nothing to pass to
+`ffp_diagnostics()`. The appropriate response is to revisit the model itself:
+the view may be impossible, several views may be mutually contradictory, or
+the scenario support may not contain the states required by the intended
+analysis.
+
+Before changing solver settings, ask whether the requested posterior can 
+exist on the available scenario support. This is especially important for 
+extreme views. Entropy Pooling can reweight available scenarios, but it 
+cannot create an economically relevant state that is absent from the 
+scenario set.
+
+## Numerical failure is different again
+
+A regular mathematical problem can still encounter a numerical optimization
+failure. This is conceptually different from both boundary and infeasible
+problems.
+
+The current solver examines the constraint problem when ordinary optimization
+does not produce a valid solution. If the mathematical problem is classified
+as regular, a failure is treated as numerical rather than being mislabeled as
+economic infeasibility.
+
+This distinction matters when deciding what to change. An infeasible problem
+requires revisiting views or scenario support. A boundary problem requires
+recognizing that the exact solution lies outside the interior representation of
+the current solver. A genuinely numerical problem may justify examining
+solver controls, scaling, redundant constraints, or conditioning.
+
+Most users should nevertheless begin with the default solver settings, which
+are intended for typical applications.
+
+## Diagnostics are not economic interpretation
+
+Once a fit has passed its numerical checks, diagnostics have largely completed
+their task. A residual close to zero tells us that a view was satisfied; it
+does not tell us whether satisfying the view changed the posterior distribution
+in an economically meaningful way.
+
+Similarly, an inequality being binding tells us something about the geometry
+of the fitted constraint set, but not whether portfolio risk rose or fell.
+KL divergence measures probability distortion, but it is not by itself a
+measure of investment relevance.
+
+Economic interpretation belongs to the post-fit distribution tools.
+
+```{r economic-interpretation}
+ffp_stats(fit)
+
+ffp_risk(fit, confidence = 0.99)
+```
+
+Visual comparison of prior and posterior distributions can provide another
+perspective.
+
+```{r diagnostic-plot, eval = FALSE}
+autoplot(fit)
+```
+
+The Effective Number of Scenarios reported through distributional summaries
+also belongs on this side of the analysis. ENS measures concentration of
+probability mass rather than numerical satisfaction of the Entropy Pooling
+constraints.
+
+## A practical diagnostic workflow
+
+For most fitted models, a diagnostic review can remain simple. Begin with the
+printed `<ffp_fit>` and `summary(fit)` to check solver status, KL divergence,
+maximum residual, satisfied views, and binding inequalities. Then use
+`ffp_diagnostics(fit)` to verify each semantic view. Constraint-level
+diagnostics are most useful when a view expands into several mathematical
+conditions or when an inequality is close to binding.
+
+Only after those numerical questions are understood should the analysis move
+to `ffp_stats()`, `ffp_risk()`, `ffp_moments()`, or visualization to determine
+what the posterior means economically.
+
+If `ffp_fit()` instead reports a boundary or infeasible problem, there is no
+fitted posterior to diagnose. In that case, the error itself is part of the
+diagnostic workflow: it identifies whether the requested solution exists only
+on a problematic boundary or cannot exist at all on the available support.
+
+This separation keeps three different questions distinct: whether the model is
+mathematically feasible, whether the numerical solution satisfies the model,
+and what the resulting posterior distribution means for the application.
+
+## Where to go next
+
+The three main layers of the `ffp` workflow now answer complementary questions.
+
+The model and view interface defines the scenario support, prior information,
+and statements that should hold under the posterior. `ffp_fit()` and
+`ffp_diagnostics()` determine whether those statements form a feasible
+full-confidence Entropy Pooling problem and whether the resulting probabilities
+satisfy its constraints numerically. Finally, the distributional tools describe
+how that posterior changes moments, tail risk, scenario concentration, and
+other economically relevant quantities.
+
+When the views themselves are uncertain, `ffp_opinion_pooling()` adds a
+separate modeling layer for confidence without changing the numerical meaning
+of the original full-confidence fit.
+
+Together, these components separate **model specification**, **numerical
+validation**, **view confidence**, and **economic interpretation**. This
+separation is intended to make Entropy Pooling models easier to understand,
+diagnose, and use in downstream decisions.

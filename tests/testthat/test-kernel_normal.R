@@ -310,7 +310,9 @@ test_that("kernel_normal remains compatible with bind_probs", {
     sigma = volu
   )
 
-  bound <- bind_probs(result)
+  bound <- bind_probs(
+    kernel_normal = result
+  )
 
   expect_s3_class(
     bound,
@@ -318,17 +320,12 @@ test_that("kernel_normal remains compatible with bind_probs", {
   )
 
   expect_equal(
-    bound$probs,
+    bound$probability,
     as.double(result)
   )
 
-  expect_true(
-    all(
-      grepl(
-        "kernel_normal",
-        as.character(bound$fn),
-        fixed = TRUE
-      )
-    )
+  expect_identical(
+    unique(bound$distribution),
+    "kernel_normal"
   )
 })

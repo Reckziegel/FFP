@@ -1,7 +1,10 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-<img src="man/figures/ffp_sticker.png" align="right" width="147" height="170"/>
+<img src="man/figures/ffp_sticker.png"
+     align="right"
+     width="147"
+     height="170" />
 
 # Fully Flexible Probabilities
 
@@ -18,44 +21,22 @@ status](https://www.r-pkg.org/badges/version/ffp)](https://CRAN.R-project.org/pa
 downloads](https://cranlogs.r-pkg.org/badges/last-month/ffp?color=blue)](https://r-pkg.org/pkg/ffp)
 [![CRAN RStudio mirror
 downloads](https://cranlogs.r-pkg.org/badges/grand-total/ffp?color=blue)](https://r-pkg.org/pkg/ffp)
-
 <!-- badges: end -->
 
-> **Flexible scenario probabilities for conditioning, stress testing,
-> and portfolio analysis in R.**
+Empirical distributions are often built from historical scenarios that
+receive equal probability. This is a natural starting point when there
+is no reason to consider some scenarios more plausible than others.
 
-`ffp` provides tools for assigning flexible probabilities to historical
-or simulated scenarios and for updating those probabilities when new
-information or subjective market views become available.
+In practice, an expert may have an additional information. Fully
+Flexible Probabilities provide a way to incorporate this information
+without touching in the scenarios. Only probabilities are allowed to
+change.
 
-The central idea is simple:
-
-> **Keep the scenarios, change their probabilities.**
-
-Instead of replacing an existing scenario set, `ffp` changes how much
-probability is assigned to each observation.
-
-Flexible probabilities can be used to:
-
-- emphasize recent observations;
-- condition the historical sample on a particular market state;
-- incorporate partial information;
-- impose subjective views through Entropy Pooling;
-- carry the resulting probabilities into risk measurement, simulation,
-  and portfolio analysis.
-
-Conceptually,
-
-$$
-\text{scenarios}
-+
-\text{information}
-\longrightarrow
-\text{flexible probabilities}
-$$
-
-The scenarios remain available throughout the analysis. What changes is
-how important each scenario is.
+`ffp` organizes this process into a model workflow. You define the
+scenario support, choose prior probabilities, express views about the
+distribution, and use Entropy Pooling to obtain posterior probabilities
+that satisfy those views while remaining as close as possible to the
+prior.
 
 ## Installation
 
@@ -68,457 +49,301 @@ install.packages("ffp")
 You can install the development version from GitHub with:
 
 ``` r
-# install.packages("devtools")
+# install.packages("pak")
 devtools::install_github("Reckziegel/FFP")
 ```
 
-## Quick start
+## A model-first workflow
 
-A small example illustrates the basic workflow.
-
-Suppose the historical scenarios are the daily log returns in
-`EuStockMarkets`.
+Consider 500 simulated scenarios for equity returns, bond returns, and
+inflation:
 
 ``` r
 library(ffp)
 
-x <- diff(log(EuStockMarkets))
-
-prior <- rep(1 / nrow(x), nrow(x))
-```
-
-The matrix `x` contains the historical scenarios, while `prior` assigns
-the same probability to every observation.
-
-Now suppose the investor believes that the expected return of the `FTSE`
-should be 20% above its historical average.
-
-``` r
-target <- mean(x[, "FTSE"]) * 1.20
-
-view <- view_on_mean(
-  x = x[, "FTSE", drop = FALSE],
-  mean = target
-)
-```
-
-The view is incorporated through Entropy Pooling:
-
-``` r
-posterior <- entropy_pooling(
-  p = prior,
-  Aeq = view$Aeq,
-  beq = view$beq, 
-  solver = "nlminb"
-)
-```
-
-We can check the resulting expected returns with:
-
-``` r
-ffp_moments(x, posterior)$mu
-#>          DAX          SMI          CAC         FTSE 
-#> 0.0007233428 0.0008764380 0.0005145713 0.0005183822
-```
-
-The important point is that the observations in `x` have **not**
-changed.
-
-Entropy Pooling has only changed their probabilities.
-
-In symbols,
-
-$$
-\underbrace{(X,p)}_{\text{prior}}
-\quad\longrightarrow\quad
-\underbrace{(X,q^*)}_{\text{posterior}},
-$$
-
-where:
-
-- $X$ contains the historical or simulated scenarios;
-- $p$ contains the prior probabilities;
-- $q^*$ contains the posterior probabilities.
-
-This simple idea is at the center of the package:
-
-$$
-\text{same scenarios, different probabilities}
-$$
-
-## How `ffp` fits together
-
-There are two main ways of introducing information into scenario
-probabilities.
-
-### Conditioning
-
-Sometimes the information comes from the data itself.
-
-For example, we may want recent observations to receive more weight, or
-we may want to condition the historical sample on a particular economic
-state.
-
-### Views and stress testing
-
-In other situations, the information comes from a subjective view or
-stress scenario.
-
-Both approaches ultimately produce probability weights over the same
-scenario set.
-
-These probabilities can then be used for risk measurement, simulation,
-or portfolio analysis.
-
-## Constructing flexible probabilities
-
-Flexible probabilities allow different observations to carry different
-amounts of information.
-
-The appropriate function depends on the type of information available.
-
-| Information available                      | Function           |
-|:-------------------------------------------|:-------------------|
-| Recent observations should matter more     | `exp_decay()`      |
-| Condition on a hard event                  | `crisp()`          |
-| Condition smoothly around a target         | `kernel_normal()`  |
-| Impose partial information through entropy | `kernel_entropy()` |
-| Combine fast and slow decay information    | `double_decay()`   |
-
-For example, exponential decay gives progressively more weight to recent
-observations:
-
-``` r
-p <- exp_decay(x, 0.01)
-
-p
-#> <ffp[1859]>
-#> 8.484746e-11 8.57002e-11 8.65615e-11 8.743145e-11 8.831015e-11 ... 0.009950166
-```
-
-The output is a probability vector associated with the historical
-scenarios.
-
-The probabilities do not need to be uniform: they reflect the
-information that the user wants the historical sample to represent.
-
-## Stress testing with Entropy Pooling
-
-Entropy Pooling allows subjective market views to be incorporated by
-reweighting the scenarios.
-
-The `view_on_*()` functions translate an investor’s statement into the
-constraints required by `entropy_pooling()`.
-
-| If your view is about…          | Use                               |
-|:--------------------------------|:----------------------------------|
-| Expected returns or means       | `view_on_mean()`                  |
-| Volatility                      | `view_on_volatility()`            |
-| Covariance                      | `view_on_covariance()`            |
-| Correlation                     | `view_on_correlation()`           |
-| Relative performance or ranking | `view_on_rank()`                  |
-| Marginal distributions          | `view_on_marginal_distribution()` |
-| Dependence or copulas           | `view_on_copula()`                |
-| A joint target distribution     | `view_on_joint_distribution()`    |
-
-A useful way to think about the API is:
-
-$$
-\mathtt{view\_on\_*()}
-\longrightarrow
-\mathtt{entropy\_pooling()}
-$$
-
-For several simultaneous views,
-
-$$
-\texttt{view\_on\_*()}
-\longrightarrow
-\texttt{bind\_views()}
-\longrightarrow
-\texttt{entropy\_pooling()}
-$$
-
-For example:
-
-``` r
-view_mean <- view_on_mean(
-  x = x[, "FTSE", drop = FALSE],
-  mean = mean(x[, "FTSE"]) * 1.20
-)
-
-view_vol <- view_on_volatility(
-  x = x[, "CAC", drop = FALSE],
-  vol = sd(x[, "CAC"]) * 0.90
-)
-
-views <- bind_views(
-  view_mean,
-  view_vol
-)
-
-posterior <- entropy_pooling(
-  p = prior,
-  Aeq = views$Aeq,
-  beq = views$beq,
-  A = views$A,
-  b = views$b, 
-  solver = "nlminb"
-)
-```
-
-The separation between these functions is intentional:
-
-- `view_on_*()` describes **what the investor believes**;
-- `bind_views()` combines several beliefs;
-- `entropy_pooling()` determines **how scenario probabilities must
-  change**.
-
-## What does Entropy Pooling optimize?
-
-Among all probability distributions that satisfy the views, Entropy
-Pooling chooses the one that is closest to the prior distribution.
-
-Closeness is measured using relative entropy, or the Kullback–Leibler
-divergence:
-
-$$D_{\mathrm{KL}}(q \| p) = \sum_{j=1}^{J} q_j \left[ \log(q_j)-\log(p_j) \right].$$
-
-The full-confidence posterior is therefore
-
-$$q^* = \arg\min_q D_{\mathrm{KL}}(q \| p)$$
-
-subject to the constraints implied by the views.
-
-In words:
-
-> **Satisfy the views while introducing the smallest possible distortion
-> relative to the prior probabilities.**
-
-For a detailed explanation of the method, see [How does Entropy Pooling
-work?](articles/how-does-EP-work.html).
-
-## Confidence in the views
-
-The posterior returned by Entropy Pooling represents **full confidence**
-in the imposed views.
-
-A user may instead want to retain part of the original prior model.
-
-If
-
-$$
-c\in[0,1]
-$$
-
-denotes confidence in the views, the confidence-weighted probabilities
-can be written as
-
-$$
-p_c = (1-c)p+cq^*.
-$$
-
-When
-
-$$
-c=0,
-$$
-
-the prior is recovered:
-
-$$
-p_c=p.
-$$
-
-When
-
-$$
-c=1,
-$$
-
-the full-confidence posterior is recovered:
-
-$$
-p_c=q^*.
-$$
-
-This separates two conceptually different questions:
-
-1.  **What do I believe?**
-2.  **How strongly do I believe it?**
-
-The first question determines the view. The second determines the
-confidence assigned to that view.
-
-## Inspecting the posterior
-
-Posterior probabilities should not be treated as a black box.
-
-`ffp` provides tools for checking how the update affected the scenario
-distribution.
-
-### Moments
-
-``` r
-ffp_moments(x, posterior)
-```
-
-This is useful for verifying that mean, volatility, covariance, or
-correlation views moved in the intended direction.
-
-### Relative entropy
-
-``` r
-relative_entropy(prior, posterior)
-```
-
-This measures how far the posterior probabilities moved from the prior.
-
-### Effective number of scenarios
-
-``` r
-ens(posterior)
-```
-
-The Effective Number of Scenarios helps identify whether the posterior
-has concentrated too much probability on a small subset of observations.
-
-### Distributional statistics
-
-``` r
-empirical_stats(
-  x = x,
-  p = posterior
-)
-```
-
-This can be used to inspect changes in moments and tail-risk measures
-under the new probability distribution.
-
-A useful checklist is:
-
-| Question                                          | Function             |
-|:--------------------------------------------------|:---------------------|
-| Did the moments move as intended?                 | `ffp_moments()`      |
-| How far did the posterior move from the prior?    | `relative_entropy()` |
-| Did probability become too concentrated?          | `ens()`              |
-| What happened to the empirical risk distribution? | `empirical_stats()`  |
-| What do the probabilities look like?              | `autoplot()`         |
-
-## Using the posterior
-
-Finding the posterior probabilities is usually not the end of the
-analysis.
-
-Once the probabilities have been updated, they can be carried into
-downstream procedures.
-
-### Risk analysis
-
-``` r
-empirical_stats(
-  x = x,
-  p = posterior
-)
-```
-
-The historical scenarios are unchanged, but the statistics are now
-computed under the posterior probabilities.
-
-### Resampling scenarios
-
-``` r
 set.seed(123)
 
-simulated <- bootstrap_scenarios(
-  x = x,
-  p = posterior,
-  n = 10000L
+scenarios <- tibble::tibble(
+  equity    = rnorm(500, mean = 0.006, sd = 0.04),
+  bonds     = rnorm(500, mean = 0.002, sd = 0.012),
+  inflation = rnorm(500, mean = 0.025, sd = 0.007)
 )
+scenarios
+#> # A tibble: 500 × 3
+#>      equity     bonds inflation
+#>       <dbl>     <dbl>     <dbl>
+#>  1 -0.0164  -0.00522    0.0180 
+#>  2 -0.00321 -0.00992    0.0177 
+#>  3  0.0683   0.0143     0.0249 
+#>  4  0.00882  0.0110     0.0241 
+#>  5  0.0112  -0.0161     0.00715
+#>  6  0.0746   0.000858   0.0323 
+#>  7  0.0244  -0.00875    0.0267 
+#>  8 -0.0446  -0.0228     0.0419 
+#>  9 -0.0215   0.00380    0.0298 
+#> 10 -0.0118   0.00105    0.0219 
+#> # ℹ 490 more rows
 ```
 
-This is useful when a downstream procedure expects a conventional
-scenario sample rather than an explicit probability vector.
+Each row represents one possible scenario. At this point, the data
+describe what can happen, but we have not yet specified how probable
+each scenario should be.
 
-The complete workflow can therefore be summarized as
+#### Define the scenario support
 
-$$
-\boxed{
-\text{historical or simulated scenarios}
-\rightarrow
-\text{flexible probabilities}
-\rightarrow
-\text{conditioning or views}
-\rightarrow
-\text{posterior}
-\rightarrow
-\text{risk and portfolio analysis}
-}.
-$$
+The first step is to create an `ffp` model from the scenarios:
 
-## Learn `ffp`
+``` r
+model <- ffp_model(scenarios)
+model
+#> <ffp_model>
+#> 
+#> Scenarios
+#>   Count:     500
+#>   Variables: 3
+#> 
+#> Prior
+#>   None
+#> 
+#> Views
+#>   None
+#> 
+#> Confidence
+#>   Full
+```
 
-The documentation is organized around two complementary tutorials.
+`ffp_model()` defines the support of the empirical distribution. These
+scenarios remain fixed throughout the Entropy Pooling workflow.
 
-### Understand Entropy Pooling
+#### Choose a prior
 
-If you want to understand the intuition, notation, and mathematical
-structure behind the method, start with:
+Next, we specify the probabilities we want to assign before
+incorporating any views.
 
-[**How does Entropy Pooling work?**](articles/how-does-EP-work.html)
+A uniform prior gives every scenario the same initial probability:
 
-This vignette explains:
+``` r
+model <- model |>
+  ffp_prior(
+    prior_uniform()
+  )
+model
+#> <ffp_model>
+#> 
+#> Scenarios
+#>   Count:     500
+#>   Variables: 3
+#> 
+#> Prior
+#>   Specified
+#> 
+#> Views
+#>   None
+#> 
+#> Confidence
+#>   Full
+```
 
-- prior and posterior probabilities;
-- how views become constraints;
-- relative entropy;
-- the dual optimization problem;
-- confidence in the views.
+The prior represents what we believe about the scenarios before
+introducing additional information.
 
-### Use Entropy Pooling in practice
+#### Add a view
 
-If you want to learn how the package works in R, continue with:
+Suppose we believe that the expected equity return should be 1%. We
+express this directly as a view on the model:
 
-[**Entropy Pooling in practice**](articles/views.html)
+``` r
+model <- model |>
+  ffp_view(
+    view_mean(equity, target = 0.01)
+  )
+model
+#> <ffp_model>
+#> 
+#> Scenarios
+#>   Count:     500
+#>   Variables: 3
+#> 
+#> Prior
+#>   Specified
+#> 
+#> Views
+#>   1 view(s)
+#> 
+#> Confidence
+#>   Full
+```
 
-This vignette covers:
+A view describes a property that we want the posterior distribution to
+satisfy. Here, it concerns the posterior mean of `equity`.
 
-- the basic `ffp` workflow;
-- all `view_on_*()` constructors;
-- `bind_views()`;
-- solver selection;
-- diagnostics;
-- confidence;
-- advanced distributional views;
-- using the posterior in downstream analysis.
+#### Fit the model
 
-### Function reference
+Finally, we combine the prior and the view using Entropy Pooling:
 
-For individual functions and arguments, see the:
+``` r
+fit <- ffp_fit(model)
+fit
+#> <ffp_fit>
+#> Scenarios:      500
+#> Views:          1
+#> Status:         converged
+#> KL divergence:  0.00226086
+#> Max residual:   6.66e-16
+```
 
-[**Function reference**](reference/index.html)
+`ffp_fit()` finds posterior scenario probabilities that satisfy the view
+while remaining as close as possible to the prior in relative-entropy
+terms. The scenario support remains unchanged; only the probabilities
+are updated.
 
-A useful path for a new user is therefore:
+Once the individual steps are familiar, the same model can be written as
+a single pipeline:
 
-$$
-\boxed{
-\text{Quick Start}
-\rightarrow
-\text{How does EP work?}
-\rightarrow
-\text{EP in practice}
-\rightarrow
-\text{Reference}
-}.
-$$
+``` r
+fit <- scenarios |>
+  ffp_model() |>
+  ffp_prior(
+    prior_uniform()
+  ) |>
+  ffp_view(
+    view_mean(equity, target = 0.01)
+  ) |>
+  ffp_fit()
+```
 
-## References
+## Understanding the posterior
 
-The package builds primarily on the Fully Flexible Probabilities and
-Fully Flexible Views frameworks developed by Attilio Meucci.
+Because the fitted model retains the scenarios, the prior and posterior
+probabilities, distributional changes can be inspected directly:
 
-Meucci, A. (2008). *Fully Flexible Views: Theory and Practice*. Risk,
-21(10), 97–102.
+``` r
+stats <- ffp_stats(fit)
+stats
+#> <<ffp_stats>>
+#> Prior -> posterior empirical distribution
+#> 
+#> Scenarios: 500
+#> Variables: 3
+#> Tail probability: 1.0%
+#> 
+#> Effective scenarios
+#> Prior ENS: 500.0 (100.0%)
+#> Posterior ENS: 498.9 (99.8%)
+#> ENS retained: 99.8%
+```
 
-Meucci, A. (2010). *Historical Scenarios with Fully Flexible
-Probabilities*. GARP Risk Professional, 47–51.
+To understand what happened to a particular variable:
+
+``` r
+summary(stats, variable = "equity")
+#> <summary_ffp_stats>
+#> Variable: "equity"
+#> 
+#> # A tibble: 6 × 4
+#>   statistic             prior posterior    change
+#>   <chr>                 <dbl>     <dbl>     <dbl>
+#> 1 mean                0.00738    0.0100  0.00262 
+#> 2 sd                  0.0389     0.0390  0.000110
+#> 3 skewness            0.0861     0.0818 -0.00430 
+#> 4 kurtosis            2.95       2.94   -0.0145  
+#> 5 quantile           -0.0830    -0.0803  0.00269 
+#> 6 expected_shortfall -0.0924    -0.0904  0.00201
+```
+
+Tail risk can be inspected using the usual loss convention:
+
+``` r
+ffp_risk(fit, confidence = 0.99)
+#> <ffp_risk>
+#> Prior -> posterior tail risk at 99.0% confidence
+#> 
+#> # A tibble: 3 × 5
+#>   variable  value_at_risk_prior expected_shortfall_prior value_at_risk_posterior
+#>   <chr>                   <dbl>                    <dbl>                   <dbl>
+#> 1 equity                0.0803                   0.0924                  0.0803 
+#> 2 bonds                 0.0233                   0.0277                  0.0245 
+#> 3 inflation            -0.00978                 -0.00801                -0.00978
+#> # ℹ 1 more variable: expected_shortfall_posterior <dbl>
+#> 
+#> Prior ENS: 500.0
+#> Posterior ENS: 498.9
+#> ENS retained: 99.8%
+```
+
+The same posterior probabilities can therefore be used to study changes
+in location, dispersion, shape, tail risk, and the effective number of
+scenarios.
+
+## Priors and views
+
+A uniform prior is only the simplest starting point.
+
+`ffp` can construct priors from time decay (`prior_exp_decay()`),
+rolling windows (`prior_rolling_window()`), market conditioning
+(`prior_crisp()`), custom probabilities (`prior_custom()`), or
+combinations of different prior specifications (`prior_product()` and
+`prior_mixture()`).
+
+``` r
+prior_exp_decay(half_life = 60)
+prior_kernel(inflation, target = 0.03, bandwidth = 0.005)
+```
+
+Views can describe different features of the posterior distribution:
+
+``` r
+view_mean(equity, target = 0.01)
+view_probability(inflation > 0.04, target = 0.20)
+view_quantile(equity, target = -0.08, level = 0.05)
+```
+
+Several views can be attached to the same model and processed jointly.
+
+## Partial confidence
+
+`ffp_fit()` computes the full-confidence Entropy Pooling posterior.
+
+When a view should influence the distribution without being imposed with
+full confidence, the prior and full-confidence posterior can
+subsequently be combined through opinion pooling:
+
+``` r
+pooled <- ffp_opinion_pooling(fit, confidence = 0.75)
+pooled
+#> <ffp_opinion_pool>
+#> Scenarios:   500
+#> Confidence:  75%
+```
+
+View confidence is a modeling choice and is distinct from numerical
+solver tolerances.
+
+Additional details of the final fit can be inspected with the `summary`
+helper:
+
+``` r
+summary(pooled)
+#> <ffp_opinion_pool summary>
+#> 
+#> Scenarios:      500
+#> Views:          1
+#> Confidence:     75%
+#> 
+#> KL divergence:
+#>   Full confidence:  0.002261
+#>   Posterior:        0.001273
+#> 
+#> Probability mass reallocated:
+#>   Full confidence:  2.667%
+#>   Posterior:        2.001%
+```
+
+## ffp 2.0
+
+`ffp` 2.0 introduces a higher-level, model-first interface built around
+`ffp_model()`, `ffp_prior()`, `ffp_view()`, and `ffp_fit()`.
+
+Lower-level probability, view, and Entropy Pooling functions remain
+available, but the model workflow is the recommended starting point for
+new analyses.

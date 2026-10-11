@@ -1144,6 +1144,16 @@ feature_column <- function(x, i = 1L) {
   unname(values[, i])
 }
 
+distribution_target_count <- function(target) {
+  if (is.null(dim(target))) {
+    return(1L)
+  }
+  as.integer(NCOL(target))
+}
+
+distribution_target_observation_count <- function(target) {
+  as.integer(NROW(target))
+}
 
 # View validation ---------------------------------------------------------
 
@@ -2186,46 +2196,19 @@ first_class <- function(x) {
 }
 
 
-view_constraint_count <- function(x) {
-
-  if (x$method %in% c("quantile", "median")) {
-    return(2L * length(x$target))
-  }
-
-  if (identical(x$method, "rank")) {
-    return(feature_count(x$features) - 1L)
-  }
-
-  if (x$method %in% c("covariance", "correlation")) {
-    n_features <- feature_count(x$features)
-    return(as.integer(n_features * (n_features + 1L) / 2L))
-  }
-
-  if (identical(x$method, "marginal_distribution")) {
-    return(as.integer(feature_count(x$features) * x$parameters$order))
-  }
-
-  if (identical(x$method, "marginal_distribution")) {
-    return(as.integer(feature_count(x$features) * x$parameters$order))
-  }
-
-  if (identical(x$method, "joint_distribution")) {
-    return(joint_moment_constraint_count(n_features = feature_count(x$features), order = x$parameters$order))
-  }
-
-  if (identical(x$method, "copula")) {
-    return(joint_moment_constraint_count(n_features = feature_count(x$features), order = x$parameters$order))
-  }
-
-  length(x$target)
-}
-
 
 # Printing ----------------------------------------------------------------
 
 #' @export
 #' @noRd
 print.ffp_view_spec <- function(x, ...) {
+
+  distribution_view <- x$method %in% c(
+    "marginal_distribution",
+    "joint_distribution",
+    "copula"
+  )
+
   cat("<ffp_view_spec>\n")
 
   cat(
@@ -2236,9 +2219,20 @@ print.ffp_view_spec <- function(x, ...) {
   )
 
   if (!identical(x$method, "rank")) {
+
+    n_targets <- if (distribution_view) {
+      if (is.null(dim(x$target))) {
+        1L
+      } else {
+        as.integer(NCOL(x$target))
+      }
+    } else {
+      length(x$target)
+    }
+
     cat(
       "Targets:     ",
-      length(x$target),
+      n_targets,
       "\n",
       sep = ""
     )
@@ -2250,6 +2244,22 @@ print.ffp_view_spec <- function(x, ...) {
     "\n",
     sep = ""
   )
+
+  if (distribution_view) {
+    cat(
+      "Moment order: ",
+      x$parameters$order,
+      "\n",
+      sep = ""
+    )
+
+    cat(
+      "Target obs.:  ",
+      as.integer(NROW(x$target)),
+      "\n",
+      sep = ""
+    )
+  }
 
   if (identical(x$method, "probability")) {
     conditional <- !is.null(x$parameters$given)
@@ -2287,6 +2297,13 @@ print.ffp_view_spec <- function(x, ...) {
 #' @export
 #' @noRd
 print.ffp_view <- function(x, ...) {
+
+  distribution_view <- x$method %in% c(
+    "marginal_distribution",
+    "joint_distribution",
+    "copula"
+  )
+
   cat(
     "<ffp_view_",
     x$method,
@@ -2314,6 +2331,22 @@ print.ffp_view <- function(x, ...) {
     "\n",
     sep = ""
   )
+
+  if (distribution_view) {
+    cat(
+      "Moment order: ",
+      x$parameters$order,
+      "\n",
+      sep = ""
+    )
+
+    cat(
+      "Target obs.:  ",
+      feature_observation_count(x$target),
+      "\n",
+      sep = ""
+    )
+  }
 
   if (identical(x$method, "probability")) {
     conditional <- !is.null(x$parameters$given)

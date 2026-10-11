@@ -1,4 +1,4 @@
-url: ~
+url: https://your-username.github.io/FFP/
 template:
   bootstrap: 5
   bootswatch: litera
@@ -17,6 +17,12 @@ navbar:
           href: articles/how-does-Entropy-Pooling-work.html
         - text: "Views"
           href: articles/views.html
+        - text: "Getting Started"
+          href: articles/getting-started.html
+        - text: "Working with Views"
+          href: articles/Working-with-views.html
+        - text: "Diagnosing Entropy pooling Fits"
+          href: articles/diagnosing-entropy-pooling-fits.html
     - text: "News"
       href: news/index.html
 
@@ -35,8 +41,8 @@ reference:
       - kernel_entropy
       - double_decay
 
-    - title: Views on the Market
-      desc: Functions that help to construct the elements of entropy programming.
+    - title: Views on the Market - Helper Functions
+      desc: Functions that help construct views on different market aspects.
       contents:
       - view_on_mean
       - view_on_covariance
@@ -47,27 +53,71 @@ reference:
       - view_on_marginal_distribution
       - view_on_joint_distribution
 
-    - title: Optimization
-      desc: Minimum Relative Entropy
+    - title: Views on the Market - Constructor Functions
+      desc: High-level view constructors for different market constraints.
+      contents:
+      - ffp_view
+      - view_mean
+      - view_covariance
+      - view_correlation
+      - view_volatility
+      - view_rank
+      - view_probability
+      - view_quantile
+      - view_variance
+      - view_median
+
+    - title: Prior Specification
+      desc: Functions to specify prior distributions using different approaches.
+      contents:
+      - ffp_prior
+      - prior_crisp
+      - prior_uniform
+      - prior_exp_decay
+      - prior_rolling_window
+      - prior_kernel
+      - prior_custom
+      - prior_mixture
+      - prior_product
+
+    - title: Optimization & Fitting
+      desc: Minimum Relative Entropy and model fitting.
       contents:
       - entropy_pooling
+      - entropy_solver_control
+      - ffp_fit
+      - ffp_model
       - relative_entropy
 
+    - title: FFP Operations
+      desc: Functions to extract information from fitted models and objects.
+      contents:
+      - ffp_probabilities
+      - ffp_moments
+      - ffp_stats
+      - ffp_risk
+      - ffp_diagnostics
+      - ffp_opinion_pooling
+      - summary.ffp_fit
+      - summary.ffp_opinion_pool
+
     - title: Utilities
-      desc: Functions to manipulate data.
+      desc: Functions to manipulate and transform data.
       contents:
       - bind_probs
       - bind_views
       - bootstrap_scenarios
+      - average_ffp
+      - fit_to_moments
       - ens
       - empirical_stats
-      - ffp_moments
       - half_life
 
     - title: Visualization
       desc: Functions to explore `ffp` objects with help of `ggplot2`.
       contents:
       - autoplot.ffp
+      - autoplot.ffp_fit
       - scenario_density
 
     - title: Class

@@ -1,8 +1,14 @@
-pandoc: 3.9.0.2
+pandoc: '3.10'
 pkgdown: 2.2.1
 pkgdown_sha: ~
 articles:
-  Entropy Pooling in practice: Entropy Pooling in practice.html
+  diagnosing-entropy-pooling-fits: diagnosing-entropy-pooling-fits.html
+  Entropy-Pooling-in-practice: Entropy-Pooling-in-practice.html
+  getting-started: getting-started.html
   how-does-Entropy-Pooling-work: how-does-Entropy-Pooling-work.html
   views: views.html
-last_built: 2026-08-12T16:50Z
+  Working-with-Views: Working-with-Views.html
+last_built: 2026-09-27T23:43Z
+urls:
+  reference: https://your-username.github.io/FFP/reference
+  article: https://your-username.github.io/FFP/articles

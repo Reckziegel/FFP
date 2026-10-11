@@ -200,7 +200,7 @@ test_that("average_ffp() validates its inputs", {
       p1_valid,
       c(0.1, 0.4, 0.5)
     ),
-    "All arguments must be"
+    "All supplied distributions must be"
   )
 
   p_short <- ffp(c(0.5, 0.5))
@@ -210,7 +210,7 @@ test_that("average_ffp() validates its inputs", {
       p1_valid,
       p_short
     ),
-    "same length"
+    "same number of scenarios"
   )
 })
 

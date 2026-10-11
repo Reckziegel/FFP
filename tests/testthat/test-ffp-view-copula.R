@@ -416,3 +416,59 @@ test_that("copula compiler creates informative metadata", {
   expect_match(metadata$label[[4]], "^E\\[equity \\* bonds\\] = ")
   expect_match(metadata$label[[7]], "^E\\[equity\\^2 \\* bonds\\] = ")
 })
+
+test_that("ffp_fit reproduces copula marginal and dependence moments", {
+  scenarios <- data.frame(
+    equity = c(0, 0, 0, 0.5, 0.5, 0.5, 1, 1, 1),
+    bonds = c(0, 0.5, 1, 0, 0.5, 1, 0, 0.5, 1)
+  )
+
+  target_counts <- c(2L, 3L, 1L, 3L, 17L, 4L, 1L, 4L, 1L)
+
+  target <- scenarios[
+    rep(seq_len(nrow(scenarios)), times = target_counts),
+    ,
+    drop = FALSE
+  ]
+
+  fit <- ffp_model(scenarios) |>
+    ffp_prior(prior_uniform()) |>
+    ffp_view(
+      view_copula(
+        x = cbind(equity, bonds),
+        target = target,
+        order = 2L
+      )
+    ) |>
+    ffp_fit()
+
+  posterior <- as.double(fit$posterior)
+
+  posterior_moments <- c(
+    sum(posterior * scenarios$equity),
+    sum(posterior * scenarios$bonds),
+    sum(posterior * scenarios$equity^2),
+    sum(posterior * scenarios$equity * scenarios$bonds),
+    sum(posterior * scenarios$bonds^2)
+  )
+
+  target_cross_moment <- mean(target$equity * target$bonds)
+
+  expected_moments <- c(
+    1 / 2,
+    1 / 2,
+    1 / 3,
+    target_cross_moment,
+    1 / 3
+  )
+
+  expect_equal(
+    posterior_moments,
+    expected_moments,
+    tolerance = 1e-8
+  )
+
+  expect_identical(fit$n_views, 1L)
+  expect_true(fit$solver$converged)
+  expect_gt(fit$solver$objective, 0)
+})

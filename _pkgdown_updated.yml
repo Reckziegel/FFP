@@ -1,0 +1,123 @@
+url: ~
+template:
+  bootstrap: 5
+  bootswatch: litera
+
+navbar:
+  title: "ffp"
+  left:
+    - text: "Home"
+      href: index.html
+    - text: "Function Reference"
+      href: reference/index.html
+    - text: "Vignettes"
+      href: reference/index.html
+      menu:
+        - text: "How does EP Work"
+          href: articles/how-does-Entropy-Pooling-work.html
+        - text: "Views"
+          href: articles/views.html
+    - text: "News"
+      href: news/index.html
+
+
+reference:
+    - title: Full Information
+      desc: Functions that completely describe a distribution.
+      contents:
+      - crisp
+      - exp_decay
+      - kernel_normal
+
+    - title: Partial Information
+      desc: Functions that partially describe a distribution.
+      contents:
+      - kernel_entropy
+      - double_decay
+
+    - title: Views on the Market
+      desc: Functions that help to construct the elements of entropy programming.
+      contents:
+      - ffp_view
+      - view_mean
+      - view_covariance
+      - view_correlation
+      - view_volatility
+      - view_rank
+      - view_probability
+      - view_quantile
+      - view_variance
+      - view_median
+      - view_on_mean
+      - view_on_covariance
+      - view_on_correlation
+      - view_on_volatility
+      - view_on_rank
+      - view_on_copula
+      - view_on_marginal_distribution
+      - view_on_joint_distribution
+
+    - title: Prior Specification
+      desc: Functions to specify prior distributions using different approaches.
+      contents:
+      - ffp_prior
+      - prior_crisp
+      - prior_uniform
+      - prior_exp_decay
+      - prior_rolling_window
+      - prior_kernel
+      - prior_custom
+      - prior_mixture
+      - prior_product
+
+    - title: Optimization & Fitting
+      desc: Minimum Relative Entropy and model fitting.
+      contents:
+      - entropy_pooling
+      - entropy_solver_control
+      - ffp_fit
+      - ffp_model
+      - relative_entropy
+
+    - title: FFP Operations
+      desc: Functions to extract information from fitted models and objects.
+      contents:
+      - ffp_probabilities
+      - ffp_moments
+      - ffp_stats
+      - ffp_risk
+      - ffp_diagnostics
+      - ffp_opinion_pooling
+
+    - title: Utilities
+      desc: Functions to manipulate and transform data.
+      contents:
+      - bind_probs
+      - bind_views
+      - bootstrap_scenarios
+      - combine_ffp
+      - average_ffp
+      - fit_to_moments
+      - ens
+      - empirical_stats
+      - half_life
+      - scenario_histogram
+
+    - title: Visualization
+      desc: Functions to explore `ffp` objects with help of `ggplot2`.
+      contents:
+      - autoplot.ffp
+      - scenario_density
+
+    - title: Class
+      desc: Functions to manipulate `ffp` objects.
+      contents:
+      - ffp
+      - new_ffp
+      - as_ffp
+      - is_ffp
+
+    - title: Data
+      contents:
+      - db
+      - db_tbl

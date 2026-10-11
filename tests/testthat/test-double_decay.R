@@ -444,7 +444,9 @@ test_that("double_decay remains compatible with bind_probs", {
     fast = fast
   )
 
-  bound <- bind_probs(result)
+  bound <- bind_probs(
+    double_decay = result
+  )
 
   expect_s3_class(
     bound,
@@ -452,17 +454,12 @@ test_that("double_decay remains compatible with bind_probs", {
   )
 
   expect_equal(
-    bound$probs,
+    bound$probability,
     as.double(result)
   )
 
-  expect_true(
-    all(
-      grepl(
-        "double_decay",
-        as.character(bound$fn),
-        fixed = TRUE
-      )
-    )
+  expect_identical(
+    unique(bound$distribution),
+    "double_decay"
   )
 })

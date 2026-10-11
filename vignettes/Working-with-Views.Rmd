@@ -1,0 +1,987 @@
+---
+title: "Working with Views"
+author: "Bernardo Reckziegel"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    toc_depth: 2
+vignette: >
+  %\VignetteIndexEntry{Working with Views}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  message = FALSE,
+  warning = FALSE
+)
+```
+
+```{r setup}
+library(ffp)
+```
+
+## What is a view?
+
+Fully Flexible Probabilities represent a distribution through a fixed set of
+scenarios and a probability vector. Starting from prior
+probabilities \(q_1,\ldots,q_T\), Entropy Pooling searches for posterior
+probabilities \(p_1,\ldots,p_T\) that incorporate new information while
+remaining as close as possible to the prior.
+
+A **view** is the way that information is expressed.
+
+<!-- It is useful to distinguish a view from both a forecast and a probability -->
+<!-- weight.  -->
+
+A view does not tell `ffp` which scenarios should receive more
+probability. Instead, it states a property that the posterior distribution
+should satisfy. For example, an investor may believe that expected equity
+returns should be 1.5%, that inflation above 4% should occur with probability
+10%, or that equity returns should have a higher expected return than bonds 
+(positive equity risk premia).
+
+The Entropy Pooling problem can be written generically as:
+
+$$
+\begin{aligned}
+\min_p
+&\quad
+\sum_{t=1}^{T}
+p_t
+\log\left(
+\frac{p_t}{q_t}
+\right)
+\\[4pt]
+\text{subject to}
+&\quad
+A_{\mathrm{eq}}p = b_{\mathrm{eq}},
+\\
+&\quad
+A_{\mathrm{ineq}}p \leq b_{\mathrm{ineq}},
+\\
+&\quad
+p_t \geq 0,
+\qquad t=1,\ldots,T,
+\\
+&\quad
+\sum_{t=1}^{T}p_t = 1.
+\end{aligned}
+$$
+
+The role of the `view_*()` functions is therefore to translate economically
+meaningful statements into rows of \(A_{\mathrm{eq}}\),
+\(b_{\mathrm{eq}}\), \(A_{\mathrm{ineq}}\), and
+\(b_{\mathrm{ineq}}\).
+
+Most users do not need to construct these matrices directly. The view
+interface exists precisely so that the analysis can be expressed in terms of
+means, probabilities, quantiles, rankings, dispersion, and dependence rather
+than low-level constraint matrices.
+
+<!-- One semantic view does not necessarily correspond to one mathematical -->
+<!-- constraint. A mean target produces one equality, while a quantile target -->
+<!-- requires two inequalities. Ranking several variables or targeting an entire -->
+<!-- covariance matrix generates multiple constraints from a single view -->
+<!-- specification. -->
+
+This vignette develops these ideas using a common set of simulated scenarios.
+
+## Scenario data
+
+We use 1000 joint scenarios for equity returns, bond returns, and inflation.
+The variables are deliberately dependent so that views can act on both
+marginal and joint properties of the distribution:
+
+```{r scenarios}
+set.seed(123)
+
+n_scenarios <- 1000
+
+growth_shock    <- rnorm(n_scenarios)
+inflation_shock <- rnorm(n_scenarios)
+market_shock    <- rnorm(n_scenarios)
+
+scenarios <- tibble::tibble(
+  equity    = 0.006 + 0.030 * growth_shock - 0.010 * inflation_shock + 0.025 * market_shock,
+  bonds     = 0.002 - 0.006 * growth_shock - 0.012 * inflation_shock + 0.008 * market_shock,
+  inflation = 0.025 + 0.006 * growth_shock + 0.008 * inflation_shock
+)
+
+scenarios
+```
+
+We then define the scenario support and assign uniform prior probabilities:
+
+```{r model}
+model <- scenarios |>
+  ffp_model() |>
+  ffp_prior(
+    prior_uniform()
+  )
+model
+```
+
+Views can only be attached after a prior has been specified. This ordering is
+important because some views, particularly those involving second moments,
+use reference quantities computed under the current model prior.
+
+## Views on location
+
+### Mean views
+
+A mean view is the most direct example of a linear constraint on scenario
+probabilities.
+
+Suppose the posterior expected equity return should be 1.5%:
+
+```{r mean-view}
+mean_view <- view_mean(equity, target = 0.015)
+mean_view
+```
+
+Mathematically, the statement is:
+
+$$
+E_p[X]
+=
+\sum_{t=1}^{T}p_tX_t
+=
+m,
+$$
+
+where \(m\) is the target value. In this example:
+
+$$
+\sum_{t=1}^{T}
+p_t x_{t,\mathrm{equity}}
+=
+0.015.
+$$
+
+Because the scenario values are fixed, this expression is linear in the
+unknown probabilities \(p_t\).
+
+The view can easily then be attached to the model:
+
+```{r attach-mean}
+model_mean <- model |>
+  ffp_view(mean_view)
+model_mean
+```
+
+`view_mean()` is not restricted to a single raw column. The `x` argument may
+also be an expression evaluated from the scenario data. For example, a view on
+the positive equity risk premium of 1% can be written directly as:
+
+```{r mean-expression}
+view_mean(equity - bonds, target = 0.01)
+```
+
+The expression is evaluated scenario by scenario before the view is compiled,
+so the resulting mathematical condition is:
+
+$$
+E_p[
+\text{equity} - \text{bonds}
+]
+=
+0.01.
+$$
+
+Multiple features can also be targeted in one view. In that case, there must
+be exactly one target per feature. Targets are matched by position and are not
+silently recycled:
+
+```{r mean-panel}
+returns <- scenarios |>
+  dplyr::select(equity, bonds)
+
+view_mean(returns, target = c(0.015, 0.003))
+```
+
+This creates two mean constraints, one for `equity` and one for `bonds`.
+
+### Ranking views
+
+A ranking view is also a statement about posterior means, but it does not
+require the user to specify their numerical values. Instead, it imposes an
+ordering.
+
+Suppose we believe equity to have a posterior expected return at least as high as
+bonds:
+
+```{r rank-view}
+view_rank(returns, order = c("equity", "bonds"))
+```
+
+For two variables, the view means:
+
+$$
+E_p[\text{equity}]
+\geq
+E_p[\text{bonds}],
+$$
+
+which can be rewritten as the linear inequality:
+
+$$
+E_p[
+\text{bonds} - \text{equity}
+]
+\leq
+0.
+$$
+
+More generally, if \(K\) variables are ordered as:
+
+$$
+E_p[X_1]
+\geq
+E_p[X_2]
+\geq
+\cdots
+\geq
+E_p[X_K],
+$$
+
+`ffp` only needs to impose the adjacent comparisons:
+
+$$
+E_p[X_2-X_1] \leq 0,
+$$
+
+$$
+E_p[X_3-X_2] \leq 0,
+$$
+
+and so forth. A ranking of \(K\) features therefore generates
+\(K-1\) mathematical inequalities.
+
+The inequalities are weak inequalities. Ties are allowed; `ffp` does not add
+an arbitrary epsilon or numerical margin to force strict ordering.
+
+Ranking views are useful when the analyst has a strong relative opinion but
+does not want to commit to exact expected-return target. 
+
+## Views on events
+
+### Unconditional probability views
+
+Many economic opinions are naturally expressed as probabilities rather than
+moments. Suppose we believe that inflation above 4% should occur with posterior
+probability 10%.
+
+```{r probability-view}
+view_probability(inflation > 0.04, target = 0.10)
+```
+
+The logical expression `inflation > 0.04` creates an indicator for each
+scenario. If \(A_t\) equals one when the event occurs and zero otherwise, the
+view becomes:
+
+$$
+P_p(A)
+=
+\sum_{t=1}^{T}
+p_t A_t
+=
+0.10.
+$$
+
+The constraint remains linear because the scenario-level event indicators are
+known before the optimization begins.
+
+The same interface can express more complex events using ordinary logical
+operators. For example:
+
+```{r complex-events}
+view_probability(
+  equity < 0 & inflation > 0.04,
+  target = 0.08
+)
+
+view_probability(
+  equity < -0.05 | inflation > 0.05,
+  target = 0.12
+)
+```
+
+The first view describes a joint event, whereas the second describes a union of
+events. No special probability syntax is required beyond the logical
+expressions used in R.
+
+### Conditional probability views
+
+`view_probability()` can also express conditional probabilities through the
+`given` argument.
+
+Suppose we define a high-inflation regime and believe that equity losses should
+occur with probability 70% conditional on that regime.
+
+```{r conditional-probability}
+view_probability(
+  equity < 0,
+  target = 0.70,
+  given  = inflation > 0.035
+)
+```
+
+For events \(A\) and \(G\), the statement:
+
+$$
+P_p(A \mid G)
+=
+\pi
+$$
+
+is equivalent to:
+
+$$
+P_p(A \cap G)
+-
+\pi P_p(G)
+=
+0.
+$$
+
+In scenario form:
+
+$$
+\sum_{t=1}^{T}
+p_t
+\left[
+\mathbb{1}(A_t \cap G_t)
+-
+\pi
+\mathbb{1}(G_t)
+\right]
+=
+0.
+$$
+
+The ratio implied by conditional probability has therefore been transformed
+into a linear equality in the posterior probabilities.
+
+The conditioning event must have positive probability under the current prior.
+If the prior assigns zero probability to every scenario in `given`, the
+conditional probability is undefined and the view cannot be attached.
+
+## Views on quantiles and medians
+
+### Quantile views
+
+Quantiles require more care because flexible distributions are discrete. The
+scenario support is fixed, and `ffp` does not interpolate between scenario
+values to create sample quantiles.
+
+Suppose we want \(-6\%\) to be a posterior 5% quantile of equity returns.
+
+```{r quantile-view}
+view_quantile(equity, target = -0.06, level = 0.05)
+```
+
+For a target \(q\) and quantile level \(u\), the view means that \(q\) belongs
+to the set of posterior \(u\)-quantiles. This requires:
+
+$$
+P_p(X < q)
+\leq
+u
+$$
+
+and
+
+$$
+P_p(X > q)
+\leq
+1-u.
+$$
+
+Equivalently, using the posterior cumulative distribution function:
+
+$$
+F_p(q^-)
+\leq
+u
+\leq
+F_p(q).
+$$
+
+For the example above, `ffp` therefore compiles the two inequalities:
+
+$$
+\sum_{t=1}^{T}
+p_t
+\mathbb{1}
+(x_{t,\mathrm{equity}} < -0.06)
+\leq
+0.05
+$$
+
+and
+
+$$
+\sum_{t=1}^{T}
+p_t
+\mathbb{1}
+(x_{t,\mathrm{equity}} > -0.06)
+\leq
+0.95.
+$$
+
+This is an important example of the distinction between a **semantic view**
+and a **mathematical constraint**. The user expresses one quantile view, but
+the compiler needs two inequalities to represent it.
+
+The formulation also handles probability mass located exactly at the target
+naturally. No interpolation rule from `stats::quantile()` is involved.
+
+A scalar `level` can be shared across multiple features:
+
+```{r quantile-panel}
+view_quantile(
+  returns, 
+  target = c(-0.06, -0.025), 
+  level  = 0.05
+)
+```
+
+Different features can also use different levels when one level is supplied
+for each target:
+
+```{r quantile-mixed-levels}
+view_quantile(
+  returns,
+  target = c(-0.06, 0.03),
+  level  = c(0.05, 0.95)
+)
+```
+
+### Median views
+
+`view_median()` is the median-specific counterpart to `view_quantile()`. It
+uses exactly the same discrete-distribution logic with \(u=0.5\).
+
+```{r median-view}
+view_median(equity, target = 0.005)
+```
+
+The target \(m\) is a posterior median when:
+
+$$
+P_p(X < m)
+\leq
+0.5
+$$
+
+and
+
+$$
+P_p(X > m)
+\leq
+0.5.
+$$
+
+A median view therefore also generates two inequalities per target. The
+dedicated function is mainly a convenience for a common special case of a
+quantile view.
+
+## Views on dispersion
+
+Views on variance and volatility introduce an additional idea. A literal
+posterior variance:
+
+$$
+E_p[X^2] - E_p[X]^2
+$$
+
+is nonlinear in the probability vector because the posterior mean itself
+depends on \(p\).
+
+The Fully Flexible Views formulation keeps the Entropy Pooling constraints
+linear by anchoring the second-moment representation to a **reference mean**
+computed under the model prior.
+
+Let:
+
+$$
+\hat m_q
+=
+E_q[X]
+$$
+
+denote this prior reference mean.
+
+### Volatility views
+
+For a volatility target \(\sigma^\star\), `view_volatility()` uses:
+
+$$
+E_p[X^2]
+=
+\hat m_q^2
++
+(\sigma^\star)^2
+$$
+
+In scenario form:
+
+$$
+\sum_{t=1}^{T}
+p_t X_t^2
+=
+\hat m_q^2
++
+(\sigma^\star)^2
+$$
+
+The target is supplied directly in standard-deviation units.
+
+```{r volatility-view}
+equity_sd <- stats::sd(scenarios$equity)
+
+view_volatility(
+  equity,
+  target = equity_sd * 1.10
+)
+```
+
+The reference mean is not another user parameter. It is calculated internally
+from the feature values and the model prior when the view is compiled.
+
+This distinction matters when interpreting the result. The function uses the
+linear second-moment representation of a volatility view rather than inserting
+the nonlinear expression:
+
+$$
+E_p[X^2] - E_p[X]^2
+$$
+
+directly into the optimization problem.
+
+### Variance views
+
+`view_variance()` uses the same representation, but its target is expressed in
+variance units rather than standard-deviation units.
+
+For variance target \(v^\star\):
+
+$$
+E_p[X^2]
+=
+\hat m_q^2
++
+v^\star
+$$
+
+For example:
+
+```{r variance-view}
+view_variance(
+  equity,
+  target = equity_sd^2
+)
+```
+
+The distinction between `view_volatility()` and `view_variance()` is therefore
+primarily one of parameterization. The former accepts standard-deviation units,
+while the latter accepts squared units.
+
+## Views on dependence
+
+The same linear second-moment approach extends from individual variables to
+the dependence structure of several variables.
+
+For the examples below, we work with the two return series:
+
+```{r return-panel}
+returns <- scenarios |>
+  dplyr::select(equity, bonds)
+```
+
+### Covariance views
+
+Suppose \(X_k\) and \(X_l\) are two scenario features and
+\(C^\star_{kl}\) is the target covariance between them. Let
+\(\hat m_{q,k}\) and \(\hat m_{q,l}\) denote their means under the prior.
+
+The covariance view is represented through
+
+$$
+E_p[X_kX_l]
+=
+\hat m_{q,k}\hat m_{q,l}
++
+C^\star_{kl}
+$$
+
+For \(K\) features, the user supplies a complete \(K\times K\) target covariance
+matrix:
+
+```{r covariance-target}
+#shrinkage 
+sigma <- stats::cov(returns)
+delta <- 0.2 # shrinkage intensity
+target_cov <- (1 - delta) * sigma + delta * diag(diag(sigma))
+```
+
+The view is then written as
+
+```{r covariance-view}
+view_covariance(returns, target = target_cov)
+```
+
+Because a covariance matrix is symmetric, `ffp` only needs to compile one
+triangular portion. A covariance view on \(K\) features therefore produces:
+
+$$
+\frac{K(K+1)}{2}
+$$
+
+equality constraints.
+
+The diagonal deserves attention. A complete covariance-matrix view does not
+only constrain pairwise covariances; its diagonal also contains variance
+targets. In that sense, `view_covariance()` jointly describes marginal
+dispersion and cross-variable dependence.
+
+The target must be a valid covariance matrix: numeric, square, finite,
+symmetric, and positive semidefinite. When the features and the target matrix
+are both named, their order must already agree. `ffp` does not silently reorder
+the matrix to match the scenario data.
+
+### Correlation views
+
+Correlation views are represented in a similar way, but they use both prior
+reference means and prior reference standard deviations.
+
+Let \(R^\star_{kl}\) denote the desired correlation between features \(k\) and
+\(l\). The linear constraint is:
+
+$$
+E_p[X_kX_l]
+=
+\hat m_{q,k}\hat m_{q,l}
++
+\hat\sigma_{q,k}
+\hat\sigma_{q,l}
+R^\star_{kl}
+$$
+
+where \(\hat\sigma_{q,k}\) and \(\hat\sigma_{q,l}\) are standard deviations
+computed under the model prior.
+
+For two assets, a target correlation matrix might be:
+
+```{r correlation-target}
+target_cor <- matrix(
+  c(
+    1.00, 0.20,
+    0.20, 1.00
+  ),
+  nrow = 2,
+  byrow = TRUE,
+  dimnames = list(
+    c("equity", "bonds"),
+    c("equity", "bonds")
+  )
+)
+target_cor
+```
+
+and the corresponding view is:
+
+```{r correlation-view}
+view_correlation(returns, target = target_cor)
+```
+
+The target must be a valid correlation matrix: it must be symmetric, positive
+semidefinite, have unit diagonal, and contain entries between \(-1\) and
+\(1\).
+
+A correlation view requires positive reference dispersion for every feature
+under the prior. Correlation is undefined when a variable has zero prior
+variance.
+
+As with covariance, the full target matrix is meaningful. Since the diagonal
+of a valid correlation matrix is one, the diagonal constraints also anchor the
+second moments of the individual variables through their prior reference
+standard deviations. `view_correlation()` should therefore not be interpreted
+as modifying only the off-diagonal entries of a covariance structure.
+
+## Why reference moments are used
+
+The treatment of volatility, variance, covariance and correlation deserves a
+short summary because it differs from the direct constraints used for means and
+event probabilities.
+
+The key computational requirement of the Entropy Pooling interface is that
+views compile into **linear constraints in the posterior probabilities**. Means
+and probabilities are already linear in \(p\), but standard deviations,
+covariances and correlations would generally become nonlinear if all posterior
+moments inside their usual definitions were allowed to move simultaneously.
+
+The Fully Flexible Views formulation avoids this problem by expressing these
+views through second moments while keeping selected reference moments fixed
+under the prior. The resulting constraints remain linear and can therefore be
+combined with the other views in the same Entropy Pooling problem.
+
+This also means that a user should distinguish between a conventional
+statistical identity computed entirely under posterior probabilities and the
+linear view representation used to obtain those probabilities. Functions such
+as `ffp_moments()` can later be used to calculate the actual probability-weighted
+posterior moments implied by the fitted distribution.
+
+## Combining views
+
+The real flexibility of the interface appears when several pieces of
+information are expressed together.
+
+Consider a modest increase in expected equity returns and a lower probability
+of very high inflation:
+
+```{r combined-targets}
+equity_target  <- mean(scenarios$equity) + 0.002
+high_inflation <- scenarios$inflation > 0.04
+inflation_probability_target <- mean(high_inflation) * 0.80
+
+c(
+  equity_target = equity_target,
+  inflation_probability_target = inflation_probability_target
+)
+```
+
+We can add both views in one call:
+
+```{r combined-views}
+model_views <- model |>
+  ffp_view(
+    view_mean(equity, target = equity_target),
+    view_probability(inflation > 0.04, target = inflation_probability_target)
+  )
+model_views
+```
+
+The same model could also have been built incrementally:
+
+```{r combined-incremental}
+model_views_incremental <- model |>
+  ffp_view(
+    view_mean(equity, target = equity_target)
+  ) |>
+  ffp_view(
+    view_probability(inflation > 0.04, target = inflation_probability_target)
+  )
+model_views_incremental
+```
+
+The second call does **not** replace the first view. Views accumulate in the
+model.
+
+More importantly, fitting the model does not perform one Entropy Pooling update
+for the mean view and then use that posterior as a new prior for the probability
+view. Instead, all attached views are compiled and solved jointly against the
+same original model prior.
+
+The optimization problem is therefore:
+
+$$
+\begin{aligned}
+\min_p
+&\quad
+\sum_{t=1}^{T}
+p_t
+\log\left(
+\frac{p_t}{q_t}
+\right)
+\\[4pt]
+\text{subject to}
+&\quad
+\sum_{t=1}^{T}
+p_t
+x_{t,\mathrm{equity}}
+=
+m^\star,
+\\
+&\quad
+\sum_{t=1}^{T}
+p_t
+\mathbb{1}
+(x_{t,\mathrm{inflation}}>0.04)
+=
+\pi^\star,
+\\
+&\quad
+p_t \geq 0,
+\\
+&\quad
+\sum_{t=1}^{T}p_t = 1,
+\end{aligned}
+$$
+
+where \(m^\star\) and \(\pi^\star\) are the two targets supplied above.
+
+We can solve the model as usual:
+
+```{r combined-fit}
+fit <- ffp_fit(model_views)
+fit
+```
+
+This joint treatment is central to interpreting `ffp_view()`. A model with many
+views represents one coherent set of statements about a single posterior
+distribution.
+
+## Semantic views and mathematical constraints
+
+The examples above show that the number of `view_*()` calls is not necessarily
+the number of rows that enter the optimization problem.
+
+A useful summary is:
+
+| View | Mathematical representation |
+|---|---|
+| `view_mean()` | one equality per target |
+| `view_probability()` | one equality per event |
+| `view_quantile()` | two inequalities per target |
+| `view_median()` | two inequalities per target |
+| `view_rank()` | \(K-1\) inequalities for \(K\) ranked features |
+| `view_volatility()` | one second-moment equality per target |
+| `view_variance()` | one second-moment equality per target |
+| `view_covariance()` | \(K(K+1)/2\) equalities |
+| `view_correlation()` | \(K(K+1)/2\) equalities |
+
+The user-facing API is deliberately semantic: it records what the analyst means.
+The compiler handles the mathematical expansion needed by Entropy Pooling.
+
+This separation is especially useful for quantiles and matrix views, where
+writing the corresponding constraint matrices manually would quickly become
+cumbersome and error-prone.
+
+## Scenario support and feasibility
+
+A view can only redistribute probability over scenarios that already exist in
+the model. This creates an important relationship between the scenario support
+and the views that can be imposed.
+
+For example, a posterior mean must lie inside the convex hull of the available
+scenario values. If every equity return in the support is below 5%, then a
+full-confidence view requiring an expected return of 10% cannot be satisfied
+simply by changing probabilities.
+
+Similarly, if no scenario satisfies an event, its posterior probability can
+only be zero. Entropy Pooling cannot assign positive probability to an outcome
+that does not exist in the support.
+
+Quantile views are also constrained by the available scenario values and
+probability mass, while combinations of individually reasonable views may still
+be mutually inconsistent.
+
+This limitation is not a defect of Entropy Pooling. It is a direct consequence
+of the modeling principle that the scenarios remain fixed while only their
+probabilities change.
+
+For this reason, scenario design becomes especially important when working with
+extreme views or stress scenarios. If an economically relevant state of the
+world is absent from the support, probability reweighting alone cannot create
+it.
+
+A feasible solution may also lie on the boundary of the probability simplex,
+meaning that some posterior scenario probabilities are exactly zero. Such a
+boundary solution is not automatically a numerical failure; it may be the
+correct full-confidence solution implied by the views.
+
+Detailed numerical assessment of the fitted problem belongs to
+`ffp_diagnostics()`.
+
+## Full confidence and partial confidence
+
+Every view attached to a model and passed to `ffp_fit()` is treated with
+**full confidence**. The posterior probabilities are chosen so that the compiled
+view constraints are satisfied, subject to numerical precision.
+
+This is different from saying that the analyst is completely certain about the
+economic opinion itself.
+
+When views should influence the distribution without being imposed with full
+confidence, `ffp_opinion_pooling()` provides a separate step after fitting. If
+\(p_{\mathrm{full}}\) is the full-confidence posterior and \(c\) is a global
+confidence level, the partially confident distribution is:
+
+$$
+p_c
+=
+(1-c)q
++
+c p_{\mathrm{full}}
+$$
+
+For example:
+
+```{r partial-confidence}
+pooled <- ffp_opinion_pooling(fit, confidence = 0.75)
+pooled
+```
+
+The distinction between these layers is important. `view_*()` specifies what
+the posterior should say. `ffp_fit()` solves that problem under full
+confidence. `ffp_opinion_pooling()` subsequently expresses how strongly the
+analyst believes the collection of views.
+
+<!-- View confidence must also be distinguished from numerical solver tolerances. -->
+<!-- Confidence is an economic modeling choice, whereas tolerances determine how -->
+<!-- numerical constraint satisfaction is assessed. -->
+
+## A compact view workflow
+
+Once the meaning of the individual view types is understood, a relatively rich
+model can still be expressed compactly.
+
+```{r compact-workflow, eval = FALSE}
+fit <- scenarios |>
+  ffp_model() |>
+  ffp_prior(
+    prior_uniform()
+  ) |>
+  ffp_view(
+    view_mean(equity, target = 0.015),
+    view_probability(inflation > 0.04, target = 0.10),
+    view_rank(returns, order = c("equity", "bonds"))
+  ) |>
+  ffp_fit()
+```
+
+<!-- Despite the compact syntax, the economic meaning remains explicit: one view -->
+<!-- targets an expected return, another targets the probability of an inflation -->
+<!-- event, and another imposes a relative ordering of expected asset returns. -->
+<!-- `ffp` compiles these statements into their corresponding equality and -->
+<!-- inequality constraints and solves them jointly in a single Entropy Pooling -->
+<!-- problem. -->
+
+The purpose of the view interface is therefore not merely to shorten code. It
+creates a separation between the analyst's economic statements and the
+numerical representation required to enforce them.
+
+## Where to go next
+
+Views are only one component of a Fully Flexible Probabilities model. The prior
+determines how scenario probabilities are distributed before subjective
+information is introduced, while the views describe the properties that the
+full-confidence posterior should satisfy.
+
+After fitting, `ffp_stats()`, `ffp_risk()`, and `ffp_moments()` can be used to
+study the economic consequences of the probability update.
+`ffp_diagnostics()` provides the complementary numerical perspective by showing
+how the compiled constraints behave and whether the Entropy Pooling problem is
+regular, on the boundary, or infeasible.
+
+When views are economically uncertain, `ffp_opinion_pooling()` keeps that
+question separate from both view specification and numerical solution. This
+separation between **prior information**, **view content**, **numerical
+feasibility**, and **view confidence** is one of the central organizing ideas
+of the `ffp` 2.0 workflow.

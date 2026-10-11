@@ -1127,6 +1127,37 @@ compile_view.default <- function(view, prior, call = rlang::caller_env()) {
 
 # Compiler helpers --------------------------------------------------------
 
+view_constraint_count <- function(x) {
+
+  if (x$method %in% c("quantile", "median")) {
+    return(2L * length(x$target))
+  }
+
+  if (identical(x$method, "rank")) {
+    return(feature_count(x$features) - 1L)
+  }
+
+  if (x$method %in% c("covariance", "correlation")) {
+    n_features <- feature_count(x$features)
+    return(as.integer(n_features * (n_features + 1L) / 2L))
+  }
+
+  if (identical(x$method, "marginal_distribution")) {
+    return(as.integer(feature_count(x$features) * x$parameters$order))
+  }
+
+  if (x$method %in% c("joint_distribution", "copula")) {
+    return(
+      joint_moment_constraint_count(
+        n_features = feature_count(x$features),
+        order = x$parameters$order
+      )
+    )
+  }
+
+  length(x$target)
+}
+
 view_feature_labels <- function(view) {
   n_features <- feature_count(view$features)
   feature_names <- view$features$names

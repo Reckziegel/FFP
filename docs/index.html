@@ -36,7 +36,7 @@
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-vignettes" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Vignettes</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-vignettes">
-<li><a class="dropdown-item" href="articles/how-does-EP-work.html">How does EP Work</a></li>
+<li><a class="dropdown-item" href="articles/how-does-Entropy-Pooling-work.html">How does EP Work</a></li>
     <li><a class="dropdown-item" href="articles/views.html">Views</a></li>
   </ul>
 </li>
@@ -61,31 +61,11 @@
 <!-- badges: start -->
 
 <blockquote>
-<p><strong>Flexible scenario probabilities for conditioning, stress testing, and portfolio analysis in R.</strong></p>
+<p><strong>Flexible empirical distributions and Entropy Pooling in R.</strong></p>
 </blockquote>
-<p><code>ffp</code> provides tools for assigning flexible probabilities to historical or simulated scenarios and for updating those probabilities when new information or subjective market views become available.</p>
-<p>The central idea is simple:</p>
-<blockquote>
-<p><strong>Keep the scenarios, change their probabilities.</strong></p>
-</blockquote>
-<p>Instead of replacing an existing scenario set, <code>ffp</code> changes how much probability is assigned to each observation.</p>
-<p>Flexible probabilities can be used to:</p>
-<ul>
-<li>emphasize recent observations;</li>
-<li>condition the historical sample on a particular market state;</li>
-<li>incorporate partial information;</li>
-<li>impose subjective views through Entropy Pooling;</li>
-<li>carry the resulting probabilities into risk measurement, simulation, and portfolio analysis.</li>
-</ul>
-<p>Conceptually,</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mtext mathvariant="normal">scenarios</mtext><mo>+</mo><mtext mathvariant="normal">information</mtext><mo>→</mo><mtext mathvariant="normal">flexible probabilities</mtext></mrow><annotation encoding="application/x-tex">
-\text{scenarios}
-+
-\text{information}
-\longrightarrow
-\text{flexible probabilities}
-</annotation></semantics></math></p>
-<p>The scenarios remain available throughout the analysis. What changes is how important each scenario is.</p>
+<p>Empirical distributions are often built from historical scenarios that receive equal probability. This is a natural starting point when there is no reason to consider some scenarios more plausible than others.</p>
+<p>In practice, however, we may have additional information. Fully Flexible Probabilities provide a way to incorporate this information without changing the scenarios. Only the probability attached to each scenario is allowed to change.</p>
+<p><code>ffp</code> organizes this process into a model workflow. You define the scenario support, choose prior probabilities, express views about the distribution, and use Entropy Pooling to obtain posterior probabilities that satisfy those views while remaining as close as possible to the prior.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
@@ -94,489 +74,182 @@
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"ffp"</span><span class="op">)</span></span></code></pre></div>
 <p>You can install the development version from GitHub with:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># install.packages("devtools")</span></span>
+<code class="sourceCode R"><span><span class="co"># install.packages("pak")</span></span>
 <span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org/reference/install-deprecated.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"Reckziegel/FFP"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="quick-start">Quick start<a class="anchor" aria-label="anchor" href="#quick-start"></a>
+<h2 id="a-model-first-workflow">A model-first workflow<a class="anchor" aria-label="anchor" href="#a-model-first-workflow"></a>
 </h2>
-<p>A small example illustrates the basic workflow.</p>
-<p>Suppose the historical scenarios are the daily log returns in <code>EuStockMarkets</code>.</p>
+<p>Consider 500 simulated scenarios for equity returns, bond returns, and inflation.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/Reckziegel/FFP" class="external-link">ffp</a></span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/diff.html" class="external-link">diff</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">EuStockMarkets</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">123</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">prior</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p>The matrix <code>x</code> contains the historical scenarios, while <code>prior</code> assigns the same probability to every observation.</p>
-<p>Now suppose the investor believes that the expected return of the <code>FTSE</code> should be 20% above its historical average.</p>
+<span><span class="va">scenarios</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span></span>
+<span>  equity    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">500</span>, mean <span class="op">=</span> <span class="fl">0.006</span>, sd <span class="op">=</span> <span class="fl">0.04</span><span class="op">)</span>,</span>
+<span>  bonds     <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">500</span>, mean <span class="op">=</span> <span class="fl">0.002</span>, sd <span class="op">=</span> <span class="fl">0.012</span><span class="op">)</span>,</span>
+<span>  inflation <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">500</span>, mean <span class="op">=</span> <span class="fl">0.025</span>, sd <span class="op">=</span> <span class="fl">0.007</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">scenarios</span></span>
+<span><span class="co">#&gt; # A tibble: 500 × 3</span></span>
+<span><span class="co">#&gt;      equity     bonds inflation</span></span>
+<span><span class="co">#&gt;       &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt;  1 -0.0164  -0.00522    0.0180 </span></span>
+<span><span class="co">#&gt;  2 -0.00321 -0.00992    0.0177 </span></span>
+<span><span class="co">#&gt;  3  0.0683   0.0143     0.0249 </span></span>
+<span><span class="co">#&gt;  4  0.00882  0.0110     0.0241 </span></span>
+<span><span class="co">#&gt;  5  0.0112  -0.0161     0.00715</span></span>
+<span><span class="co">#&gt;  6  0.0746   0.000858   0.0323 </span></span>
+<span><span class="co">#&gt;  7  0.0244  -0.00875    0.0267 </span></span>
+<span><span class="co">#&gt;  8 -0.0446  -0.0228     0.0419 </span></span>
+<span><span class="co">#&gt;  9 -0.0215   0.00380    0.0298 </span></span>
+<span><span class="co">#&gt; 10 -0.0118   0.00105    0.0219 </span></span>
+<span><span class="co">#&gt; # ℹ 490 more rows</span></span></code></pre></div>
+<p>Each row represents one possible scenario. At this point, the data describe <strong>what can happen</strong>, but we have not yet specified how probable each scenario should be.</p>
+<div class="section level4">
+<h4 id="define-the-scenario-support">Define the scenario support<a class="anchor" aria-label="anchor" href="#define-the-scenario-support"></a>
+</h4>
+<p>The first step is to create an <code>ffp</code> model from the scenarios.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">target</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">x</span><span class="op">[</span>, <span class="st">"FTSE"</span><span class="op">]</span><span class="op">)</span> <span class="op">*</span> <span class="fl">1.20</span></span>
-<span></span>
-<span><span class="va">view</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/view_on_mean.html">view_on_mean</a></span><span class="op">(</span></span>
-<span>  x <span class="op">=</span> <span class="va">x</span><span class="op">[</span>, <span class="st">"FTSE"</span>, drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span>,</span>
-<span>  mean <span class="op">=</span> <span class="va">target</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-<p>The view is incorporated through Entropy Pooling:</p>
+<code class="sourceCode R"><span><span class="va">model</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/ffp_model.html">ffp_model</a></span><span class="op">(</span><span class="va">scenarios</span><span class="op">)</span></span></code></pre></div>
+<p><code><a href="reference/ffp_model.html">ffp_model()</a></code> defines the support of the empirical distribution. These scenarios remain fixed throughout the Entropy Pooling workflow.</p>
+</div>
+<div class="section level4">
+<h4 id="choose-a-prior">Choose a prior<a class="anchor" aria-label="anchor" href="#choose-a-prior"></a>
+</h4>
+<p>Next, we specify the probabilities we want to assign before incorporating any views.</p>
+<p>A uniform prior gives every scenario the same initial probability.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">posterior</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/entropy_pooling.html">entropy_pooling</a></span><span class="op">(</span></span>
-<span>  p <span class="op">=</span> <span class="va">prior</span>,</span>
-<span>  Aeq <span class="op">=</span> <span class="va">view</span><span class="op">$</span><span class="va">Aeq</span>,</span>
-<span>  beq <span class="op">=</span> <span class="va">view</span><span class="op">$</span><span class="va">beq</span>, </span>
-<span>  solver <span class="op">=</span> <span class="st">"nlminb"</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-<p>We can check the resulting expected returns with:</p>
+<code class="sourceCode R"><span><span class="va">model</span> <span class="op">&lt;-</span> <span class="va">model</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="reference/ffp_prior.html">ffp_prior</a></span><span class="op">(</span></span>
+<span>    <span class="fu"><a href="reference/prior_uniform.html">prior_uniform</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span></code></pre></div>
+<p>The prior represents what we believe about the scenarios before introducing additional information.</p>
+</div>
+<div class="section level4">
+<h4 id="add-a-view">Add a view<a class="anchor" aria-label="anchor" href="#add-a-view"></a>
+</h4>
+<p>Suppose we believe that the expected equity return should be 1%. We express this directly as a view on the model.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="reference/ffp_moments.html">ffp_moments</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">posterior</span><span class="op">)</span><span class="op">$</span><span class="va">mu</span></span>
-<span><span class="co">#&gt;          DAX          SMI          CAC         FTSE </span></span>
-<span><span class="co">#&gt; 0.0007233428 0.0008764380 0.0005145713 0.0005183822</span></span></code></pre></div>
-<p>The important point is that the observations in <code>x</code> have <strong>not</strong> changed.</p>
-<p>Entropy Pooling has only changed their probabilities.</p>
-<p>In symbols,</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><munder><munder><mrow><mo stretchy="false" form="prefix">(</mo><mi>X</mi><mo>,</mo><mi>p</mi><mo stretchy="false" form="postfix">)</mo></mrow><mo accent="true">⏟</mo></munder><mtext mathvariant="normal">prior</mtext></munder><mspace width="1.0em"></mspace><mo>→</mo><mspace width="1.0em"></mspace><munder><munder><mrow><mo stretchy="false" form="prefix">(</mo><mi>X</mi><mo>,</mo><msup><mi>q</mi><mo>*</mo></msup><mo stretchy="false" form="postfix">)</mo></mrow><mo accent="true">⏟</mo></munder><mtext mathvariant="normal">posterior</mtext></munder><mo>,</mo></mrow><annotation encoding="application/x-tex">
-\underbrace{(X,p)}_{\text{prior}}
-\quad\longrightarrow\quad
-\underbrace{(X,q^*)}_{\text{posterior}},
-</annotation></semantics></math></p>
-<p>where:</p>
-<ul>
-<li>
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>X</mi><annotation encoding="application/x-tex">X</annotation></semantics></math> contains the historical or simulated scenarios;</li>
-<li>
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>p</mi><annotation encoding="application/x-tex">p</annotation></semantics></math> contains the prior probabilities;</li>
-<li>
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>q</mi><mo>*</mo></msup><annotation encoding="application/x-tex">q^*</annotation></semantics></math> contains the posterior probabilities.</li>
-</ul>
-<p>This simple idea is at the center of the package:</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mtext mathvariant="normal">same scenarios, different probabilities</mtext><annotation encoding="application/x-tex">
-\text{same scenarios, different probabilities}
-</annotation></semantics></math></p>
+<code class="sourceCode R"><span><span class="va">model</span> <span class="op">&lt;-</span> <span class="va">model</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="reference/ffp_view.html">ffp_view</a></span><span class="op">(</span></span>
+<span>    <span class="fu"><a href="reference/view_mean.html">view_mean</a></span><span class="op">(</span><span class="va">equity</span>, target <span class="op">=</span> <span class="fl">0.01</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span></code></pre></div>
+<p>A view describes a property that we want the posterior distribution to satisfy. Here, it concerns the posterior mean of <code>equity</code>.</p>
 </div>
-<div class="section level2">
-<h2 id="how-ffp-fits-together">How <code>ffp</code> fits together<a class="anchor" aria-label="anchor" href="#how-ffp-fits-together"></a>
-</h2>
-<p>There are two main ways of introducing information into scenario probabilities.</p>
-<div class="section level3">
-<h3 id="conditioning">Conditioning<a class="anchor" aria-label="anchor" href="#conditioning"></a>
-</h3>
-<p>Sometimes the information comes from the data itself.</p>
-<p>For example, we may want recent observations to receive more weight, or we may want to condition the historical sample on a particular economic state.</p>
-<pre class="text"><code>historical scenarios
-        |
-        v
-   conditioning
-        |
-        +-- exp_decay()
-        +-- crisp()
-        +-- kernel_normal()
-        +-- kernel_entropy()
-        +-- double_decay()
-        |
-        v
-flexible probabilities</code></pre>
-</div>
-<div class="section level3">
-<h3 id="views-and-stress-testing">Views and stress testing<a class="anchor" aria-label="anchor" href="#views-and-stress-testing"></a>
-</h3>
-<p>In other situations, the information comes from a subjective view or stress scenario.</p>
-<pre class="text"><code>historical scenarios
-        |
-        v
-     prior
-        |
-        v
-   view_on_*()
-        |
-        v
-   bind_views()
-        |
-        v
-entropy_pooling()
-        |
-        v
-posterior probabilities</code></pre>
-<p>Both approaches ultimately produce probability weights over the same scenario set.</p>
-<p>These probabilities can then be used for risk measurement, simulation, or portfolio analysis.</p>
+<div class="section level4">
+<h4 id="fit-the-model">Fit the model<a class="anchor" aria-label="anchor" href="#fit-the-model"></a>
+</h4>
+<p>Finally, we combine the prior and the view using Entropy Pooling.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/ffp_fit.html">ffp_fit</a></span><span class="op">(</span><span class="va">model</span><span class="op">)</span></span>
+<span><span class="va">fit</span></span>
+<span><span class="co">#&gt; &lt;ffp_fit&gt;</span></span>
+<span><span class="co">#&gt; Scenarios:      500</span></span>
+<span><span class="co">#&gt; Views:          1</span></span>
+<span><span class="co">#&gt; Status:         converged</span></span>
+<span><span class="co">#&gt; KL divergence:  0.00226086</span></span>
+<span><span class="co">#&gt; Max residual:   6.66e-16</span></span></code></pre></div>
+<p><code><a href="reference/ffp_fit.html">ffp_fit()</a></code> finds posterior scenario probabilities that satisfy the view while remaining as close as possible to the prior in relative-entropy terms. The scenario support remains unchanged; only the probabilities are updated.</p>
+<p>Once the individual steps are familiar, the same model can be written as a single pipeline:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="va">scenarios</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="reference/ffp_model.html">ffp_model</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="reference/ffp_prior.html">ffp_prior</a></span><span class="op">(</span></span>
+<span>    <span class="fu"><a href="reference/prior_uniform.html">prior_uniform</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="reference/ffp_view.html">ffp_view</a></span><span class="op">(</span></span>
+<span>    <span class="fu"><a href="reference/view_mean.html">view_mean</a></span><span class="op">(</span><span class="va">equity</span>, target <span class="op">=</span> <span class="fl">0.01</span><span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="reference/ffp_fit.html">ffp_fit</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
-<h2 id="constructing-flexible-probabilities">Constructing flexible probabilities<a class="anchor" aria-label="anchor" href="#constructing-flexible-probabilities"></a>
+<h2 id="understanding-the-posterior">Understanding the posterior<a class="anchor" aria-label="anchor" href="#understanding-the-posterior"></a>
 </h2>
-<p>Flexible probabilities allow different observations to carry different amounts of information.</p>
-<p>The appropriate function depends on the type of information available.</p>
-<table class="table">
-<thead><tr>
-<th align="left">Information available</th>
-<th align="left">Function</th>
-</tr></thead>
-<tbody>
-<tr>
-<td align="left">Recent observations should matter more</td>
-<td align="left"><code><a href="reference/exp_decay.html">exp_decay()</a></code></td>
-</tr>
-<tr>
-<td align="left">Condition on a hard event</td>
-<td align="left"><code><a href="reference/crisp.html">crisp()</a></code></td>
-</tr>
-<tr>
-<td align="left">Condition smoothly around a target</td>
-<td align="left"><code><a href="reference/kernel_normal.html">kernel_normal()</a></code></td>
-</tr>
-<tr>
-<td align="left">Impose partial information through entropy</td>
-<td align="left"><code><a href="reference/kernel_entropy.html">kernel_entropy()</a></code></td>
-</tr>
-<tr>
-<td align="left">Combine fast and slow decay information</td>
-<td align="left"><code><a href="reference/double_decay.html">double_decay()</a></code></td>
-</tr>
-</tbody>
-</table>
-<p>For example, exponential decay gives progressively more weight to recent observations:</p>
+<p>Because the fitted model retains both the scenarios and their prior and posterior probabilities, distributional changes can be inspected directly.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/exp_decay.html">exp_decay</a></span><span class="op">(</span><span class="va">x</span>, <span class="fl">0.01</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">p</span></span>
-<span><span class="co">#&gt; &lt;ffp[1859]&gt;</span></span>
-<span><span class="co">#&gt; 8.484746e-11 8.57002e-11 8.65615e-11 8.743145e-11 8.831015e-11 ... 0.009950166</span></span></code></pre></div>
-<p>The output is a probability vector associated with the historical scenarios.</p>
-<p>The probabilities do not need to be uniform: they reflect the information that the user wants the historical sample to represent.</p>
-</div>
-<div class="section level2">
-<h2 id="stress-testing-with-entropy-pooling">Stress testing with Entropy Pooling<a class="anchor" aria-label="anchor" href="#stress-testing-with-entropy-pooling"></a>
-</h2>
-<p>Entropy Pooling allows subjective market views to be incorporated by reweighting the scenarios.</p>
-<p>The <code>view_on_*()</code> functions translate an investor’s statement into the constraints required by <code><a href="reference/entropy_pooling.html">entropy_pooling()</a></code>.</p>
-<table class="table">
-<thead><tr>
-<th align="left">If your view is about…</th>
-<th align="left">Use</th>
-</tr></thead>
-<tbody>
-<tr>
-<td align="left">Expected returns or means</td>
-<td align="left"><code><a href="reference/view_on_mean.html">view_on_mean()</a></code></td>
-</tr>
-<tr>
-<td align="left">Volatility</td>
-<td align="left"><code><a href="reference/view_on_volatility.html">view_on_volatility()</a></code></td>
-</tr>
-<tr>
-<td align="left">Covariance</td>
-<td align="left"><code><a href="reference/view_on_covariance.html">view_on_covariance()</a></code></td>
-</tr>
-<tr>
-<td align="left">Correlation</td>
-<td align="left"><code><a href="reference/view_on_correlation.html">view_on_correlation()</a></code></td>
-</tr>
-<tr>
-<td align="left">Relative performance or ranking</td>
-<td align="left"><code><a href="reference/view_on_rank.html">view_on_rank()</a></code></td>
-</tr>
-<tr>
-<td align="left">Marginal distributions</td>
-<td align="left"><code><a href="reference/view_on_marginal_distribution.html">view_on_marginal_distribution()</a></code></td>
-</tr>
-<tr>
-<td align="left">Dependence or copulas</td>
-<td align="left"><code><a href="reference/view_on_copula.html">view_on_copula()</a></code></td>
-</tr>
-<tr>
-<td align="left">A joint target distribution</td>
-<td align="left"><code><a href="reference/view_on_joint_distribution.html">view_on_joint_distribution()</a></code></td>
-</tr>
-</tbody>
-</table>
-<p>A useful way to think about the API is:</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mtext mathvariant="monospace">𝚟𝚒𝚎𝚠_𝚘𝚗_*()</mtext><mo>→</mo><mtext mathvariant="monospace">𝚎𝚗𝚝𝚛𝚘𝚙𝚢_𝚙𝚘𝚘𝚕𝚒𝚗𝚐()</mtext></mrow><annotation encoding="application/x-tex">
-\texttt{view_on_*()}
-\longrightarrow
-\texttt{entropy_pooling()}
-</annotation></semantics></math></p>
-<p>For several simultaneous views,</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mtext mathvariant="monospace">𝚟𝚒𝚎𝚠_𝚘𝚗_*()</mtext><mo>→</mo><mtext mathvariant="monospace">𝚋𝚒𝚗𝚍_𝚟𝚒𝚎𝚠𝚜()</mtext><mo>→</mo><mtext mathvariant="monospace">𝚎𝚗𝚝𝚛𝚘𝚙𝚢_𝚙𝚘𝚘𝚕𝚒𝚗𝚐()</mtext></mrow><annotation encoding="application/x-tex">
-\texttt{view_on_*()}
-\longrightarrow
-\texttt{bind_views()}
-\longrightarrow
-\texttt{entropy_pooling()}
-</annotation></semantics></math></p>
-<p>For example:</p>
+<code class="sourceCode R"><span><span class="va">stats</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/ffp_stats.html">ffp_stats</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
+<span><span class="va">stats</span></span>
+<span><span class="co">#&gt; &lt;&lt;ffp_stats&gt;&gt;</span></span>
+<span><span class="co">#&gt; Prior -&gt; posterior empirical distribution</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Scenarios: 500</span></span>
+<span><span class="co">#&gt; Variables: 3</span></span>
+<span><span class="co">#&gt; Tail probability: 1.0%</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Effective scenarios</span></span>
+<span><span class="co">#&gt; Prior ENS: 500.0 (100.0%)</span></span>
+<span><span class="co">#&gt; Posterior ENS: 498.9 (99.8%)</span></span>
+<span><span class="co">#&gt; ENS retained: 99.8%</span></span></code></pre></div>
+<p>To understand what happened to a particular variable:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">view_mean</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/view_on_mean.html">view_on_mean</a></span><span class="op">(</span></span>
-<span>  x <span class="op">=</span> <span class="va">x</span><span class="op">[</span>, <span class="st">"FTSE"</span>, drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span>,</span>
-<span>  mean <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">x</span><span class="op">[</span>, <span class="st">"FTSE"</span><span class="op">]</span><span class="op">)</span> <span class="op">*</span> <span class="fl">1.20</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">view_vol</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/view_on_volatility.html">view_on_volatility</a></span><span class="op">(</span></span>
-<span>  x <span class="op">=</span> <span class="va">x</span><span class="op">[</span>, <span class="st">"CAC"</span>, drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span>,</span>
-<span>  vol <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/sd.html" class="external-link">sd</a></span><span class="op">(</span><span class="va">x</span><span class="op">[</span>, <span class="st">"CAC"</span><span class="op">]</span><span class="op">)</span> <span class="op">*</span> <span class="fl">0.90</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">views</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/bind_views.html">bind_views</a></span><span class="op">(</span></span>
-<span>  <span class="va">view_mean</span>,</span>
-<span>  <span class="va">view_vol</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">posterior</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/entropy_pooling.html">entropy_pooling</a></span><span class="op">(</span></span>
-<span>  p <span class="op">=</span> <span class="va">prior</span>,</span>
-<span>  Aeq <span class="op">=</span> <span class="va">views</span><span class="op">$</span><span class="va">Aeq</span>,</span>
-<span>  beq <span class="op">=</span> <span class="va">views</span><span class="op">$</span><span class="va">beq</span>,</span>
-<span>  A <span class="op">=</span> <span class="va">views</span><span class="op">$</span><span class="va">A</span>,</span>
-<span>  b <span class="op">=</span> <span class="va">views</span><span class="op">$</span><span class="va">b</span>, </span>
-<span>  solver <span class="op">=</span> <span class="st">"nlminb"</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-<p>The separation between these functions is intentional:</p>
-<ul>
-<li>
-<code>view_on_*()</code> describes <strong>what the investor believes</strong>;</li>
-<li>
-<code><a href="reference/bind_views.html">bind_views()</a></code> combines several beliefs;</li>
-<li>
-<code><a href="reference/entropy_pooling.html">entropy_pooling()</a></code> determines <strong>how scenario probabilities must change</strong>.</li>
-</ul>
-</div>
-<div class="section level2">
-<h2 id="what-does-entropy-pooling-optimize">What does Entropy Pooling optimize?<a class="anchor" aria-label="anchor" href="#what-does-entropy-pooling-optimize"></a>
-</h2>
-<p>Among all probability distributions that satisfy the views, Entropy Pooling chooses the one that is closest to the prior distribution.</p>
-<p>Closeness is measured using relative entropy, or the Kullback–Leibler divergence:</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>D</mi><mrow><mi mathvariant="normal">K</mi><mi mathvariant="normal">L</mi></mrow></msub><mo stretchy="false" form="prefix">(</mo><mi>q</mi><mo stretchy="false" form="postfix">‖</mo><mi>p</mi><mo stretchy="false" form="postfix">)</mo><mo>=</mo><munderover><mo>∑</mo><mrow><mi>j</mi><mo>=</mo><mn>1</mn></mrow><mi>J</mi></munderover><msub><mi>q</mi><mi>j</mi></msub><mrow><mo stretchy="true" form="prefix">[</mo><mi mathvariant="normal">log</mi><mo stretchy="false" form="prefix">(</mo><msub><mi>q</mi><mi>j</mi></msub><mo stretchy="false" form="postfix">)</mo><mo>−</mo><mi mathvariant="normal">log</mi><mo stretchy="false" form="prefix">(</mo><msub><mi>p</mi><mi>j</mi></msub><mo stretchy="false" form="postfix">)</mo><mo stretchy="true" form="postfix">]</mo></mrow><mi>.</mi></mrow><annotation encoding="application/x-tex">
-D_{\mathrm{KL}}(q\Vert p)
-=
-\sum_{j=1}^{J}
-q_j
-\left[
-\log(q_j)-\log(p_j)
-\right].
-</annotation></semantics></math></p>
-<p>The full-confidence posterior is therefore</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>q</mi><mo>*</mo></msup><mo>=</mo><mrow><mi mathvariant="normal">arg</mi><mo>⁡</mo></mrow><munder><mi mathvariant="normal">min</mi><mi>q</mi></munder><msub><mi>D</mi><mrow><mi mathvariant="normal">K</mi><mi mathvariant="normal">L</mi></mrow></msub><mo stretchy="false" form="prefix">(</mo><mi>q</mi><mo stretchy="false" form="postfix">‖</mo><mi>p</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">
-q^*
-=
-\arg\min_q
-D_{\mathrm{KL}}(q\Vert p)
-</annotation></semantics></math></p>
-<p>subject to the constraints implied by the views.</p>
-<p>In words:</p>
-<blockquote>
-<p><strong>Satisfy the views while introducing the smallest possible distortion relative to the prior probabilities.</strong></p>
-</blockquote>
-<p>For a detailed explanation of the method, see <a href="articles/how-does-EP-work.html">How does Entropy Pooling work?</a>.</p>
-</div>
-<div class="section level2">
-<h2 id="confidence-in-the-views">Confidence in the views<a class="anchor" aria-label="anchor" href="#confidence-in-the-views"></a>
-</h2>
-<p>The posterior returned by Entropy Pooling represents <strong>full confidence</strong> in the imposed views.</p>
-<p>A user may instead want to retain part of the original prior model.</p>
-<p>If</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>c</mi><mo>∈</mo><mo stretchy="false" form="prefix">[</mo><mn>0</mn><mo>,</mo><mn>1</mn><mo stretchy="false" form="postfix">]</mo></mrow><annotation encoding="application/x-tex">
-c\in[0,1]
-</annotation></semantics></math></p>
-<p>denotes confidence in the views, the confidence-weighted probabilities can be written as</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>p</mi><mi>c</mi></msub><mo>=</mo><mo stretchy="false" form="prefix">(</mo><mn>1</mn><mo>−</mo><mi>c</mi><mo stretchy="false" form="postfix">)</mo><mi>p</mi><mo>+</mo><mi>c</mi><msup><mi>q</mi><mo>*</mo></msup><mi>.</mi></mrow><annotation encoding="application/x-tex">
-p_c
-=
-(1-c)p+cq^*.
-</annotation></semantics></math></p>
-<p>When</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>c</mi><mo>=</mo><mn>0</mn><mo>,</mo></mrow><annotation encoding="application/x-tex">
-c=0,
-</annotation></semantics></math></p>
-<p>the prior is recovered:</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>p</mi><mi>c</mi></msub><mo>=</mo><mi>p</mi><mi>.</mi></mrow><annotation encoding="application/x-tex">
-p_c=p.
-</annotation></semantics></math></p>
-<p>When</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>c</mi><mo>=</mo><mn>1</mn><mo>,</mo></mrow><annotation encoding="application/x-tex">
-c=1,
-</annotation></semantics></math></p>
-<p>the full-confidence posterior is recovered:</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>p</mi><mi>c</mi></msub><mo>=</mo><msup><mi>q</mi><mo>*</mo></msup><mi>.</mi></mrow><annotation encoding="application/x-tex">
-p_c=q^*.
-</annotation></semantics></math></p>
-<p>This separates two conceptually different questions:</p>
-<ol style="list-style-type: decimal">
-<li><strong>What do I believe?</strong></li>
-<li><strong>How strongly do I believe it?</strong></li>
-</ol>
-<p>The first question determines the view. The second determines the confidence assigned to that view.</p>
-</div>
-<div class="section level2">
-<h2 id="inspecting-the-posterior">Inspecting the posterior<a class="anchor" aria-label="anchor" href="#inspecting-the-posterior"></a>
-</h2>
-<p>Posterior probabilities should not be treated as a black box.</p>
-<p><code>ffp</code> provides tools for checking how the update affected the scenario distribution.</p>
-<div class="section level3">
-<h3 id="moments">Moments<a class="anchor" aria-label="anchor" href="#moments"></a>
-</h3>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">stats</span>, variable <span class="op">=</span> <span class="st">"equity"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; &lt;summary_ffp_stats&gt;</span></span>
+<span><span class="co">#&gt; Variable: "equity"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; # A tibble: 6 × 4</span></span>
+<span><span class="co">#&gt;   statistic             prior posterior    change</span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;                 &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1 mean                0.00738    0.0100  0.00262 </span></span>
+<span><span class="co">#&gt; 2 sd                  0.0389     0.0390  0.000110</span></span>
+<span><span class="co">#&gt; 3 skewness            0.0861     0.0818 -0.00430 </span></span>
+<span><span class="co">#&gt; 4 kurtosis            2.95       2.94   -0.0145  </span></span>
+<span><span class="co">#&gt; 5 quantile           -0.0830    -0.0803  0.00269 </span></span>
+<span><span class="co">#&gt; 6 expected_shortfall -0.0924    -0.0904  0.00201</span></span></code></pre></div>
+<p>Tail risk can be inspected using the usual loss convention:</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="reference/ffp_moments.html">ffp_moments</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">posterior</span><span class="op">)</span></span></code></pre></div>
-<p>This is useful for verifying that mean, volatility, covariance, or correlation views moved in the intended direction.</p>
+<code class="sourceCode R"><span><span class="fu"><a href="reference/ffp_risk.html">ffp_risk</a></span><span class="op">(</span><span class="va">fit</span>, confidence <span class="op">=</span> <span class="fl">0.99</span><span class="op">)</span></span>
+<span><span class="co">#&gt; &lt;ffp_risk&gt;</span></span>
+<span><span class="co">#&gt; Prior -&gt; posterior tail risk at 99.0% confidence</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; # A tibble: 3 × 5</span></span>
+<span><span class="co">#&gt;   variable  value_at_risk_prior expected_shortfall_prior value_at_risk_posterior</span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;                   &lt;dbl&gt;                    &lt;dbl&gt;                   &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1 equity                0.0803                   0.0924                  0.0803 </span></span>
+<span><span class="co">#&gt; 2 bonds                 0.0233                   0.0277                  0.0245 </span></span>
+<span><span class="co">#&gt; 3 inflation            -0.00978                 -0.00801                -0.00978</span></span>
+<span><span class="co">#&gt; # ℹ 1 more variable: expected_shortfall_posterior &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Prior ENS: 500.0</span></span>
+<span><span class="co">#&gt; Posterior ENS: 498.9</span></span>
+<span><span class="co">#&gt; ENS retained: 99.8%</span></span></code></pre></div>
+<p>The same posterior probabilities can therefore be used to study changes in location, dispersion, shape, tail risk, and the effective number of scenarios.</p>
 </div>
-<div class="section level3">
-<h3 id="relative-entropy">Relative entropy<a class="anchor" aria-label="anchor" href="#relative-entropy"></a>
-</h3>
+<div class="section level2">
+<h2 id="priors-and-views">Priors and views<a class="anchor" aria-label="anchor" href="#priors-and-views"></a>
+</h2>
+<p>A uniform prior is only the simplest starting point.</p>
+<p><code>ffp</code> can construct priors from time decay (<code><a href="reference/prior_exp_decay.html">prior_exp_decay()</a></code>), rolling windows (<code><a href="reference/prior_rolling_window.html">prior_rolling_window()</a></code>), market conditioning (<code><a href="reference/prior_crisp.html">prior_crisp()</a></code>), custom probabilities (<code><a href="reference/prior_custom.html">prior_custom()</a></code>), or combinations of different prior specifications (<code><a href="reference/prior_product.html">prior_product()</a></code>).</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="reference/relative_entropy.html">relative_entropy</a></span><span class="op">(</span><span class="va">prior</span>, <span class="va">posterior</span><span class="op">)</span></span></code></pre></div>
-<p>This measures how far the posterior probabilities moved from the prior.</p>
-</div>
-<div class="section level3">
-<h3 id="effective-number-of-scenarios">Effective number of scenarios<a class="anchor" aria-label="anchor" href="#effective-number-of-scenarios"></a>
-</h3>
+<code class="sourceCode R"><span><span class="fu"><a href="reference/prior_exp_decay.html">prior_exp_decay</a></span><span class="op">(</span>half_life <span class="op">=</span> <span class="fl">60</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/prior_kernel.html">prior_kernel</a></span><span class="op">(</span><span class="va">inflation</span>, target <span class="op">=</span> <span class="fl">0.03</span>, bandwidth <span class="op">=</span> <span class="fl">0.005</span><span class="op">)</span></span></code></pre></div>
+<p>Views can describe different features of the posterior distribution.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="reference/ens.html">ens</a></span><span class="op">(</span><span class="va">posterior</span><span class="op">)</span></span></code></pre></div>
-<p>The Effective Number of Scenarios helps identify whether the posterior has concentrated too much probability on a small subset of observations.</p>
+<code class="sourceCode R"><span><span class="fu"><a href="reference/view_mean.html">view_mean</a></span><span class="op">(</span><span class="va">equity</span>, target <span class="op">=</span> <span class="fl">0.01</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/view_probability.html">view_probability</a></span><span class="op">(</span><span class="va">inflation</span> <span class="op">&gt;</span> <span class="fl">0.04</span>, target <span class="op">=</span> <span class="fl">0.20</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/view_quantile.html">view_quantile</a></span><span class="op">(</span><span class="va">equity</span>, target <span class="op">=</span> <span class="op">-</span><span class="fl">0.08</span>, level <span class="op">=</span> <span class="fl">0.05</span><span class="op">)</span></span></code></pre></div>
+<p>Several views can be attached to the same model and processed jointly.</p>
 </div>
-<div class="section level3">
-<h3 id="distributional-statistics">Distributional statistics<a class="anchor" aria-label="anchor" href="#distributional-statistics"></a>
-</h3>
+<div class="section level2">
+<h2 id="partial-confidence">Partial confidence<a class="anchor" aria-label="anchor" href="#partial-confidence"></a>
+</h2>
+<p><code><a href="reference/ffp_fit.html">ffp_fit()</a></code> computes the full-confidence Entropy Pooling posterior.</p>
+<p>When a view should influence the distribution without being imposed with full confidence, the prior and full-confidence posterior can subsequently be combined through opinion pooling.</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="reference/empirical_stats.html">empirical_stats</a></span><span class="op">(</span></span>
-<span>  x <span class="op">=</span> <span class="va">x</span>,</span>
-<span>  p <span class="op">=</span> <span class="va">posterior</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-<p>This can be used to inspect changes in moments and tail-risk measures under the new probability distribution.</p>
-<p>A useful checklist is:</p>
-<table class="table">
-<colgroup>
-<col width="69%">
-<col width="30%">
-</colgroup>
-<thead><tr>
-<th align="left">Question</th>
-<th align="left">Function</th>
-</tr></thead>
-<tbody>
-<tr>
-<td align="left">Did the moments move as intended?</td>
-<td align="left"><code><a href="reference/ffp_moments.html">ffp_moments()</a></code></td>
-</tr>
-<tr>
-<td align="left">How far did the posterior move from the prior?</td>
-<td align="left"><code><a href="reference/relative_entropy.html">relative_entropy()</a></code></td>
-</tr>
-<tr>
-<td align="left">Did probability become too concentrated?</td>
-<td align="left"><code><a href="reference/ens.html">ens()</a></code></td>
-</tr>
-<tr>
-<td align="left">What happened to the empirical risk distribution?</td>
-<td align="left"><code><a href="reference/empirical_stats.html">empirical_stats()</a></code></td>
-</tr>
-<tr>
-<td align="left">What do the probabilities look like?</td>
-<td align="left"><code>autoplot()</code></td>
-</tr>
-</tbody>
-</table>
-</div>
+<code class="sourceCode R"><span><span class="va">pooled</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/ffp_opinion_pooling.html">ffp_opinion_pooling</a></span><span class="op">(</span><span class="va">fit</span>, confidence <span class="op">=</span> <span class="fl">0.75</span><span class="op">)</span></span>
+<span><span class="va">pooled</span></span>
+<span><span class="co">#&gt; &lt;ffp_opinion_pool&gt;</span></span>
+<span><span class="co">#&gt; Scenarios:   500</span></span>
+<span><span class="co">#&gt; Confidence:  75%</span></span></code></pre></div>
+<p>View confidence is a modeling choice and is distinct from numerical solver tolerances.</p>
 </div>
 <div class="section level2">
-<h2 id="using-the-posterior">Using the posterior<a class="anchor" aria-label="anchor" href="#using-the-posterior"></a>
+<h2 id="ffp-20">ffp 2.0<a class="anchor" aria-label="anchor" href="#ffp-20"></a>
 </h2>
-<p>Finding the posterior probabilities is usually not the end of the analysis.</p>
-<p>Once the probabilities have been updated, they can be carried into downstream procedures.</p>
-<div class="section level3">
-<h3 id="risk-analysis">Risk analysis<a class="anchor" aria-label="anchor" href="#risk-analysis"></a>
-</h3>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="reference/empirical_stats.html">empirical_stats</a></span><span class="op">(</span></span>
-<span>  x <span class="op">=</span> <span class="va">x</span>,</span>
-<span>  p <span class="op">=</span> <span class="va">posterior</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-<p>The historical scenarios are unchanged, but the statistics are now computed under the posterior probabilities.</p>
-</div>
-<div class="section level3">
-<h3 id="resampling-scenarios">Resampling scenarios<a class="anchor" aria-label="anchor" href="#resampling-scenarios"></a>
-</h3>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">123</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">simulated</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/bootstrap_scenarios.html">bootstrap_scenarios</a></span><span class="op">(</span></span>
-<span>  x <span class="op">=</span> <span class="va">x</span>,</span>
-<span>  p <span class="op">=</span> <span class="va">posterior</span>,</span>
-<span>  n <span class="op">=</span> <span class="fl">10000L</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-<p>This is useful when a downstream procedure expects a conventional scenario sample rather than an explicit probability vector.</p>
-<p>The complete workflow can therefore be summarized as</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><menclose notation="box"><mrow><mtext mathvariant="normal">historical or simulated scenarios</mtext><mo>→</mo><mtext mathvariant="normal">flexible probabilities</mtext><mo>→</mo><mtext mathvariant="normal">conditioning or views</mtext><mo>→</mo><mtext mathvariant="normal">posterior</mtext><mo>→</mo><mtext mathvariant="normal">risk and portfolio analysis</mtext></mrow></menclose><mi>.</mi></mrow><annotation encoding="application/x-tex">
-\boxed{
-\text{historical or simulated scenarios}
-\rightarrow
-\text{flexible probabilities}
-\rightarrow
-\text{conditioning or views}
-\rightarrow
-\text{posterior}
-\rightarrow
-\text{risk and portfolio analysis}
-}.
-</annotation></semantics></math></p>
-</div>
-</div>
-<div class="section level2">
-<h2 id="learn-ffp">Learn <code>ffp</code>
-<a class="anchor" aria-label="anchor" href="#learn-ffp"></a>
-</h2>
-<p>The documentation is organized around two complementary tutorials.</p>
-<div class="section level3">
-<h3 id="understand-entropy-pooling">Understand Entropy Pooling<a class="anchor" aria-label="anchor" href="#understand-entropy-pooling"></a>
-</h3>
-<p>If you want to understand the intuition, notation, and mathematical structure behind the method, start with:</p>
-<p><strong><a href="articles/how-does-EP-work.html">How does Entropy Pooling work?</a></strong></p>
-<p>This vignette explains:</p>
-<ul>
-<li>prior and posterior probabilities;</li>
-<li>how views become constraints;</li>
-<li>relative entropy;</li>
-<li>the dual optimization problem;</li>
-<li>confidence in the views.</li>
-</ul>
-</div>
-<div class="section level3">
-<h3 id="use-entropy-pooling-in-practice">Use Entropy Pooling in practice<a class="anchor" aria-label="anchor" href="#use-entropy-pooling-in-practice"></a>
-</h3>
-<p>If you want to learn how the package works in R, continue with:</p>
-<p><strong><a href="articles/views.html">Entropy Pooling in practice</a></strong></p>
-<p>This vignette covers:</p>
-<ul>
-<li>the basic <code>ffp</code> workflow;</li>
-<li>all <code>view_on_*()</code> constructors;</li>
-<li>
-<code><a href="reference/bind_views.html">bind_views()</a></code>;</li>
-<li>solver selection;</li>
-<li>diagnostics;</li>
-<li>confidence;</li>
-<li>advanced distributional views;</li>
-<li>using the posterior in downstream analysis.</li>
-</ul>
-</div>
-<div class="section level3">
-<h3 id="function-reference">Function reference<a class="anchor" aria-label="anchor" href="#function-reference"></a>
-</h3>
-<p>For individual functions and arguments, see the:</p>
-<p><strong><a href="reference/index.html">Function reference</a></strong></p>
-<p>A useful path for a new user is therefore:</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><menclose notation="box"><mrow><mtext mathvariant="normal">Quick Start</mtext><mo>→</mo><mtext mathvariant="normal">How does EP work?</mtext><mo>→</mo><mtext mathvariant="normal">EP in practice</mtext><mo>→</mo><mtext mathvariant="normal">Reference</mtext></mrow></menclose><mi>.</mi></mrow><annotation encoding="application/x-tex">
-\boxed{
-\text{Quick Start}
-\rightarrow
-\text{How does EP work?}
-\rightarrow
-\text{EP in practice}
-\rightarrow
-\text{Reference}
-}.
-</annotation></semantics></math></p>
-</div>
-</div>
-<div class="section level2">
-<h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
-</h2>
-<p>The package builds primarily on the Fully Flexible Probabilities and Fully Flexible Views frameworks developed by Attilio Meucci.</p>
-<p>Meucci, A. (2008). <em>Fully Flexible Views: Theory and Practice</em>. Risk, 21(10), 97–102.</p>
-<p>Meucci, A. (2010). <em>Historical Scenarios with Fully Flexible Probabilities</em>. GARP Risk Professional, 47–51.</p>
+<p><code>ffp</code> 2.0 introduces a higher-level, model-first interface built around <code><a href="reference/ffp_model.html">ffp_model()</a></code>, <code><a href="reference/ffp_prior.html">ffp_prior()</a></code>, <code><a href="reference/ffp_view.html">ffp_view()</a></code>, and <code><a href="reference/ffp_fit.html">ffp_fit()</a></code>.</p>
+<p>Lower-level probability, view, and Entropy Pooling functions remain available, but the model workflow is the recommended starting point for new analyses.</p>
 </div>
 </div>
 

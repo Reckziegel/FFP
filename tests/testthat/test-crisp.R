@@ -461,7 +461,7 @@ test_that("crisp remains compatible with bind_probs", {
   )
 
   bound <- bind_probs(
-    result
+    crisp = result
   )
 
   expect_s3_class(
@@ -470,17 +470,12 @@ test_that("crisp remains compatible with bind_probs", {
   )
 
   expect_equal(
-    bound$probs,
+    bound$probability,
     as.double(result)
   )
 
-  expect_true(
-    all(
-      grepl(
-        "crisp",
-        as.character(bound$fn),
-        fixed = TRUE
-      )
-    )
+  expect_identical(
+    unique(bound$distribution),
+    "crisp"
   )
 })

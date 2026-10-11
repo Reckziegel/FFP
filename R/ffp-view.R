@@ -2187,6 +2187,7 @@ first_class <- function(x) {
 
 
 view_constraint_count <- function(x) {
+
   if (x$method %in% c("quantile", "median")) {
     return(2L * length(x$target))
   }
@@ -2196,8 +2197,24 @@ view_constraint_count <- function(x) {
   }
 
   if (x$method %in% c("covariance", "correlation")) {
-    k <- feature_count(x$features)
-    return(as.integer(k * (k + 1L) / 2L))
+    n_features <- feature_count(x$features)
+    return(as.integer(n_features * (n_features + 1L) / 2L))
+  }
+
+  if (identical(x$method, "marginal_distribution")) {
+    return(as.integer(feature_count(x$features) * x$parameters$order))
+  }
+
+  if (identical(x$method, "marginal_distribution")) {
+    return(as.integer(feature_count(x$features) * x$parameters$order))
+  }
+
+  if (identical(x$method, "joint_distribution")) {
+    return(joint_moment_constraint_count(n_features = feature_count(x$features), order = x$parameters$order))
+  }
+
+  if (identical(x$method, "copula")) {
+    return(joint_moment_constraint_count(n_features = feature_count(x$features), order = x$parameters$order))
   }
 
   length(x$target)
@@ -3426,5 +3443,571 @@ validate_covariance_compatibility <- function(target, features, call = rlang::ca
   invisible(target)
 }
 
+# Marginal-distribution view ----------------------------------------------
+
+#' Marginal distribution view
+#'
+#' Creates a full-information view that approximates target marginal
+#' distributions by matching raw moments.
+#'
+#' `x` defines the scenario features whose posterior marginal distributions are
+#' to be adjusted. `target` contains an empirical sample from the desired
+#' marginal distributions. Target observations are treated as equally likely.
+#'
+#' The target sample does not need to contain the same number of observations as
+#' the model scenarios. It must, however, contain exactly one target variable for
+#' each feature in `x`.
+#'
+#' The argument `order` determines the highest raw moment imposed. With the
+#' default `order = 2L`, the view matches
+#'
+#' \deqn{
+#'   E[X_k]
+#' }
+#'
+#' and
+#'
+#' \deqn{
+#'   E[X_k^2].
+#' }
+#'
+#' Setting `order = 3L` or `order = 4L` additionally matches the corresponding
+#' third or fourth raw moments. Higher orders therefore impose progressively
+#' more information on the posterior distribution.
+#'
+#' If both `x` and `target` have variable names, the names and their order must
+#' match exactly. The package never silently reorders target variables.
+#'
+#' @param x <[`data-masking`][rlang::args_data_masking]> A numeric scenario
+#'   feature or expression. It may resolve to a vector or a rectangular panel
+#'   with one row per model scenario.
+#' @param target A numeric empirical sample representing the desired marginal
+#'   distributions. It may contain a different number of observations from
+#'   `x`, but must contain exactly one variable per feature in `x`.
+#' @param order A single integer giving the highest raw moment to match.
+#'   Supported values are `2L`, `3L`, and `4L`. Defaults to `2L`.
+#'
+#' @return An object of class `ffp_view_marginal_distribution_spec` and
+#'   `ffp_view_spec`.
+#'
+#' @references
+#' Meucci, A. (2008). Fully Flexible Views: Theory and Practice.
+#'
+#' @seealso [ffp_view()], [view_mean()], [view_variance()],
+#'   [view_joint_distribution()]
+#'
+#' @export
+#'
+#' @examples
+#' target <- data.frame(
+#'   equity = c(-0.06, -0.02, 0.01, 0.04, 0.08)
+#' )
+#'
+#' view_marginal_distribution(
+#'   x = equity,
+#'   target = target,
+#'   order = 2L
+#' )
+view_marginal_distribution <- function(x, target, order = 2L) {
+
+  call <- rlang::caller_env()
+
+  if (missing(target)) {
+    ffp_abort(
+      c(
+        "{.fn view_marginal_distribution} requires {.arg target}.",
+        "i" = "Supply an empirical sample representing the desired marginal distribution."
+      ),
+      class = "ffp_error_invalid_view",
+      call = call
+    )
+  }
+
+  x <- rlang::enquo(x)
+
+  validate_view_x_spec(x = x, constructor = "view_marginal_distribution", call = call)
+
+  order <- validate_distribution_view_order(order = order, call = call)
+
+  new_view_spec(
+    method = "marginal_distribution",
+    x = x,
+    target = target,
+    parameters = list(order = order),
+    class = "ffp_view_marginal_distribution_spec"
+  )
+}
 
 
+#' @exportS3Method
+#' @noRd
+bind_view.ffp_view_marginal_distribution_spec <- function(view, model, call = rlang::caller_env()) {
+
+  features <- resolve_view_features(expression = view$x, model = model, arg = "x", call = call)
+
+  validate_distribution_view_features(features = features, constructor = "view_marginal_distribution", arg = "x", call = call)
+
+  target <- as_distribution_target_features(target = view$target, call = call)
+
+  validate_distribution_view_features(features = target,constructor = "view_marginal_distribution", arg = "target", call = call)
+  validate_distribution_target_compatibility(features = features, target = target, call = call)
+
+  new_bound_view(
+    method = "marginal_distribution",
+    features = features,
+    target = target,
+    parameters = list(order = view$parameters$order),
+    metadata = list(expression = compact_view_label(view$x)),
+    class = "ffp_view_marginal_distribution"
+  )
+}
+
+
+as_distribution_target_features <- function(target, call = rlang::caller_env()) {
+
+  n_observations <- NROW(target)
+
+  if (n_observations == 0L) {
+    ffp_abort(
+      c(
+        "{.arg target} must contain at least one observation.",
+        "i" = "Each row represents one draw from the target distribution."
+      ),
+      class = c(
+        "ffp_error_invalid_view_target",
+        "ffp_error_invalid_view"
+      ),
+      call = call
+    )
+  }
+
+  as_scenario_features(x = target, n_scenarios = n_observations, arg = "target", call = call)
+}
+
+
+validate_distribution_view_order <- function(order, call = rlang::caller_env()) {
+
+  valid <- is.numeric(order) && is.null(dim(order)) && length(order) == 1L && !is.na(order) && is.finite(order) && order == as.integer(order) && order %in% 2:4
+
+  if (!valid) {
+    ffp_abort(
+      c(
+        "{.arg order} must be one of {.val 2}, {.val 3}, or {.val 4}.",
+        "i" = "The default {.code order = 2L} matches the first two raw moments."
+      ),
+      class = c(
+        "ffp_error_invalid_view_order",
+        "ffp_error_invalid_view"
+      ),
+      call = call
+    )
+  }
+
+  as.integer(order)
+}
+
+
+validate_distribution_view_features <- function(features, constructor, arg, call = rlang::caller_env()) {
+
+  values <- features$values
+
+  numeric_features <- if (inherits(values, "data.frame")) {
+    vapply(values, is.numeric, logical(1))
+  } else {
+    is.numeric(values)
+  }
+
+  if (!all(numeric_features)) {
+    ffp_abort(
+      c(
+        paste0("{.fn ", constructor, "} requires numeric distributions."),
+        "x" = paste0("At least one variable in {.arg ", arg, "} is not numeric.")
+      ),
+      class = c(
+        "ffp_error_invalid_view_features",
+        "ffp_error_invalid_view"
+      ),
+      call = call
+    )
+  }
+
+  if (anyNA(values)) {
+    ffp_abort(
+      c(
+        paste0("{.arg ", arg, "} must not contain missing values."),
+        "x" = "Found at least one {.val NA} or {.val NaN} value."
+      ),
+      class = c(
+        "ffp_error_invalid_view_features",
+        "ffp_error_invalid_view"
+      ),
+      call = call
+    )
+  }
+
+  if (has_non_finite_feature_values(values)) {
+    ffp_abort(
+      c(
+        paste0("{.arg ", arg, "} must contain only finite values."),
+        "x" = "Found at least one {.val Inf} or {.val -Inf} value."
+      ),
+      class = c(
+        "ffp_error_invalid_view_features",
+        "ffp_error_invalid_view"
+      ),
+      call = call
+    )
+  }
+
+  invisible(features)
+}
+
+
+validate_distribution_target_compatibility <- function(features, target, call = rlang::caller_env()) {
+
+  n_features        <- feature_count(features)
+  n_target_features <- feature_count(target)
+
+  if (n_target_features != n_features) {
+    ffp_abort(
+      c(
+        "{.arg target} is incompatible with the view features.",
+        "x" = paste0("{.arg x} contains ", n_features, " feature(s), but {.arg target} contains ", n_target_features, "."),
+        "i" = "Supply exactly one target distribution per feature in {.arg x}."
+      ),
+      class = c(
+        "ffp_error_incompatible_view",
+        "ffp_error_invalid_view"
+      ),
+      call = call
+    )
+  }
+
+  feature_names <- features$names
+  target_names  <- target$names
+
+  if (!is.null(feature_names) && !is.null(target_names) && !identical(feature_names, target_names)) {
+    ffp_abort(
+      c(
+        "Variable names in {.arg target} must match {.arg x} exactly.",
+        "x" = "The target variables have different names or a different order.",
+        "i" = "The package never reorders distribution targets automatically."
+      ),
+      class = c(
+        "ffp_error_incompatible_view",
+        "ffp_error_invalid_view"
+      ),
+      call = call
+    )
+  }
+
+  invisible(target)
+}
+
+# Joint-distribution view -------------------------------------------------
+
+#' Joint distribution view
+#'
+#' Creates a full-information view that approximates a target joint
+#' distribution by matching raw cross-moments.
+#'
+#' `x` must resolve to at least two numeric scenario features. `target`
+#' contains an empirical sample from the desired joint distribution, with one
+#' target variable for every feature in `x`. Rows of `target` are interpreted
+#' as joint draws and are treated as equally likely.
+#'
+#' The target sample does not need to contain the same number of observations
+#' as the model scenarios. It must, however, contain exactly the same number of
+#' variables as `x`.
+#'
+#' The argument `order` determines the highest total degree of the raw
+#' cross-moments imposed. With the default `order = 2L`, the view matches all
+#' first moments and all unique second raw moments. For two variables
+#' \eqn{X_1} and \eqn{X_2}, these constraints are
+#'
+#' \deqn{
+#'   E[X_1],\quad
+#'   E[X_2],\quad
+#'   E[X_1^2],\quad
+#'   E[X_1 X_2],\quad
+#'   E[X_2^2].
+#' }
+#'
+#' Setting `order = 3L` or `order = 4L` additionally matches all unique raw
+#' cross-moments of total degree three or four. Higher orders therefore impose
+#' substantially more information on the posterior distribution and may also
+#' make the Entropy Pooling problem more demanding numerically.
+#'
+#' If both `x` and `target` have variable names, the names and their order must
+#' match exactly. The package never silently reorders target variables.
+#'
+#' @param x <[`data-masking`][rlang::args_data_masking]> A numeric scenario
+#'   panel or expression resolving to at least two features, with one row per
+#'   model scenario.
+#' @param target A numeric empirical sample representing the desired joint
+#'   distribution. Rows represent joint draws. The sample may contain a
+#'   different number of observations from `x`, but must contain exactly one
+#'   variable per feature in `x`.
+#' @param order A single integer giving the highest total degree of the raw
+#'   cross-moments to match. Supported values are `2L`, `3L`, and `4L`.
+#'   Defaults to `2L`.
+#'
+#' @return An object of class `ffp_view_joint_distribution_spec` and
+#'   `ffp_view_spec`.
+#'
+#' @references
+#' Meucci, A. (2008). Fully Flexible Views: Theory and Practice.
+#'
+#' @seealso [ffp_view()], [view_marginal_distribution()],
+#'   [view_covariance()], [view_correlation()]
+#'
+#' @export
+#'
+#' @examples
+#' target <- data.frame(
+#'   equity = c(-0.08, -0.02, 0.03, 0.09),
+#'   bonds = c(-0.03, 0.00, 0.02, 0.04)
+#' )
+#'
+#' view_joint_distribution(
+#'   x = cbind(equity, bonds),
+#'   target = target,
+#'   order = 2L
+#' )
+view_joint_distribution <- function(x, target, order = 2L) {
+
+  call <- rlang::caller_env()
+
+  if (missing(target)) {
+    ffp_abort(
+      c(
+        "{.fn view_joint_distribution} requires {.arg target}.",
+        "i" = "Supply an empirical sample representing the desired joint distribution."
+      ),
+      class = "ffp_error_invalid_view",
+      call = call
+    )
+  }
+
+  x <- rlang::enquo(x)
+
+  validate_view_x_spec(x = x, constructor = "view_joint_distribution", call = call)
+
+  order <- validate_distribution_view_order(order = order, call = call)
+
+  new_view_spec(
+    method = "joint_distribution",
+    x = x,
+    target = target,
+    parameters = list(order = order),
+    class = "ffp_view_joint_distribution_spec"
+  )
+}
+
+
+#' @exportS3Method
+#' @noRd
+bind_view.ffp_view_joint_distribution_spec <- function(view, model, call = rlang::caller_env()) {
+
+  features <- resolve_view_features(expression = view$x, model = model, arg = "x", call = call)
+  validate_distribution_view_features(features = features, constructor = "view_joint_distribution", arg = "x", call = call)
+  validate_joint_distribution_dimension(features = features, arg = "x", call = call)
+
+  target <- as_distribution_target_features(target = view$target, call = call)
+  validate_distribution_view_features(features = target, constructor = "view_joint_distribution", arg = "target", call = call)
+  validate_joint_distribution_dimension(features = target,arg = "target", call = call)
+  validate_distribution_target_compatibility(features = features,target = target, call = call)
+
+  new_bound_view(
+    method = "joint_distribution",
+    features = features,
+    target = target,
+    parameters = list(order = view$parameters$order),
+    metadata = list(expression = compact_view_label(view$x)),
+    class = "ffp_view_joint_distribution"
+  )
+}
+
+
+validate_joint_distribution_dimension <- function(features, arg, call = rlang::caller_env()) {
+
+  n_features <- feature_count(features)
+
+  if (n_features < 2L) {
+    ffp_abort(
+      c(
+        "{.fn view_joint_distribution} requires at least two variables.",
+        "x" = paste0("{.arg ", arg, "} contains ", n_features, " variable."),
+        "i" = "Use {.fn view_marginal_distribution} for a univariate distribution."
+      ),
+      class = c("ffp_error_invalid_view_features", "ffp_error_invalid_view"),
+      call = call
+    )
+  }
+
+  invisible(features)
+}
+
+# Copula view -------------------------------------------------------------
+
+#' Copula view
+#'
+#' Creates a full-information view on the dependence structure represented by
+#' a target copula.
+#'
+#' `x` must resolve to at least two numeric copula features. Both `x` and
+#' `target` must contain values in `[0, 1]`, with each row representing one
+#' joint copula observation.
+#'
+#' The target sample does not need to contain the same number of observations
+#' as the model scenarios. It must contain exactly one target variable for each
+#' feature in `x`.
+#'
+#' Copula marginals are uniform on `[0, 1]`. The marginal raw moments are
+#' therefore determined theoretically, while mixed cross-moments are obtained
+#' from the empirical target copula.
+#'
+#' The argument `order` determines the highest total degree of the moments used
+#' to describe the dependence structure. Supported values are `2L`, `3L`, and
+#' `4L`.
+#'
+#' If both `x` and `target` have variable names, names and order must match
+#' exactly. The package never silently reorders target variables.
+#'
+#' @param x <[`data-masking`][rlang::args_data_masking]> A numeric copula panel
+#'   or expression resolving to at least two features, with one row per model
+#'   scenario and values in `[0, 1]`.
+#' @param target A numeric empirical sample from the desired target copula.
+#'   Rows represent joint draws and values must lie in `[0, 1]`.
+#' @param order A single integer giving the highest total degree of the moments
+#'   used to represent the copula. Supported values are `2L`, `3L`, and `4L`.
+#'   Defaults to `2L`.
+#'
+#' @return An object of class `ffp_view_copula_spec` and `ffp_view_spec`.
+#'
+#' @references
+#' Meucci, A. (2008). Fully Flexible Views: Theory and Practice.
+#'
+#' @seealso [ffp_view()], [view_joint_distribution()]
+#'
+#' @export
+#'
+#' @examples
+#' target <- data.frame(equity = c(0.10, 0.35, 0.70, 0.90), bonds = c(0.20, 0.55, 0.45, 0.80))
+#'
+#' view_copula(
+#'   x = cbind(equity, bonds),
+#'   target = target,
+#'   order = 2L
+#' )
+view_copula <- function(x, target, order = 2L) {
+
+  call <- rlang::caller_env()
+
+  if (missing(target)) {
+    ffp_abort(
+      c(
+        "{.fn view_copula} requires {.arg target}.",
+        "i" = "Supply an empirical sample representing the desired target copula."
+      ),
+      class = "ffp_error_invalid_view",
+      call = call
+    )
+  }
+
+  x <- rlang::enquo(x)
+
+  validate_view_x_spec(x = x, constructor = "view_copula", call = call)
+  order <- validate_distribution_view_order(order = order, call = call)
+
+  new_view_spec(
+    method = "copula",
+    x = x,
+    target = target,
+    parameters = list(order = order),
+    class = "ffp_view_copula_spec"
+  )
+}
+
+
+#' @exportS3Method
+#' @noRd
+bind_view.ffp_view_copula_spec <- function(view, model, call = rlang::caller_env()) {
+
+  features <- resolve_view_features(expression = view$x, model = model, arg = "x", call = call)
+
+  validate_copula_features(features = features, arg = "x", call = call)
+  validate_copula_dimension(features = features, arg = "x", call = call)
+
+  target <- as_distribution_target_features(target = view$target, call = call)
+
+  validate_copula_features(features = target, arg = "target", call = call)
+  validate_copula_dimension(features = target, arg = "target", call = call)
+
+  validate_distribution_target_compatibility(features = features, target = target, call = call)
+
+  new_bound_view(
+    method = "copula",
+    features = features,
+    target = target,
+    parameters = list(order = view$parameters$order),
+    metadata = list(expression = compact_view_label(view$x)),
+    class = "ffp_view_copula"
+  )
+}
+
+
+validate_copula_features <- function(features, arg, call = rlang::caller_env()) {
+
+  validate_distribution_view_features(
+    features = features,
+    constructor = "view_copula",
+    arg = arg,
+    call = call
+  )
+
+  values <- features$values
+
+  outside_unit_interval <- if (inherits(values, "data.frame")) {
+    any(vapply(values, function(column) any(column < 0 | column > 1), logical(1)))
+  } else {
+    any(values < 0 | values > 1)
+  }
+
+  if (outside_unit_interval) {
+    ffp_abort(
+      c(
+        paste0("{.arg ", arg, "} must contain copula values in [0, 1]."),
+        "x" = "Found at least one value outside the unit interval.",
+        "i" = "Supply copula observations or pseudo-observations rather than raw scenario values."
+      ),
+      class = c(
+        "ffp_error_invalid_view_features",
+        "ffp_error_invalid_view"
+      ),
+      call = call
+    )
+  }
+
+  invisible(features)
+}
+
+
+validate_copula_dimension <- function(features, arg, call = rlang::caller_env()) {
+
+  n_features <- feature_count(features)
+
+  if (n_features < 2L) {
+    ffp_abort(
+      c(
+        "{.fn view_copula} requires at least two variables.",
+        "x" = paste0("{.arg ", arg, "} contains ", n_features, " variable."),
+        "i" = "A copula describes dependence between two or more variables."
+      ),
+      class = c("ffp_error_invalid_view_features", "ffp_error_invalid_view"),
+      call = call
+    )
+  }
+
+  invisible(features)
+}

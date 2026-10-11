@@ -733,6 +733,371 @@ compile_view.ffp_view_variance <- function(view, prior, call = rlang::caller_env
   )
 }
 
+# Marginal distribution ---------------------------------------------------
+
+#' @exportS3Method
+#' @noRd
+compile_view.ffp_view_marginal_distribution <- function(view, prior, call = rlang::caller_env()) {
+
+  n_scenarios <- feature_observation_count(view$features)
+  n_features  <- feature_count(view$features)
+  order       <- view$parameters$order
+
+  feature_values <- feature_set_matrix(view$features)
+  target_values  <- feature_set_matrix(view$target)
+
+  a_eq <- marginal_raw_moment_matrix(feature_values = feature_values, order = order)
+  b_eq <- marginal_raw_moment_targets(target_values = target_values, order = order)
+
+  if (any(!is.finite(a_eq)) || any(!is.finite(b_eq))) {
+    ffp_abort(
+      c(
+        "Marginal-distribution moments must be finite.",
+        "x" = paste0("At least one raw moment through order ", order, " overflowed or became non-finite."),
+        "i" = "Check the scale of {.arg x} and {.arg target}, or use a lower moment order."
+      ),
+      class = c(
+        "ffp_error_invalid_view_moments",
+        "ffp_error_invalid_view"
+      ),
+      call = call
+    )
+  }
+
+  feature_labels      <- view_feature_labels(view)
+  constraint_features <- rep(feature_labels, times = order)
+  degrees             <- rep(seq_len(order), each = n_features)
+
+  moment_labels <- ifelse(degrees == 1L, constraint_features, paste0(constraint_features, "^", degrees))
+
+  metadata <- new_constraint_metadata(
+    type = "equality",
+    method = "marginal_distribution",
+    feature_1 = constraint_features,
+    label = paste0("E[", moment_labels, "] = ", format_constraint_value(b_eq))
+  )
+
+  new_ffp_constraints(n_scenarios = n_scenarios, a_eq = a_eq, b_eq = b_eq, metadata = metadata)
+}
+
+# Covariance --------------------------------------------------------------
+
+#' @exportS3Method
+#' @noRd
+compile_view.ffp_view_covariance <- function(view, prior, call = rlang::caller_env()) {
+  n_scenarios <- feature_observation_count(view$features)
+  n_features <- feature_count(view$features)
+
+  validate_reference_prior(prior = prior, n_scenarios = n_scenarios, call = call)
+
+  feature_values <- bound_feature_matrix(view)
+
+  reference_means <- reference_feature_means(feature_values = feature_values, prior = prior, call = call)
+  pairs   <- matrix_constraint_pairs(n_features)
+  a_eq    <- second_moment_constraint_matrix(feature_values = feature_values, pairs = pairs)
+  targets <- matrix_target_entries(target = view$target, pairs = pairs)
+
+  row_indices <- pairs[, "row"]
+  col_indices <- pairs[, "col"]
+
+  b_eq <- reference_means[row_indices] * reference_means[col_indices] + targets
+
+  feature_labels <- view_feature_labels(view)
+
+  first_labels  <- feature_labels[row_indices]
+  second_labels <- feature_labels[col_indices]
+
+  metadata <- new_constraint_metadata(
+    type = "equality",
+    method = "covariance",
+    feature_1 = first_labels,
+    feature_2 = second_labels,
+    label = paste0("Cov[", first_labels, ", ", second_labels, "] = ", format_constraint_value(targets))
+  )
+
+  new_ffp_constraints(
+    n_scenarios = n_scenarios,
+    a_eq = a_eq,
+    b_eq = b_eq,
+    metadata = metadata
+  )
+}
+
+
+# Correlation -------------------------------------------------------------
+
+#' @exportS3Method
+#' @noRd
+compile_view.ffp_view_correlation <- function(view, prior, call = rlang::caller_env()) {
+  n_scenarios <- feature_observation_count(view$features)
+  n_features  <- feature_count(view$features)
+
+  validate_reference_prior(prior = prior, n_scenarios = n_scenarios, call = call)
+
+  feature_values <- bound_feature_matrix(view)
+
+  reference_means <- reference_feature_means(feature_values = feature_values, prior = prior, call = call)
+  reference_sds   <- reference_feature_sds(feature_values = feature_values, prior = prior, call = call)
+
+  undefined <- !is.finite(reference_sds) | reference_sds <= 0
+
+  if (any(undefined)) {
+    feature_labels <- view_feature_labels(view)
+
+    ffp_abort(
+      c(
+        "Correlation is undefined under the current prior.",
+        "x" = paste0(
+          "Feature(s) with zero reference dispersion: ",
+          paste(feature_labels[undefined], collapse = ", "),
+          "."
+        ),
+        "i" = paste0(
+          "Revise the current prior or use features with positive ",
+          "prior dispersion."
+        )
+      ),
+      class = c("ffp_error_undefined_correlation", "ffp_error_incompatible_view"),
+      call = call
+    )
+  }
+
+  pairs <- matrix_constraint_pairs(n_features)
+
+  a_eq <- second_moment_constraint_matrix(feature_values = feature_values, pairs = pairs)
+  targets <- matrix_target_entries(target = view$target, pairs = pairs)
+
+  row_indices <- pairs[, "row"]
+  col_indices <- pairs[, "col"]
+
+  b_eq <- reference_means[row_indices] * reference_means[col_indices] + reference_sds[row_indices] * reference_sds[col_indices] * targets
+
+  feature_labels <- view_feature_labels(view)
+
+  first_labels  <- feature_labels[row_indices]
+  second_labels <- feature_labels[col_indices]
+
+  metadata <- new_constraint_metadata(
+    type = "equality",
+    method = "correlation",
+    feature_1 = first_labels,
+    feature_2 = second_labels,
+    label = paste0("Cor[", first_labels, ", ", second_labels, "] = ", format_constraint_value(targets))
+  )
+
+  new_ffp_constraints(
+    n_scenarios = n_scenarios,
+    a_eq = a_eq,
+    b_eq = b_eq,
+    metadata = metadata
+  )
+}
+
+
+# Volatility --------------------------------------------------------------
+
+#' @exportS3Method
+#' @noRd
+compile_view.ffp_view_volatility <- function(view, prior, call = rlang::caller_env()) {
+  n_scenarios <- feature_observation_count(view$features)
+  n_features <- feature_count(view$features)
+
+  validate_reference_prior(prior = prior, n_scenarios = n_scenarios, call = call)
+
+  feature_values <- vapply(
+    seq_len(n_features),
+    function(i) {
+      feature_column(view$features, i = i)
+    },
+    numeric(n_scenarios)
+  )
+
+  reference_means <- vapply(
+    seq_len(n_features),
+    function(i) {
+      reference_mean(x = feature_values[, i], prior = prior, call = call)
+    },
+    numeric(1)
+  )
+
+  a_eq <- t(feature_values^2)
+  storage.mode(a_eq) <- "double"
+  dimnames(a_eq) <- NULL
+
+  targets <- unname(as.numeric(view$target))
+
+  b_eq <- reference_means^2 + targets^2
+
+  feature_labels <- view_feature_labels(view)
+  target_labels  <- format_constraint_value(targets)
+
+  metadata <- new_constraint_metadata(
+    type = "equality",
+    method = "volatility",
+    feature_1 = feature_labels,
+    label = paste0("Volatility[", feature_labels, "] target = ", target_labels)
+  )
+
+  new_ffp_constraints(
+    n_scenarios = n_scenarios,
+    a_eq = a_eq,
+    b_eq = b_eq,
+    metadata = metadata
+  )
+}
+
+# Joint distribution ------------------------------------------------------
+
+#' @exportS3Method
+#' @noRd
+compile_view.ffp_view_joint_distribution <- function(view, prior, call = rlang::caller_env()) {
+
+  n_scenarios <- feature_observation_count(view$features)
+  n_features  <- feature_count(view$features)
+  order       <- view$parameters$order
+
+  feature_values <- feature_set_matrix(view$features)
+  target_values  <- feature_set_matrix(view$target)
+
+  indices <- lapply(
+    seq_len(order),
+    function(degree) {
+      moment_multi_indices(n_features = n_features, degree = degree)
+    }
+  )
+
+  constraint_blocks <- lapply(
+    indices,
+    function(index) {
+      moment_constraint_matrix(feature_values = feature_values, indices = index)
+    }
+  )
+
+  target_blocks <- lapply(
+    indices,
+    function(index) {
+      moment_target_values(target_values = target_values, indices = index)
+    }
+  )
+
+  a_eq <- do.call(rbind, constraint_blocks)
+  b_eq <- unname(unlist(target_blocks, use.names = FALSE))
+
+  if (any(!is.finite(a_eq)) || any(!is.finite(b_eq))) {
+    ffp_abort(
+      c(
+        "Joint-distribution moments must be finite.",
+        "x" = paste0("At least one raw cross-moment through order ", order, " overflowed or became non-finite."),
+        "i" = "Check the scale of {.arg x} and {.arg target}, or use a lower moment order."
+      ),
+      class = c("ffp_error_invalid_view_moments", "ffp_error_invalid_view"),
+      call = call
+    )
+  }
+
+  feature_labels <- view_feature_labels(view)
+
+  moment_labels <- unlist(
+    Map(
+      function(index) {
+        moment_expression_labels(indices = index, feature_labels = feature_labels)
+      },
+      indices
+    ),
+    use.names = FALSE
+  )
+
+  metadata <- new_constraint_metadata(
+    type = "equality",
+    method = "joint_distribution",
+    feature_1 = moment_labels,
+    label = paste0("E[", moment_labels, "] = ", format_constraint_value(b_eq))
+  )
+
+  new_ffp_constraints(
+    n_scenarios = n_scenarios,
+    a_eq = a_eq,
+    b_eq = b_eq,
+    metadata = metadata
+  )
+}
+
+# Copula ------------------------------------------------------------------
+
+#' @exportS3Method
+#' @noRd
+compile_view.ffp_view_copula <- function(view, prior, call = rlang::caller_env()) {
+
+  n_scenarios <- feature_observation_count(view$features)
+  n_features  <- feature_count(view$features)
+  order       <- view$parameters$order
+
+  feature_values <- feature_set_matrix(view$features)
+  target_values  <- feature_set_matrix(view$target)
+
+  indices <- lapply(
+    seq_len(order),
+    function(degree) {
+      moment_multi_indices(n_features = n_features, degree = degree)
+    }
+  )
+
+  constraint_blocks <- lapply(
+    indices,
+    function(index) {
+      moment_constraint_matrix(feature_values = feature_values, indices = index)
+    }
+  )
+
+  target_blocks <- lapply(
+    indices,
+    function(index) {
+      copula_moment_targets(target_values = target_values, indices = index)
+    }
+  )
+
+  a_eq <- do.call(rbind, constraint_blocks)
+  b_eq <- unname(unlist(target_blocks, use.names = FALSE))
+
+  if (any(!is.finite(a_eq)) || any(!is.finite(b_eq))) {
+    ffp_abort(
+      c(
+        "Copula moments must be finite.",
+        "x" = paste0("At least one copula moment through order ", order, " became non-finite."),
+        "i" = "Check {.arg x} and {.arg target}, or use a lower moment order."
+      ),
+      class = c("ffp_error_invalid_view_moments", "ffp_error_invalid_view"),
+      call = call
+    )
+  }
+
+  feature_labels <- view_feature_labels(view)
+
+  moment_labels <- unlist(
+    lapply(
+      indices,
+      function(index) {
+        moment_expression_labels(indices = index, feature_labels = feature_labels)
+      }
+    ),
+    use.names = FALSE
+  )
+
+  metadata <- new_constraint_metadata(
+    type = "equality",
+    method = "copula",
+    feature_1 = moment_labels,
+    label = paste0("E[", moment_labels, "] = ", format_constraint_value(b_eq))
+  )
+
+  new_ffp_constraints(
+    n_scenarios = n_scenarios,
+    a_eq = a_eq,
+    b_eq = b_eq,
+    metadata = metadata
+  )
+}
+
 # Fallback methods --------------------------------------------------------
 
 #' @exportS3Method
@@ -1031,169 +1396,151 @@ matrix_target_entries <- function(target, pairs) {
   unname(target[cbind(pairs[, "row"], pairs[, "col"])])
 }
 
+feature_set_matrix <- function(features) {
 
-# Covariance --------------------------------------------------------------
+  n_observations <- feature_observation_count(features)
+  n_features <- feature_count(features)
 
-#' @exportS3Method
-#' @noRd
-compile_view.ffp_view_covariance <- function(view, prior, call = rlang::caller_env()) {
-  n_scenarios <- feature_observation_count(view$features)
-  n_features <- feature_count(view$features)
-
-  validate_reference_prior(prior = prior, n_scenarios = n_scenarios, call = call)
-
-  feature_values <- bound_feature_matrix(view)
-
-  reference_means <- reference_feature_means(feature_values = feature_values, prior = prior, call = call)
-  pairs   <- matrix_constraint_pairs(n_features)
-  a_eq    <- second_moment_constraint_matrix(feature_values = feature_values, pairs = pairs)
-  targets <- matrix_target_entries(target = view$target, pairs = pairs)
-
-  row_indices <- pairs[, "row"]
-  col_indices <- pairs[, "col"]
-
-  b_eq <- reference_means[row_indices] * reference_means[col_indices] + targets
-
-  feature_labels <- view_feature_labels(view)
-
-  first_labels  <- feature_labels[row_indices]
-  second_labels <- feature_labels[col_indices]
-
-  metadata <- new_constraint_metadata(
-    type = "equality",
-    method = "covariance",
-    feature_1 = first_labels,
-    feature_2 = second_labels,
-    label = paste0("Cov[", first_labels, ", ", second_labels, "] = ", format_constraint_value(targets))
-  )
-
-  new_ffp_constraints(
-    n_scenarios = n_scenarios,
-    a_eq = a_eq,
-    b_eq = b_eq,
-    metadata = metadata
-  )
-}
-
-
-# Correlation -------------------------------------------------------------
-
-#' @exportS3Method
-#' @noRd
-compile_view.ffp_view_correlation <- function(view, prior, call = rlang::caller_env()) {
-  n_scenarios <- feature_observation_count(view$features)
-  n_features  <- feature_count(view$features)
-
-  validate_reference_prior(prior = prior, n_scenarios = n_scenarios, call = call)
-
-  feature_values <- bound_feature_matrix(view)
-
-  reference_means <- reference_feature_means(feature_values = feature_values, prior = prior, call = call)
-  reference_sds   <- reference_feature_sds(feature_values = feature_values, prior = prior, call = call)
-
-  undefined <- !is.finite(reference_sds) | reference_sds <= 0
-
-  if (any(undefined)) {
-    feature_labels <- view_feature_labels(view)
-
-    ffp_abort(
-      c(
-        "Correlation is undefined under the current prior.",
-        "x" = paste0(
-          "Feature(s) with zero reference dispersion: ",
-          paste(feature_labels[undefined], collapse = ", "),
-          "."
-        ),
-        "i" = paste0(
-          "Revise the current prior or use features with positive ",
-          "prior dispersion."
-        )
-      ),
-      class = c("ffp_error_undefined_correlation", "ffp_error_incompatible_view"),
-      call = call
-    )
-  }
-
-  pairs <- matrix_constraint_pairs(n_features)
-
-  a_eq <- second_moment_constraint_matrix(feature_values = feature_values, pairs = pairs)
-  targets <- matrix_target_entries(target = view$target, pairs = pairs)
-
-  row_indices <- pairs[, "row"]
-  col_indices <- pairs[, "col"]
-
-  b_eq <- reference_means[row_indices] * reference_means[col_indices] + reference_sds[row_indices] * reference_sds[col_indices] * targets
-
-  feature_labels <- view_feature_labels(view)
-
-  first_labels  <- feature_labels[row_indices]
-  second_labels <- feature_labels[col_indices]
-
-  metadata <- new_constraint_metadata(
-    type = "equality",
-    method = "correlation",
-    feature_1 = first_labels,
-    feature_2 = second_labels,
-    label = paste0("Cor[", first_labels, ", ", second_labels, "] = ", format_constraint_value(targets))
-  )
-
-  new_ffp_constraints(
-    n_scenarios = n_scenarios,
-    a_eq = a_eq,
-    b_eq = b_eq,
-    metadata = metadata
-  )
-}
-
-
-# Volatility --------------------------------------------------------------
-
-#' @exportS3Method
-#' @noRd
-compile_view.ffp_view_volatility <- function(view, prior, call = rlang::caller_env()) {
-  n_scenarios <- feature_observation_count(view$features)
-  n_features <- feature_count(view$features)
-
-  validate_reference_prior(prior = prior, n_scenarios = n_scenarios, call = call)
-
-  feature_values <- vapply(
+  values <- vapply(
     seq_len(n_features),
     function(i) {
-      feature_column(view$features, i = i)
+      feature_column(features, i = i)
+    },
+    numeric(n_observations)
+  )
+
+  storage.mode(values) <- "double"
+  dimnames(values) <- NULL
+
+  values
+}
+
+
+marginal_raw_moment_matrix <- function(feature_values, order) {
+
+  moments <- lapply(seq_len(order), function(degree) t(feature_values^degree))
+  out <- do.call(rbind, moments)
+
+  storage.mode(out) <- "double"
+  dimnames(out) <- NULL
+
+  out
+}
+
+
+marginal_raw_moment_targets <- function(target_values, order) {
+  targets <- lapply(seq_len(order), function(degree) colMeans(target_values^degree))
+  unname(unlist(targets, use.names = FALSE))
+}
+
+moment_multi_indices <- function(n_features, degree) {
+
+  build_indices <- function(prefix, start, remaining) {
+
+    if (remaining == 0L) {
+      return(matrix(prefix, nrow = 1L))
+    }
+
+    blocks <- lapply(
+      seq.int(start, n_features),
+      function(index) {
+        build_indices(prefix = c(prefix, index), start = index, remaining = remaining - 1L)
+      }
+    )
+    do.call(rbind, blocks)
+  }
+
+  indices <- build_indices(prefix = integer(), start = 1L, remaining = degree)
+  storage.mode(indices) <- "integer"
+  colnames(indices) <- paste0("index_", seq_len(degree))
+  indices
+}
+
+
+moment_constraint_matrix <- function(feature_values, indices) {
+
+  n_scenarios <- nrow(feature_values)
+
+  constraints <- vapply(
+    seq_len(nrow(indices)),
+    function(i) {
+      values <- rep(1, n_scenarios)
+      for (index in indices[i, ]) {
+        values <- values * feature_values[, index]
+      }
+      values
     },
     numeric(n_scenarios)
   )
 
-  reference_means <- vapply(
-    seq_len(n_features),
+  constraints <- t(constraints)
+  storage.mode(constraints) <- "double"
+  dimnames(constraints) <- NULL
+  constraints
+}
+
+
+moment_target_values <- function(target_values, indices) {
+
+  moments <- moment_constraint_matrix(feature_values = target_values, indices = indices)
+  unname(rowMeans(moments))
+}
+
+
+moment_expression_labels <- function(indices, feature_labels) {
+
+  vapply(
+    seq_len(nrow(indices)),
     function(i) {
-      reference_mean(x = feature_values[, i], prior = prior, call = call)
+      counts <- tabulate(indices[i, ], nbins = length(feature_labels))
+      active <- which(counts > 0L)
+      terms  <- vapply(
+        active,
+        function(j) {
+          if (counts[[j]] == 1L) {
+            feature_labels[[j]]
+          } else {
+            paste0(feature_labels[[j]], "^", counts[[j]])
+          }
+        },
+        character(1)
+      )
+      paste(terms, collapse = " * ")
+    },
+    character(1)
+  )
+}
+
+
+joint_moment_constraint_count <- function(n_features, order) {
+  counts <- vapply(
+    seq_len(order),
+    function(degree) {
+      choose(n_features + degree - 1L, degree)
     },
     numeric(1)
   )
+  as.integer(sum(counts))
+}
 
-  a_eq <- t(feature_values^2)
-  storage.mode(a_eq) <- "double"
-  dimnames(a_eq) <- NULL
-
-  targets <- unname(as.numeric(view$target))
-
-  b_eq <- reference_means^2 + targets^2
-
-  feature_labels <- view_feature_labels(view)
-  target_labels  <- format_constraint_value(targets)
-
-  metadata <- new_constraint_metadata(
-    type = "equality",
-    method = "volatility",
-    feature_1 = feature_labels,
-    label = paste0("Volatility[", feature_labels, "] target = ", target_labels)
-  )
-
-  new_ffp_constraints(
-    n_scenarios = n_scenarios,
-    a_eq = a_eq,
-    b_eq = b_eq,
-    metadata = metadata
+pure_moment_indices <- function(indices) {
+  apply(
+    indices,
+    1L,
+    function(index) {
+      length(unique(index)) == 1L
+    }
   )
 }
+
+
+copula_moment_targets <- function(target_values, indices) {
+  targets <- moment_target_values(target_values = target_values,indices = indices)
+  pure    <- pure_moment_indices(indices)
+  degree  <- ncol(indices)
+
+  targets[pure] <- 1 / (degree + 1)
+  targets
+}
+
+

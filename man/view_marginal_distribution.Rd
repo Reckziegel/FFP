@@ -23,7 +23,7 @@ An object of class \code{ffp_view_marginal_distribution_spec} and
 \code{ffp_view_spec}.
 }
 \description{
-Creates a full-information view that approximates target marginal
+Creates a moment-based distribution view that approximates target marginal
 distributions by matching raw moments.
 }
 \details{

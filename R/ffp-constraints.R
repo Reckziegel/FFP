@@ -502,8 +502,9 @@ compile_view.ffp_view_mean <- function(view, prior, call = rlang::caller_env()) 
 #' @exportS3Method
 #' @noRd
 compile_view.ffp_view_probability <- function(view, prior, call = rlang::caller_env()) {
+
   n_scenarios <- feature_observation_count(view$features)
-  n_features <- feature_count(view$features)
+  n_features  <- feature_count(view$features)
 
   events <- vapply(
     seq_len(n_features),
@@ -558,6 +559,8 @@ compile_view.ffp_view_probability <- function(view, prior, call = rlang::caller_
       call = call
     )
   }
+
+  validate_conditional_probability_support(features = view$features, given = given_features, target = view$target, prior = prior, call = call)
 
   a_eq <- vapply(
     seq_len(n_features),
@@ -1404,20 +1407,22 @@ reference_feature_sds <- function(feature_values, prior, call = rlang::caller_en
 
 
 second_moment_constraint_matrix <- function(feature_values, pairs) {
-  n_scenarios <- nrow(feature_values)
+
+  n_scenarios   <- nrow(feature_values)
+  n_constraints <- nrow(pairs)
 
   constraints <- vapply(
-    seq_len(nrow(pairs)),
+    seq_len(n_constraints),
     function(i) {
       feature_values[, pairs[i, "row"]] * feature_values[, pairs[i, "col"]]
     },
     numeric(n_scenarios)
   )
-
+  constraints <- matrix(constraints, nrow = n_scenarios, ncol = n_constraints)
   constraints <- t(constraints)
 
   storage.mode(constraints) <- "double"
-  dimnames(constraints) <- NULL
+  dimnames(constraints)     <- NULL
 
   constraints
 }
@@ -1430,7 +1435,7 @@ matrix_target_entries <- function(target, pairs) {
 feature_set_matrix <- function(features) {
 
   n_observations <- feature_observation_count(features)
-  n_features <- feature_count(features)
+  n_features     <- feature_count(features)
 
   values <- vapply(
     seq_len(n_features),
@@ -1439,6 +1444,9 @@ feature_set_matrix <- function(features) {
     },
     numeric(n_observations)
   )
+
+  # enforce matrix even if the number of scenarios is small (1L)
+  values <- matrix(values, nrow = n_observations, ncol = n_features)
 
   storage.mode(values) <- "double"
   dimnames(values) <- NULL
@@ -1490,10 +1498,11 @@ moment_multi_indices <- function(n_features, degree) {
 
 moment_constraint_matrix <- function(feature_values, indices) {
 
-  n_scenarios <- nrow(feature_values)
+  n_scenarios   <- nrow(feature_values)
+  n_constraints <- nrow(indices)
 
   constraints <- vapply(
-    seq_len(nrow(indices)),
+    seq_len(n_constraints),
     function(i) {
       values <- rep(1, n_scenarios)
       for (index in indices[i, ]) {
@@ -1504,9 +1513,12 @@ moment_constraint_matrix <- function(feature_values, indices) {
     numeric(n_scenarios)
   )
 
+  constraints <- matrix(constraints, nrow = n_scenarios, ncol = n_constraints)
   constraints <- t(constraints)
+
   storage.mode(constraints) <- "double"
   dimnames(constraints) <- NULL
+
   constraints
 }
 

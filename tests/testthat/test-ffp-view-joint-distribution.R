@@ -172,11 +172,9 @@ test_that("joint target may have a different number of observations", {
 test_that("joint distribution requires at least two features", {
   model <- make_joint_distribution_test_model()
 
-  target <- c(
-    -0.10,
-    -0.02,
-    0.03,
-    0.09
+  target <- data.frame(
+    equity = c(-0.10, -0.02, 0.03, 0.09),
+    bonds = c(-0.03, 0.00, 0.02, 0.04)
   )
 
   expect_error(
@@ -236,7 +234,6 @@ test_that("joint target names and order must match x", {
 
 
 test_that("joint targets must contain finite numeric values", {
-  model <- make_joint_distribution_test_model()
 
   missing_target <- data.frame(
     equity = c(-0.10, NA_real_, 0.03),
@@ -254,36 +251,27 @@ test_that("joint targets must contain finite numeric values", {
   )
 
   expect_error(
-    model |>
-      ffp_view(
-        view_joint_distribution(
-          cbind(equity, bonds),
-          target = missing_target
-        )
-      ),
-    class = "ffp_error_invalid_view_features"
+    view_joint_distribution(
+      x = cbind(equity, bonds),
+      target = missing_target
+    ),
+    class = "ffp_error_invalid_view_target"
   )
 
   expect_error(
-    model |>
-      ffp_view(
-        view_joint_distribution(
-          cbind(equity, bonds),
-          target = infinite_target
-        )
-      ),
-    class = "ffp_error_invalid_view_features"
+    view_joint_distribution(
+      x = cbind(equity, bonds),
+      target = infinite_target
+    ),
+    class = "ffp_error_invalid_view_target"
   )
 
   expect_error(
-    model |>
-      ffp_view(
-        view_joint_distribution(
-          cbind(equity, bonds),
-          target = character_target
-        )
-      ),
-    class = "ffp_error_invalid_view_features"
+    view_joint_distribution(
+      x = cbind(equity, bonds),
+      target = character_target
+    ),
+    class = "ffp_error_invalid_view_target"
   )
 })
 
@@ -598,5 +586,259 @@ test_that("ffp_fit reproduces joint target moments", {
     posterior_moments,
     target_moments,
     tolerance = 1e-8
+  )
+})
+
+test_that("joint target supports a single observation", {
+  model <- make_joint_distribution_test_model()
+
+  target <- data.frame(
+    equity = 0.02,
+    bonds = 0.01
+  )
+
+  model <- model |>
+    ffp_view(
+      view_joint_distribution(
+        x = cbind(equity, bonds),
+        target = target
+      )
+    )
+
+  constraints <- compile_views(model)
+
+  expect_equal(
+    constraints$b_eq,
+    c(
+      0.02,
+      0.01,
+      0.02^2,
+      0.02 * 0.01,
+      0.01^2
+    )
+  )
+})
+
+test_that("distribution views ignore a unique temporal index column", {
+  model <- make_joint_distribution_test_model()
+
+  external_x <- data.frame(
+    observation_date = as.Date("2026-01-01") + 0:4,
+    equity = model$scenarios$equity,
+    bonds = model$scenarios$bonds
+  )
+
+  target <- data.frame(
+    simulation_date = as.Date("2030-01-01") + 0:2,
+    equity = c(-0.05, 0.01, 0.08),
+    bonds = c(-0.02, 0.01, 0.03)
+  )
+
+  bound_model <- model |>
+    ffp_view(
+      view_joint_distribution(
+        x = external_x,
+        target = target
+      )
+    )
+
+  view <- bound_model$views[[1]]
+
+  expect_identical(
+    view$features$names,
+    c("equity", "bonds")
+  )
+
+  expect_identical(
+    view$target$names,
+    c("equity", "bonds")
+  )
+
+  expect_equal(
+    view$features$values,
+    external_x[c("equity", "bonds")]
+  )
+
+  expect_equal(
+    view$target$values,
+    target[c("equity", "bonds")]
+  )
+})
+
+test_that("distribution targets reject ambiguous temporal indices", {
+  target <- data.frame(
+    observation_date = as.Date("2026-01-01") + 0:2,
+    settlement_time = as.POSIXct(
+      "2026-01-01 09:00:00",
+      tz = "UTC"
+    ) + 0:2,
+    equity = c(-0.05, 0.01, 0.08),
+    bonds = c(-0.02, 0.01, 0.03)
+  )
+
+  expect_error(
+    view_joint_distribution(
+      x = cbind(equity, bonds),
+      target = target
+    ),
+    class = "ffp_error_invalid_view_target"
+  )
+})
+
+test_that("a temporal-only target is invalid", {
+  target <- data.frame(
+    date = as.Date("2026-01-01") + 0:2
+  )
+
+  expect_error(
+    view_marginal_distribution(
+      x = equity,
+      target = target
+    ),
+    class = "ffp_error_invalid_view_target"
+  )
+})
+
+test_that("distribution targets support common rectangular time-series classes", {
+  model <- make_joint_distribution_test_model()
+
+  values <- cbind(
+    equity = c(-0.05, 0.01, 0.08),
+    bonds = c(-0.02, 0.01, 0.03)
+  )
+
+  matrix_target <- values
+
+  mts_target <- stats::ts(values)
+
+  matrix_model <- model |>
+    ffp_view(
+      view_joint_distribution(
+        x = cbind(equity, bonds),
+        target = matrix_target
+      )
+    )
+
+  mts_model <- model |>
+    ffp_view(
+      view_joint_distribution(
+        x = cbind(equity, bonds),
+        target = mts_target
+      )
+    )
+
+  expect_equal(
+    feature_set_matrix(matrix_model$views[[1]]$target),
+    unname(values)
+  )
+
+  expect_equal(
+    feature_set_matrix(mts_model$views[[1]]$target),
+    unname(values)
+  )
+})
+
+test_that("distribution targets support xts", {
+  skip_if_not_installed("xts")
+
+  model <- make_joint_distribution_test_model()
+
+  values <- cbind(
+    equity = c(-0.05, 0.01, 0.08),
+    bonds = c(-0.02, 0.01, 0.03)
+  )
+
+  target <- xts::xts(
+    values,
+    order.by = as.Date("2026-01-01") + 0:2
+  )
+
+  bound_model <- model |>
+    ffp_view(
+      view_joint_distribution(
+        x = cbind(equity, bonds),
+        target = target
+      )
+    )
+
+  expect_equal(
+    feature_set_matrix(bound_model$views[[1]]$target),
+    unname(values)
+  )
+})
+
+test_that("joint distribution requires at least two features", {
+  model <- make_joint_distribution_test_model()
+
+  target <- data.frame(
+    equity = c(-0.10, -0.02, 0.03, 0.09),
+    bonds = c(-0.03, 0.00, 0.02, 0.04)
+  )
+
+  expect_error(
+    model |>
+      ffp_view(
+        view_joint_distribution(
+          x = equity,
+          target = target
+        )
+      ),
+    class = "ffp_error_invalid_view_features"
+  )
+})
+
+test_that("joint distribution printing is informative", {
+  target <- data.frame(
+    equity = c(-0.08, -0.02, 0.03, 0.09),
+    bonds = c(-0.03, 0.00, 0.02, 0.04)
+  )
+
+  spec <- view_joint_distribution(
+    x = cbind(equity, bonds),
+    target = target,
+    order = 2L
+  )
+
+  spec_output <- capture.output(
+    print(spec)
+  )
+
+  expect_true(
+    any(grepl("Method:      joint distribution", spec_output, fixed = TRUE))
+  )
+
+  expect_true(
+    any(grepl("Moment order: 2", spec_output, fixed = TRUE))
+  )
+
+  expect_true(
+    any(grepl("Target obs.:  4", spec_output, fixed = TRUE))
+  )
+
+  model <- make_joint_distribution_test_model() |>
+    ffp_view(spec)
+
+  bound_output <- capture.output(
+    print(model$views[[1]])
+  )
+
+  expect_true(
+    any(grepl("<ffp_view_joint_distribution>", bound_output, fixed = TRUE))
+  )
+
+  expect_true(
+    any(grepl("Features:    2", bound_output, fixed = TRUE))
+  )
+
+  expect_true(
+    any(grepl("Constraints: 5", bound_output, fixed = TRUE))
+  )
+
+  expect_true(
+    any(grepl("Moment order: 2", bound_output, fixed = TRUE))
+  )
+
+  expect_true(
+    any(grepl("Target obs.:  4", bound_output, fixed = TRUE))
   )
 })

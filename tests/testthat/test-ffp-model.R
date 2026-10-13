@@ -411,26 +411,6 @@ test_that("ffp_model() preserves xts scenarios and stores their index", {
 
 # Scenario dimensions -----------------------------------------------------
 
-test_that("ffp_model() rejects zero scenarios", {
-  scenarios <- matrix(
-    numeric(),
-    nrow = 0,
-    ncol = 2,
-    dimnames = list(NULL, c("x", "y"))
-  )
-
-  expect_error(
-    ffp_model(scenarios),
-    class = "ffp_error_invalid_scenarios"
-  )
-
-  expect_error(
-    ffp_model(scenarios),
-    "at least one scenario"
-  )
-})
-
-
 test_that("ffp_model() rejects zero variables", {
   scenarios <- matrix(
     numeric(),
@@ -488,6 +468,34 @@ test_that("ffp_model() rejects missing scenario values", {
   )
 })
 
+test_that("ffp_model() requires at least two scenarios", {
+
+  zero_scenarios <- matrix(
+    numeric(),
+    nrow = 0L,
+    ncol = 2L
+  )
+
+  one_scenario <- matrix(
+    c(0.01, 0.02),
+    nrow = 1L
+  )
+
+  expect_error(
+    ffp_model(zero_scenarios),
+    class = "ffp_error_invalid_scenarios"
+  )
+
+  expect_error(
+    ffp_model(one_scenario),
+    class = "ffp_error_invalid_scenarios"
+  )
+
+  expect_error(
+    ffp_model(one_scenario),
+    "at least two scenarios"
+  )
+})
 
 test_that("ffp_model() rejects NaN scenario values", {
   scenarios <- c(1, NaN, 3)

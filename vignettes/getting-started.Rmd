@@ -31,14 +31,15 @@ Portfolio managers and risk analysts are constantly asked to make decisions
 about distributions they cannot observe directly.
 
 What should expected returns look like if the investment outlook changes?
-How much risk should be assigned to a portfolio if volatility increases and
-correlations shrink to near 1? How should a signal affect the distribution 
-of a systematic strategy? How should the portfolio behave under a macroeconomic 
-regime that differs from the historical average?
+How much risk should be assigned to a portfolio if volatility increases? 
+How should a signal affect the distribution of a systematic strategy? 
+How should the portfolio behave under a macroeconomic regime that differs from the historical average?
 
-These questions arise naturally in asset management, trading desks, and other institutions
+<!-- and correlations shrink to near 1 -->
+
+These questions arise naturally in asset management, trading desks and other institutions
 that need to make decisions under uncertainty. In this context, the challenge is to translate
-the arriving information into a probability distribution that remains consistent with 
+the new arriving information into a probability distribution that remains consistent with 
 the investors views.
 
 Entropy Pooling provides a framework for incorporating this information. 
@@ -137,7 +138,7 @@ model
 
 At this stage, the model describes only what can happen. No probability distribution has yet been assigned to those scenarios. This separation is deliberate because scenario construction and probability assignment represent different parts of the modeling problem.
 
-Entropy Pooling will not generate new values for `equity`, `bonds`, or `inflation`. It works exclusively with the information supplied to `ffp_model()`. Consequently, the scenario set must contain the states of the world that are relevant to the analysis. Reweighting can make an existing scenario more or less likely, but it cannot create a scenario that is absent in history.
+Entropy Pooling will not generate new values for `equity`, `bonds`, or `inflation`. It works exclusively with the information supplied to `ffp_model()`. Consequently, the scenario set must contain the states of the world that are relevant to the analysis. Reweighting can make an existing scenario more or less likely, but it cannot create a scenario that is absent in historical records.
 
 ## Choose a prior distribution
 
@@ -159,7 +160,7 @@ $$
 
 <!-- The scenario support and the prior therefore answer two different questions. The support determines which outcomes are available to the distribution, whereas the prior determines how plausible those outcomes are before any new information is incorporated. -->
 
-A uniform distribution is only one possible prior. `ffp` also supports time-decay (`prior_exp_decay()`), rolling-window (`prior_rolling_window()`), conditioning (`prior_crisp()`), custom (`prior_custom()`), and combined prior specifications (`prior_product()`, `prior_mixture_probabilities()`, etc). 
+A uniform distribution is only one possible prior. `ffp` also supports time-decay (`prior_exp_decay()`), rolling-window (`prior_rolling_window()`), conditioning (`prior_crisp()`), custom (`prior_custom()`) and combined prior specifications (`prior_product()`, `prior_mixture_probabilities()`, etc). 
 
 We use uniform probabilities because they provide a transparent baseline from which the effects of the views can be isolated.
 
@@ -477,7 +478,7 @@ In the remainder of the example, we will use the 75%-confidence posterior. This 
 
 ## From posterior probabilities to conditional moments
 
-For asset allocation, a particularly useful representation of the final probability distribution is its expected return vector and covariance matrix. Our scenario matrix also contains `inflation`, which was useful for defining the state of the economy and expressing the second view, but we will assume inflation is not a tradable asset in the portfolio considered here.
+For asset allocation, a particularly useful representation of the final probability distribution is its expected return vector and covariance matrix. Our scenario matrix also contains `inflation`, which was useful for defining the state of the economy and expressing the second view, but we will assume `inflation` is not a tradable asset in the portfolio considered here.
 
 We therefore select only the two asset-return columns before calculating the moments:
 
@@ -562,9 +563,7 @@ For a portfolio containing only equity and bonds, the final optimization inputs 
 moments <- scenarios |>
   dplyr::select(equity, bonds) |>
   ffp_moments(p = pooled$posterior)
-
-moments$mu
-moments$sigma
+moments
 ```
 
 The compact workflow therefore preserves the same conceptual sequence developed throughout the vignette: define the available scenarios, specify how plausible they are initially, express information as distributional views, obtain the minimum-relative-entropy full-confidence posterior, adjust that posterior for view confidence when appropriate, and finally use the resulting distribution for statistical analysis or economic decisions.

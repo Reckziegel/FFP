@@ -22,8 +22,8 @@ Defaults to \code{2L}.}
 An object of class \code{ffp_view_copula_spec} and \code{ffp_view_spec}.
 }
 \description{
-Creates a full-information view on the dependence structure represented by
-a target copula.
+Creates a moment-based distribution view on the dependence structure
+represented by a target copula.
 }
 \details{
 \code{x} must resolve to at least two numeric copula features. Both \code{x} and

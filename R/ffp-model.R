@@ -262,11 +262,11 @@ validate_scenarios <- function(x, call = rlang::caller_env()) {
   n_scenarios <- scenario_count(x)
   n_variables <- scenario_variable_count(x)
 
-  if (n_scenarios == 0L) {
+  if (n_scenarios < 2L) {
     ffp_abort(
       c(
-        "{.arg x} must contain at least one scenario.",
-        "i" = "Each row represents one joint scenario."
+        "{.arg x} must contain at least two scenarios.",
+        "i" = "Entropy Pooling requires more than one scenario to redistribute probability mass."
       ),
       class = "ffp_error_invalid_scenarios",
       call = call

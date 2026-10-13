@@ -44,7 +44,7 @@ automatically.
 scenarios <- data.frame(
   equity = c(-0.08, -0.03, 0.01, 0.04, 0.06),
   inflation = c(0.02, 0.03, 0.035, 0.045, 0.05),
-  recession = c(TRUE, TRUE, FALSE, FALSE, FALSE)
+  recession = c(TRUE, TRUE, TRUE, FALSE, FALSE)
 )
 
 # Marginal event probability

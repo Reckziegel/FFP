@@ -238,39 +238,41 @@ test_that("named marginal targets preserve feature identity and order", {
 
 
 test_that("marginal targets must contain finite numeric values", {
-  model <- make_marginal_distribution_test_model()
 
-  expect_error(
-    model |>
-      ffp_view(
-        view_marginal_distribution(
-          equity,
-          target = c(-0.02, NA_real_, 0.02)
-        )
-      ),
-    class = "ffp_error_invalid_view_features"
+  missing_target <- data.frame(
+    equity = c(-0.05, NA_real_, 0.05)
+  )
+
+  infinite_target <- data.frame(
+    equity = c(-0.05, Inf, 0.05)
+  )
+
+  character_target <- data.frame(
+    equity = c("low", "middle", "high")
   )
 
   expect_error(
-    model |>
-      ffp_view(
-        view_marginal_distribution(
-          equity,
-          target = c(-0.02, Inf, 0.02)
-        )
-      ),
-    class = "ffp_error_invalid_view_features"
+    view_marginal_distribution(
+      x = equity,
+      target = missing_target
+    ),
+    class = "ffp_error_invalid_view_target"
   )
 
   expect_error(
-    model |>
-      ffp_view(
-        view_marginal_distribution(
-          equity,
-          target = c("low", "middle", "high")
-        )
-      ),
-    class = "ffp_error_invalid_view_features"
+    view_marginal_distribution(
+      x = equity,
+      target = infinite_target
+    ),
+    class = "ffp_error_invalid_view_target"
+  )
+
+  expect_error(
+    view_marginal_distribution(
+      x = equity,
+      target = character_target
+    ),
+    class = "ffp_error_invalid_view_target"
   )
 })
 
@@ -607,5 +609,89 @@ test_that("ffp_fit reproduces marginal target moments", {
     posterior_second_moment,
     mean(target^2),
     tolerance = 1e-8
+  )
+})
+
+test_that("marginal target supports a single observation", {
+  model <- make_marginal_distribution_test_model()
+
+  target <- data.frame(
+    equity = 0.02,
+    bonds = 0.01
+  )
+
+  model <- model |>
+    ffp_view(
+      view_marginal_distribution(
+        x = cbind(equity, bonds),
+        target = target
+      )
+    )
+
+  constraints <- compile_views(model)
+
+  expect_equal(
+    constraints$b_eq,
+    c(
+      0.02,
+      0.01,
+      0.02^2,
+      0.01^2
+    )
+  )
+})
+
+test_that("marginal distribution printing is informative", {
+  target <- data.frame(
+    equity = c(-0.06, -0.02, 0.01, 0.04, 0.08)
+  )
+
+  spec <- view_marginal_distribution(
+    x = equity,
+    target = target,
+    order = 3L
+  )
+
+  spec_output <- capture.output(
+    print(spec)
+  )
+
+  expect_true(
+    any(grepl("Method:      marginal distribution", spec_output, fixed = TRUE))
+  )
+
+  expect_true(
+    any(grepl("Moment order: 3", spec_output, fixed = TRUE))
+  )
+
+  expect_true(
+    any(grepl("Target obs.:  5", spec_output, fixed = TRUE))
+  )
+
+  model <- make_marginal_distribution_test_model() |>
+    ffp_view(spec)
+
+  bound_output <- capture.output(
+    print(model$views[[1]])
+  )
+
+  expect_true(
+    any(grepl("<ffp_view_marginal_distribution>", bound_output, fixed = TRUE))
+  )
+
+  expect_true(
+    any(grepl("Features:    1", bound_output, fixed = TRUE))
+  )
+
+  expect_true(
+    any(grepl("Constraints: 3", bound_output, fixed = TRUE))
+  )
+
+  expect_true(
+    any(grepl("Moment order: 3", bound_output, fixed = TRUE))
+  )
+
+  expect_true(
+    any(grepl("Target obs.:  5", bound_output, fixed = TRUE))
   )
 })

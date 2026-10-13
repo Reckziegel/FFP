@@ -5,7 +5,7 @@ date: "`r Sys.Date()`"
 output:
   rmarkdown::html_vignette:
     toc: true
-    toc_depth: 2
+    toc_depth: 1
 vignette: >
   %\VignetteIndexEntry{Working with Views}
   %\VignetteEngine{knitr::rmarkdown}
@@ -78,7 +78,7 @@ meaningful statements into rows of \(A_{\mathrm{eq}}\),
 \(b_{\mathrm{eq}}\), \(A_{\mathrm{ineq}}\), and
 \(b_{\mathrm{ineq}}\).
 
-Most users do not need to construct these matrices directly. The view
+Most users do not need to construct these matrices directly. The `view_*`
 interface exists precisely so that the analysis can be expressed in terms of
 means, probabilities, quantiles, rankings, dispersion, and dependence rather
 than low-level constraint matrices.
@@ -274,7 +274,7 @@ does not want to commit to exact expected-return target.
 
 Many economic opinions are naturally expressed as probabilities rather than
 moments. Suppose we believe that inflation above 4% should occur with posterior
-probability 10%.
+probability 10%:
 
 ```{r probability-view}
 view_probability(inflation > 0.04, target = 0.10)
@@ -371,6 +371,14 @@ The conditioning event must have positive probability under the current prior.
 If the prior assigns zero probability to every scenario in `given`, the
 conditional probability is undefined and the view cannot be attached.
 
+Positive conditioning probability is necessary, but it is not always
+sufficient. For a target strictly between zero and one, the current prior
+support inside the conditioning event must contain scenarios in which the
+target event occurs and scenarios in which it does not occur. Otherwise, the
+linear equality could only be satisfied by assigning zero posterior
+probability to the conditioning event itself, which would make the original
+conditional probability undefined.
+
 ## Views on quantiles and medians
 
 ### Quantile views
@@ -379,7 +387,7 @@ Quantiles require more care because flexible distributions are discrete. The
 scenario support is fixed, and `ffp` does not interpolate between scenario
 values to create sample quantiles.
 
-Suppose we want \(-6\%\) to be a posterior 5% quantile of equity returns.
+Suppose we want -6% to be a posterior 5% quantile of equity returns:
 
 ```{r quantile-view}
 view_quantile(equity, target = -0.06, level = 0.05)
@@ -438,8 +446,8 @@ This is an important example of the distinction between a **semantic view**
 and a **mathematical constraint**. The user expresses one quantile view, but
 the compiler needs two inequalities to represent it.
 
-The formulation also handles probability mass located exactly at the target
-naturally. No interpolation rule from `stats::quantile()` is involved.
+The formulation also handles probability mass located exactly at the target. 
+No interpolation rule from `stats::quantile()` is involved.
 
 A scalar `level` can be shared across multiple features:
 
@@ -465,7 +473,7 @@ view_quantile(
 ### Median views
 
 `view_median()` is the median-specific counterpart to `view_quantile()`. It
-uses exactly the same discrete-distribution logic with \(u=0.5\).
+uses exactly the same discrete-distribution logic with \(u=0.5\):
 
 ```{r median-view}
 view_median(equity, target = 0.005)
@@ -484,7 +492,7 @@ and
 $$
 P_p(X > m)
 \leq
-0.5.
+0.5
 $$
 
 A median view therefore also generates two inequalities per target. The
@@ -504,7 +512,7 @@ is nonlinear in the probability vector because the posterior mean itself
 depends on \(p\).
 
 The Fully Flexible Views formulation keeps the Entropy Pooling constraints
-linear by anchoring the second-moment representation to a **reference mean**
+linear by anchoring the second-moment representation to a reference mean
 computed under the model prior.
 
 Let:
@@ -540,7 +548,7 @@ p_t X_t^2
 (\sigma^\star)^2
 $$
 
-The target is supplied directly in standard-deviation units.
+The target is supplied directly in standard-deviation units:
 
 ```{r volatility-view}
 equity_sd <- stats::sd(scenarios$equity)
@@ -624,13 +632,13 @@ For \(K\) features, the user supplies a complete \(K\times K\) target covariance
 matrix:
 
 ```{r covariance-target}
-#shrinkage 
+# shrink covariance matrix
 sigma <- stats::cov(returns)
 delta <- 0.2 # shrinkage intensity
 target_cov <- (1 - delta) * sigma + delta * diag(diag(sigma))
 ```
 
-The view is then written as
+The view is then written as:
 
 ```{r covariance-view}
 view_covariance(returns, target = target_cov)
@@ -701,8 +709,7 @@ view_correlation(returns, target = target_cor)
 ```
 
 The target must be a valid correlation matrix: it must be symmetric, positive
-semidefinite, have unit diagonal, and contain entries between \(-1\) and
-\(1\).
+semidefinite, have unit diagonal, and contain entries between -1 and 1.
 
 A correlation view requires positive reference dispersion for every feature
 under the prior. Correlation is undefined when a variable has zero prior
@@ -727,8 +734,8 @@ covariances and correlations would generally become nonlinear if all posterior
 moments inside their usual definitions were allowed to move simultaneously.
 
 The Fully Flexible Views formulation avoids this problem by expressing these
-views through second moments while keeping selected reference moments fixed
-under the prior. The resulting constraints remain linear and can therefore be
+views through second moments while keeping selected reference moments *fixed
+under the prior*. The resulting constraints remain linear and can therefore be
 combined with the other views in the same Entropy Pooling problem.
 
 This also means that a user should distinguish between a conventional
@@ -736,6 +743,269 @@ statistical identity computed entirely under posterior probabilities and the
 linear view representation used to obtain those probabilities. Functions such
 as `ffp_moments()` can later be used to calculate the actual probability-weighted
 posterior moments implied by the fitted distribution.
+
+## Views on distributions
+
+The views introduced so far target specific properties of the posterior
+distribution: a mean, a probability, a quantile, a variance or a dependence
+measure. Sometimes, however, the analyst has a richer description of the
+distribution they would like the posterior to resemble.
+
+`ffp` supports this through **moment-based distribution views**. Instead of
+requiring the posterior to reproduce every observation of a target sample,
+these views summarize that sample through moments and impose the corresponding
+moment conditions on the posterior scenario probabilities.
+
+The target sample does not become part of the model scenario support. The
+scenarios remain fixed; the target observations are only used to determine the
+right-hand side of the Entropy Pooling constraints. For this reason, the
+target may contain a different number of observations from the model scenarios.
+
+To illustrate the distinction between marginal, joint, and copula views, we
+construct a target distribution from the high-inflation region of our simulated
+sample:
+
+```{r distribution-target}
+high_inflation_threshold <- stats::quantile(scenarios$inflation, 0.70)
+
+distribution_target <- scenarios |>
+  dplyr::filter(inflation >= high_inflation_threshold) |>
+  dplyr::select(equity, bonds)
+distribution_target
+```
+
+The target therefore represents the empirical distribution of equity and bond
+returns observed in the upper 30% of inflation scenarios. It contains fewer
+observations than the original scenario set, which is completely valid for a
+distribution view.
+
+### Marginal distribution views
+
+`view_marginal_distribution()` focuses on the marginal distribution of each
+feature separately.
+
+Suppose \(Y_{j,k}\), for \(j=1,\ldots,J^\star\), denotes the observations of
+feature \(k\) in the target sample. For moment degree \(d\), the empirical
+target moment is
+
+$$
+m^\star_{k,d}
+=
+\frac{1}{J^\star}
+\sum_{j=1}^{J^\star}
+Y_{j,k}^{d}.
+$$
+
+The corresponding posterior constraint is
+
+$$
+\sum_{t=1}^{T}
+p_t X_{t,k}^{d}
+=
+m^\star_{k,d}.
+$$
+
+With the default `order = 2L`, `ffp` therefore matches the first and second raw
+moments of every marginal distribution:
+
+```{r marginal-distribution-view}
+marginal_distribution_view <- view_marginal_distribution(
+  x = returns,
+  target = distribution_target,
+  order = 2L
+)
+
+marginal_distribution_view
+```
+
+For two features, this generates four equalities:
+
+$$
+E_p[X_1],
+\qquad
+E_p[X_2],
+\qquad
+E_p[X_1^2],
+\qquad
+E_p[X_2^2].
+$$
+
+What is deliberately absent is a cross-moment such as \(E_p[X_1X_2]\).
+A marginal distribution view says how each variable should behave
+individually; it does not attempt to reproduce the dependence structure in the
+target sample.
+
+Increasing `order` to `3L` or `4L` adds the corresponding third and fourth raw
+moments. A higher order supplies more information about the target
+distribution, but it also adds constraints and can make the Entropy Pooling
+problem more restrictive. `order = 2L` is therefore a useful starting point
+rather than merely a computational shortcut.
+
+### Joint distribution views
+
+`view_joint_distribution()` extends the same idea to the joint distribution.
+It matches not only marginal raw moments but also their cross-moments.
+
+Using the same target sample:
+
+```{r joint-distribution-view}
+joint_distribution_view <- view_joint_distribution(
+  x = returns,
+  target = distribution_target,
+  order = 2L
+)
+
+joint_distribution_view
+```
+
+For two variables \(X_1\) and \(X_2\), an order-two joint distribution view
+generates the five conditions:
+
+$$
+E_p[X_1],
+\qquad
+E_p[X_2],
+\qquad
+E_p[X_1^2],
+\qquad
+E_p[X_1X_2],
+\qquad
+E_p[X_2^2].
+$$
+
+The additional term
+
+$$
+E_p[X_1X_2]
+$$
+
+is what distinguishes the joint view from two marginal views of the same
+order. It carries information about how the two variables move together.
+
+More generally, `view_joint_distribution()` includes every unique raw
+cross-moment with total degree up to `order`. If there are \(K\) features, the
+number of equality constraints is
+
+$$
+\sum_{d=1}^{m}
+{K+d-1 \choose d},
+$$
+
+where \(m\) is the selected moment order.
+
+This growth is worth keeping in mind. Higher-order joint views can describe a
+target distribution more richly, but the amount of information imposed on the
+posterior grows quickly with both the number of variables and the moment order.
+
+### Copula views
+
+A joint distribution combines two types of information: the behavior of each
+marginal distribution and the dependence between them. A copula separates
+these components and describes only the dependence structure.
+
+`view_copula()` works with copula observations, or pseudo-observations, in the
+unit interval. We can construct empirical pseudo-observations from ranks:
+
+```{r copula-features}
+pseudo_observation <- function(x) {
+  rank(x, ties.method = "average") / (length(x) + 1)
+}
+
+copula_scenarios <- tibble::tibble(
+  equity = pseudo_observation(returns$equity),
+  bonds  = pseudo_observation(returns$bonds)
+)
+
+target_copula <- tibble::tibble(
+  equity = pseudo_observation(distribution_target$equity),
+  bonds  = pseudo_observation(distribution_target$bonds)
+)
+
+target_copula
+```
+
+We can then express a view on the dependence structure observed in the
+high-inflation target sample:
+
+```{r copula-view}
+copula_view <- view_copula(
+  x = copula_scenarios,
+  target = target_copula,
+  order = 2L
+)
+
+copula_view
+```
+
+A genuine copula has uniform marginal distributions on \([0,1]\). `ffp`
+therefore does not estimate pure marginal moments from `target`. For a pure
+moment of degree \(d\), it uses the theoretical uniform value
+
+$$
+E[U_k^d]
+=
+\frac{1}{d+1}.
+$$
+
+For example,
+
+$$
+E[U_k]
+=
+\frac{1}{2}
+$$
+
+and
+
+$$
+E[U_k^2]
+=
+\frac{1}{3}.
+$$
+
+The empirical target sample is instead used to determine the **mixed**
+cross-moments that contain the dependence information. For two variables and
+`order = 2L`, the constraints are therefore based on
+
+$$
+E_p[U_1]
+=
+\frac{1}{2},
+\qquad
+E_p[U_2]
+=
+\frac{1}{2},
+$$
+
+$$
+E_p[U_1^2]
+=
+\frac{1}{3},
+\qquad
+E_p[U_2^2]
+=
+\frac{1}{3},
+$$
+
+together with the empirical target condition
+
+$$
+E_p[U_1U_2]
+=
+\frac{1}{J^\star}
+\sum_{j=1}^{J^\star}
+U^\star_{j,1}U^\star_{j,2}.
+$$
+
+This distinction is useful in practice. `view_joint_distribution()` describes
+marginal behavior and dependence together, whereas `view_copula()` targets
+dependence after the marginal scales have been removed.
+
+For all three distribution views, `target` may contain a different number of
+observations from `x`, but it must contain one target variable for each feature.
+When both sides are named, names and order must agree; `ffp` does not silently
+reorder variables. A single `Date` or `POSIXt` column may be used as an
+observation index and is not treated as a distribution variable.
 
 ## Combining views
 
@@ -855,6 +1125,9 @@ A useful summary is:
 | `view_variance()` | one second-moment equality per target |
 | `view_covariance()` | \(K(K+1)/2\) equalities |
 | `view_correlation()` | \(K(K+1)/2\) equalities |
+| `view_marginal_distribution()` | \(K m\) equalities for \(K\) features and moment order \(m\) |
+| `view_joint_distribution()` | \(\sum_{d=1}^{m}{K+d-1 \choose d}\) raw-moment equalities |
+| `view_copula()` | the same moment count, with theoretical uniform pure moments and target mixed moments |
 
 The user-facing API is deliberately semantic: it records what the analyst means.
 The compiler handles the mathematical expansion needed by Entropy Pooling.

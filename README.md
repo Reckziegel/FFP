@@ -32,11 +32,13 @@ Flexible Probabilities provide a way to incorporate this information
 without touching in the scenarios. Only probabilities are allowed to
 change.
 
-`ffp` organizes this process into a model workflow. You define the
-scenario support, choose prior probabilities, express views about the
-distribution, and use Entropy Pooling to obtain posterior probabilities
-that satisfy those views while remaining as close as possible to the
-prior.
+<!-- `ffp` organizes this process into a model workflow. You define the scenario -->
+
+<!-- support, choose prior probabilities, express views about the distribution, and -->
+
+<!-- use Entropy Pooling to obtain posterior probabilities that satisfy those views -->
+
+<!-- while remaining as close as possible to the prior. -->
 
 ## Installation
 
@@ -283,7 +285,7 @@ A uniform prior is only the simplest starting point.
 rolling windows (`prior_rolling_window()`), market conditioning
 (`prior_crisp()`), custom probabilities (`prior_custom()`), or
 combinations of different prior specifications (`prior_product()` and
-`prior_mixture()`).
+`prior_mixture()`):
 
 ``` r
 prior_exp_decay(half_life = 60)
@@ -344,6 +346,6 @@ summary(pooled)
 `ffp` 2.0 introduces a higher-level, model-first interface built around
 `ffp_model()`, `ffp_prior()`, `ffp_view()`, and `ffp_fit()`.
 
-Lower-level probability, view, and Entropy Pooling functions remain
+Lower-level probability, view and Entropy Pooling functions remain
 available, but the model workflow is the recommended starting point for
 new analyses.

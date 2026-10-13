@@ -1884,30 +1884,6 @@ test_that("ffp_prior() rejects raw probability vectors", {
 })
 
 
-test_that("single-scenario priors remain valid", {
-  expect_identical(
-    ffp_model(1) |>
-      ffp_prior(prior_uniform()) |>
-      getElement("prior"),
-    1
-  )
-
-  expect_identical(
-    ffp_model(1) |>
-      ffp_prior(prior_exp_decay(half_life = 2)) |>
-      getElement("prior"),
-    1
-  )
-
-  expect_identical(
-    ffp_model(1) |>
-      ffp_prior(prior_rolling_window(window = 1)) |>
-      getElement("prior"),
-    1
-  )
-})
-
-
 # Printing ----------------------------------------------------------------
 
 test_that("uniform prior specification has a compact print method", {

@@ -138,7 +138,7 @@ view_mean <- function(x, target) {
 #' scenarios <- data.frame(
 #'   equity = c(-0.08, -0.03, 0.01, 0.04, 0.06),
 #'   inflation = c(0.02, 0.03, 0.035, 0.045, 0.05),
-#'   recession = c(TRUE, TRUE, FALSE, FALSE, FALSE)
+#'   recession = c(TRUE, TRUE, TRUE, FALSE, FALSE)
 #' )
 #'
 #' # Marginal event probability
@@ -802,6 +802,7 @@ bind_view.ffp_view_probability_spec <- function(view, model, call = rlang::calle
     validate_probability_features(features = given, arg = "given", call = call)
     validate_single_conditioning_event(features = given, call = call)
     validate_positive_conditioning_probability(features = given, model = model, call = call)
+    validate_conditional_probability_support(features = features, given = given, target = view$target, prior = model$prior, call = call)
 
     given_expression <- compact_view_label(view$parameters$given)
 
@@ -969,6 +970,18 @@ resolve_view_features <- function(expression, model, arg, call = rlang::caller_e
     call = call
   )
 }
+
+normalize_distribution_features <- function(features, arg = "x", call = rlang::caller_env()) {
+
+  values <- strip_distribution_temporal_column(x = features$values, arg = arg, call = call)
+
+  if (identical(values, features$values)) {
+    return(features)
+  }
+
+  new_ffp_feature_set(values = values, feature_names = names(values), source_class = features$source_class)
+}
+
 
 
 # Scenario-feature interface ---------------------------------------------
@@ -1425,6 +1438,66 @@ validate_probability_target <- function(target, call = rlang::caller_env()) {
     )
   }
   target
+}
+
+validate_conditional_probability_support <- function(features, given, target, prior, call = rlang::caller_env()) {
+
+  conditioning_event <- feature_column(given, i = 1L)
+
+  positive_prior       <- prior > 0
+  conditioning_support <- conditioning_event & positive_prior
+
+  n_features <- feature_count(features)
+
+  for (i in seq_len(n_features)) {
+
+    event <- feature_column(features, i = i)
+    target_i <- target[[i]]
+    has_event_support      <- any(conditioning_support & event)
+    has_complement_support <- any(conditioning_support & !event)
+
+    valid <- if (target_i == 0) {
+      has_complement_support
+    } else if (target_i == 1) {
+      has_event_support
+    } else {
+      has_event_support && has_complement_support
+    }
+
+    if (!valid) {
+
+      feature_names <- features$names
+      feature_label <- if (!is.null(feature_names) && length(feature_names) >= i && !is.na(feature_names[[i]]) && nzchar(feature_names[[i]])) {
+        paste0("`", feature_names[[i]], "`")
+      } else {
+        paste0("event ", i)
+      }
+
+      ffp_abort(
+        c(
+          "The conditional probability target is incompatible with the current prior support.",
+          "x" = paste0(
+            "Target ",
+            format(target_i),
+            " for ",
+            feature_label,
+            " can only be satisfied by assigning zero posterior ",
+            "probability to the conditioning event."
+          ),
+          "i" = paste0(
+            "Revise the target, conditioning event, or prior support."
+          )
+        ),
+        class = c(
+          "ffp_error_incompatible_conditional_probability",
+          "ffp_error_incompatible_view"
+        ),
+        call = call
+      )
+    }
+  }
+
+  invisible(TRUE)
 }
 
 
@@ -2393,6 +2466,9 @@ format_view_method <- function(method) {
     variance = "variance",
     covariance = "covariance",
     correlation = "correlation",
+    marginal_distribution = "marginal distribution",
+    joint_distribution = "joint distribution",
+    copula = "copula",
     method
   )
 }
@@ -3480,7 +3556,7 @@ validate_covariance_compatibility <- function(target, features, call = rlang::ca
 
 #' Marginal distribution view
 #'
-#' Creates a full-information view that approximates target marginal
+#' Creates a moment-based distribution view that approximates target marginal
 #' distributions by matching raw moments.
 #'
 #' `x` defines the scenario features whose posterior marginal distributions are
@@ -3561,6 +3637,8 @@ view_marginal_distribution <- function(x, target, order = 2L) {
   validate_view_x_spec(x = x, constructor = "view_marginal_distribution", call = call)
 
   order <- validate_distribution_view_order(order = order, call = call)
+  target_features <- as_distribution_target_features(target = target, call = call)
+  validate_distribution_view_features(features = target_features, constructor = "view_marginal_distribution", arg = "target", call = call)
 
   new_view_spec(
     method = "marginal_distribution",
@@ -3577,6 +3655,7 @@ view_marginal_distribution <- function(x, target, order = 2L) {
 bind_view.ffp_view_marginal_distribution_spec <- function(view, model, call = rlang::caller_env()) {
 
   features <- resolve_view_features(expression = view$x, model = model, arg = "x", call = call)
+  features <- normalize_distribution_features(features = features, arg = "x", call = call)
 
   validate_distribution_view_features(features = features, constructor = "view_marginal_distribution", arg = "x", call = call)
 
@@ -3598,23 +3677,208 @@ bind_view.ffp_view_marginal_distribution_spec <- function(view, model, call = rl
 
 as_distribution_target_features <- function(target, call = rlang::caller_env()) {
 
-  n_observations <- NROW(target)
+  source_class <- first_class(target)
+  target <- strip_distribution_temporal_column(x = target, arg = "target", call = call)
 
-  if (n_observations == 0L) {
+  if (inherits(target, "xts")) {
+    values        <- as.matrix(target)
+    feature_names <- colnames(values)
+
+  } else if (inherits(target, "ts")) {
+    values <- if (is.null(dim(target))) {
+      as.vector(target)
+    } else {
+      as.matrix(target)
+    }
+
+    feature_names <- if (is.null(dim(values))) {
+      NULL
+    } else {
+      colnames(values)
+    }
+
+  } else if (inherits(target, "data.frame")) {
+
+    list_columns <- vapply(target, is.list, logical(1))
+
+    if (any(list_columns)) {
+
+      column_names <- names(target)[list_columns]
+      column_names <- paste0("`", column_names, "`", collapse = ", ")
+
+      ffp_abort(
+        c(
+          "{.arg target} must not contain list-columns.",
+          "x" = paste0("Found list-column(s): ", column_names, "."),
+          "i" = "Each target variable must be stored in an atomic column."
+        ),
+        class = distribution_input_error_class("target"),
+        call = call
+      )
+    }
+
+    values        <- target
+    feature_names <- names(target)
+
+  } else if (is.matrix(target)) {
+
+    values        <- target
+    feature_names <- colnames(target)
+
+  } else if (is.array(target)) {
+
+    if (length(dim(target)) > 2L) {
+      ffp_abort(
+        c(
+          "{.arg target} must have at most two dimensions.",
+          "x" = "Arrays with more than two dimensions are not supported."
+        ),
+        class = distribution_input_error_class("target"),
+        call = call
+      )
+    }
+
+    values        <- as.matrix(target)
+    feature_names <- colnames(values)
+
+  } else if (is.atomic(target) && is.null(dim(target))) {
+
+    values        <- target
+    feature_names <- NULL
+
+  } else {
+    ffp_abort(
+      c(
+        "Unsupported distribution input in {.arg target}.",
+        "x" = paste0("Received an object of class `", source_class, "`."),
+        "i" = paste0("Use a numeric vector, matrix, data frame, tibble, {.cls ts}, {.cls mts}, or {.cls xts} object.")
+      ),
+      class = distribution_input_error_class("target"),
+      call = call
+    )
+  }
+
+  features <- new_ffp_feature_set(values = values, feature_names = feature_names, source_class = source_class)
+
+  if (feature_observation_count(features) == 0L) {
     ffp_abort(
       c(
         "{.arg target} must contain at least one observation.",
         "i" = "Each row represents one draw from the target distribution."
       ),
-      class = c(
-        "ffp_error_invalid_view_target",
-        "ffp_error_invalid_view"
-      ),
+      class = distribution_input_error_class("target"),
       call = call
     )
   }
 
-  as_scenario_features(x = target, n_scenarios = n_observations, arg = "target", call = call)
+  if (feature_count(features) == 0L) {
+    ffp_abort(
+      "{.arg target} must contain at least one distribution variable.",
+      class = distribution_input_error_class("target"),
+      call = call
+    )
+  }
+
+  validate_distribution_target_names(feature_names = features$names,call = call)
+
+  features
+}
+
+validate_distribution_target_names <- function(feature_names, call = rlang::caller_env()) {
+
+  if (is.null(feature_names)) {
+    return(invisible(feature_names))
+  }
+
+  unnamed <- is.na(feature_names) | !nzchar(feature_names)
+
+  if (all(unnamed)) {
+    return(invisible(feature_names))
+  }
+
+  if (any(unnamed)) {
+    ffp_abort(
+      c(
+        "Variable names in {.arg target} must be complete.",
+        "x" = "Some target variables are named while others are unnamed."
+      ),
+      class = distribution_input_error_class("target"),
+      call = call
+    )
+  }
+
+  duplicated_names <- unique(feature_names[duplicated(feature_names)])
+
+  if (length(duplicated_names) > 0L) {
+    duplicated_names <- paste0("`", duplicated_names, "`", collapse = ", ")
+
+    ffp_abort(
+      c(
+        "Variable names in {.arg target} must be unique.",
+        "x" = paste0("Duplicated name(s): ", duplicated_names, ".")
+      ),
+      class = distribution_input_error_class("target"),
+      call = call
+    )
+  }
+
+  invisible(feature_names)
+}
+
+distribution_input_error_class <- function(arg) {
+  if (identical(arg, "target")) {
+    return(c("ffp_error_invalid_view_target", "ffp_error_invalid_view"))
+  }
+  c("ffp_error_invalid_view_features", "ffp_error_invalid_view")
+}
+
+is_temporal_distribution_column <- function(x) {
+  inherits(x, "Date") || inherits(x, "POSIXt")
+}
+
+
+strip_distribution_temporal_column <- function(x, arg, call = rlang::caller_env()) {
+
+  if (!inherits(x, "data.frame")) {
+    return(x)
+  }
+
+  temporal  <- vapply(x, is_temporal_distribution_column, logical(1))
+  positions <- which(temporal)
+
+  if (length(positions) > 1L) {
+    column_names <- names(x)[positions]
+    column_names <- paste0("`", column_names, "`", collapse = ", ")
+
+    ffp_abort(
+      c(
+        paste0("Cannot determine a unique temporal index in {.arg ", arg, "}."),
+        "x" = paste0("Found multiple {.cls Date} or {.cls POSIXt} columns: ", column_names, "."),
+        "i" = paste0("Keep at most one temporal column identifying the observations.")
+      ),
+      class = distribution_input_error_class(arg),
+      call = call
+    )
+  }
+
+  if (length(positions) == 1L) {
+    x <- x[-positions]
+  }
+
+  if (NCOL(x) == 0L) {
+    ffp_abort(
+      c(
+        paste0(
+          "{.arg ", arg, "} must contain at least one distribution variable."),
+          "i" = paste0("Temporal index columns are not treated as distribution variables."
+        )
+      ),
+      class = distribution_input_error_class(arg),
+      call = call
+    )
+  }
+
+  x
 }
 
 
@@ -3656,10 +3920,7 @@ validate_distribution_view_features <- function(features, constructor, arg, call
         paste0("{.fn ", constructor, "} requires numeric distributions."),
         "x" = paste0("At least one variable in {.arg ", arg, "} is not numeric.")
       ),
-      class = c(
-        "ffp_error_invalid_view_features",
-        "ffp_error_invalid_view"
-      ),
+      class = distribution_input_error_class(arg),
       call = call
     )
   }
@@ -3670,10 +3931,7 @@ validate_distribution_view_features <- function(features, constructor, arg, call
         paste0("{.arg ", arg, "} must not contain missing values."),
         "x" = "Found at least one {.val NA} or {.val NaN} value."
       ),
-      class = c(
-        "ffp_error_invalid_view_features",
-        "ffp_error_invalid_view"
-      ),
+      class = distribution_input_error_class(arg),
       call = call
     )
   }
@@ -3684,10 +3942,7 @@ validate_distribution_view_features <- function(features, constructor, arg, call
         paste0("{.arg ", arg, "} must contain only finite values."),
         "x" = "Found at least one {.val Inf} or {.val -Inf} value."
       ),
-      class = c(
-        "ffp_error_invalid_view_features",
-        "ffp_error_invalid_view"
-      ),
+      class = distribution_input_error_class(arg),
       call = call
     )
   }
@@ -3741,7 +3996,7 @@ validate_distribution_target_compatibility <- function(features, target, call = 
 
 #' Joint distribution view
 #'
-#' Creates a full-information view that approximates a target joint
+#' Creates a moment-based distribution view that approximates a target joint
 #' distribution by matching raw cross-moments.
 #'
 #' `x` must resolve to at least two numeric scenario features. `target`
@@ -3827,6 +4082,10 @@ view_joint_distribution <- function(x, target, order = 2L) {
   validate_view_x_spec(x = x, constructor = "view_joint_distribution", call = call)
 
   order <- validate_distribution_view_order(order = order, call = call)
+  target_features <- as_distribution_target_features(target = target, call = call)
+
+  validate_distribution_view_features(features = target_features, constructor = "view_joint_distribution", arg = "target", call = call)
+  validate_joint_distribution_dimension(features = target_features, arg = "target", call = call)
 
   new_view_spec(
     method = "joint_distribution",
@@ -3843,6 +4102,8 @@ view_joint_distribution <- function(x, target, order = 2L) {
 bind_view.ffp_view_joint_distribution_spec <- function(view, model, call = rlang::caller_env()) {
 
   features <- resolve_view_features(expression = view$x, model = model, arg = "x", call = call)
+  features <- normalize_distribution_features(features = features, arg = "x", call = call)
+
   validate_distribution_view_features(features = features, constructor = "view_joint_distribution", arg = "x", call = call)
   validate_joint_distribution_dimension(features = features, arg = "x", call = call)
 
@@ -3870,10 +4131,16 @@ validate_joint_distribution_dimension <- function(features, arg, call = rlang::c
     ffp_abort(
       c(
         "{.fn view_joint_distribution} requires at least two variables.",
-        "x" = paste0("{.arg ", arg, "} contains ", n_features, " variable."),
+        "x" = paste0(
+          "{.arg ",
+          arg,
+          "} contains ",
+          n_features,
+          " variable."
+        ),
         "i" = "Use {.fn view_marginal_distribution} for a univariate distribution."
       ),
-      class = c("ffp_error_invalid_view_features", "ffp_error_invalid_view"),
+      class = distribution_input_error_class(arg),
       call = call
     )
   }
@@ -3885,8 +4152,8 @@ validate_joint_distribution_dimension <- function(features, arg, call = rlang::c
 
 #' Copula view
 #'
-#' Creates a full-information view on the dependence structure represented by
-#' a target copula.
+#' Creates a moment-based distribution view on the dependence structure
+#' represented by a target copula.
 #'
 #' `x` must resolve to at least two numeric copula features. Both `x` and
 #' `target` must contain values in `[0, 1]`, with each row representing one
@@ -3952,6 +4219,9 @@ view_copula <- function(x, target, order = 2L) {
 
   validate_view_x_spec(x = x, constructor = "view_copula", call = call)
   order <- validate_distribution_view_order(order = order, call = call)
+  target_features <- as_distribution_target_features(target = target, call = call)
+  validate_copula_features(features = target_features, arg = "target", call = call)
+  validate_copula_dimension(features = target_features, arg = "target", call = call)
 
   new_view_spec(
     method = "copula",
@@ -3968,6 +4238,7 @@ view_copula <- function(x, target, order = 2L) {
 bind_view.ffp_view_copula_spec <- function(view, model, call = rlang::caller_env()) {
 
   features <- resolve_view_features(expression = view$x, model = model, arg = "x", call = call)
+  features <- normalize_distribution_features(features = features, arg = "x", call = call)
 
   validate_copula_features(features = features, arg = "x", call = call)
   validate_copula_dimension(features = features, arg = "x", call = call)
@@ -4002,7 +4273,15 @@ validate_copula_features <- function(features, arg, call = rlang::caller_env()) 
   values <- features$values
 
   outside_unit_interval <- if (inherits(values, "data.frame")) {
-    any(vapply(values, function(column) any(column < 0 | column > 1), logical(1)))
+    any(
+      vapply(
+        values,
+        function(column) {
+          any(column < 0 | column > 1)
+        },
+        logical(1)
+      )
+    )
   } else {
     any(values < 0 | values > 1)
   }
@@ -4010,14 +4289,18 @@ validate_copula_features <- function(features, arg, call = rlang::caller_env()) 
   if (outside_unit_interval) {
     ffp_abort(
       c(
-        paste0("{.arg ", arg, "} must contain copula values in [0, 1]."),
+        paste0(
+          "{.arg ",
+          arg,
+          "} must contain copula values in [0, 1]."
+        ),
         "x" = "Found at least one value outside the unit interval.",
-        "i" = "Supply copula observations or pseudo-observations rather than raw scenario values."
+        "i" = paste0(
+          "Supply copula observations or pseudo-observations rather ",
+          "than raw scenario values."
+        )
       ),
-      class = c(
-        "ffp_error_invalid_view_features",
-        "ffp_error_invalid_view"
-      ),
+      class = distribution_input_error_class(arg),
       call = call
     )
   }
@@ -4034,10 +4317,16 @@ validate_copula_dimension <- function(features, arg, call = rlang::caller_env())
     ffp_abort(
       c(
         "{.fn view_copula} requires at least two variables.",
-        "x" = paste0("{.arg ", arg, "} contains ", n_features, " variable."),
+        "x" = paste0(
+          "{.arg ",
+          arg,
+          "} contains ",
+          n_features,
+          " variable."
+        ),
         "i" = "A copula describes dependence between two or more variables."
       ),
-      class = c("ffp_error_invalid_view_features", "ffp_error_invalid_view"),
+      class = distribution_input_error_class(arg),
       call = call
     )
   }

@@ -4,7 +4,7 @@ make_constraint_test_model <- function() {
   scenarios <- data.frame(
     equity = c(-0.08, -0.03, 0.01, 0.04, 0.06),
     inflation = c(0.02, 0.03, 0.035, 0.045, 0.05),
-    recession = c(TRUE, TRUE, FALSE, FALSE, FALSE)
+    recession = c(TRUE, TRUE, TRUE, FALSE, FALSE)
   )
 
   ffp_model(scenarios) |>
@@ -251,6 +251,37 @@ test_that("conditional probability is checked against the current prior", {
   expect_error(
     compile_views(model),
     class = "ffp_error_zero_conditioning_probability"
+  )
+})
+
+test_that("conditional probability support is rechecked against the current prior", {
+  scenarios <- data.frame(
+    event = c(TRUE, FALSE, TRUE, FALSE),
+    conditioning = c(TRUE, TRUE, FALSE, FALSE)
+  )
+
+  model <- ffp_model(scenarios) |>
+    ffp_prior(
+      prior_uniform()
+    ) |>
+    ffp_view(
+      view_probability(
+        x = event,
+        target = 0.50,
+        given = conditioning
+      )
+    )
+
+  model <- model |>
+    ffp_prior(
+      prior_custom(
+        c(0.50, 0, 0.25, 0.25)
+      )
+    )
+
+  expect_error(
+    compile_views(model),
+    class = "ffp_error_incompatible_conditional_probability"
   )
 })
 

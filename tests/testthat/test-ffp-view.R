@@ -4,7 +4,7 @@ make_view_test_model <- function(prior = prior_uniform()) {
   scenarios <- data.frame(
     equity = c(-0.08, -0.03, 0.01, 0.04, 0.06),
     inflation = c(0.02, 0.03, 0.035, 0.045, 0.05),
-    recession = c(TRUE, TRUE, FALSE, FALSE, FALSE)
+    recession = c(TRUE, TRUE, TRUE, FALSE, FALSE)
   )
 
   ffp_model(scenarios) |>
@@ -1077,6 +1077,107 @@ test_that("positive conditioning support is evaluated using the current prior", 
 
   expect_length(model$views, 1)
   expect_s3_class(model$views[[1]], "ffp_view_probability")
+})
+
+test_that("interior conditional targets require support on both event outcomes", {
+  scenarios <- data.frame(
+    event = c(TRUE, TRUE, FALSE, FALSE),
+    conditioning = c(TRUE, TRUE, FALSE, FALSE)
+  )
+
+  model <- ffp_model(scenarios) |>
+    ffp_prior(
+      prior_uniform()
+    )
+
+  expect_error(
+    model |>
+      ffp_view(
+        view_probability(
+          x = event,
+          target = 0.50,
+          given = conditioning
+        )
+      ),
+    class = "ffp_error_incompatible_conditional_probability"
+  )
+})
+
+test_that("zero conditional targets require complement support", {
+  scenarios <- data.frame(
+    event = c(TRUE, TRUE, FALSE, FALSE),
+    conditioning = c(TRUE, TRUE, FALSE, FALSE)
+  )
+
+  model <- ffp_model(scenarios) |>
+    ffp_prior(
+      prior_uniform()
+    )
+
+  expect_error(
+    model |>
+      ffp_view(
+        view_probability(
+          x = event,
+          target = 0,
+          given = conditioning
+        )
+      ),
+    class = "ffp_error_incompatible_conditional_probability"
+  )
+})
+
+test_that("unit conditional targets require event support", {
+  scenarios <- data.frame(
+    event = c(FALSE, FALSE, TRUE, TRUE),
+    conditioning = c(TRUE, TRUE, FALSE, FALSE)
+  )
+
+  model <- ffp_model(scenarios) |>
+    ffp_prior(
+      prior_uniform()
+    )
+
+  expect_error(
+    model |>
+      ffp_view(
+        view_probability(
+          x = event,
+          target = 1,
+          given = conditioning
+        )
+      ),
+    class = "ffp_error_incompatible_conditional_probability"
+  )
+})
+
+test_that("conditional targets accept compatible prior support", {
+  scenarios <- data.frame(
+    event = c(TRUE, FALSE, TRUE, FALSE),
+    conditioning = c(TRUE, TRUE, FALSE, FALSE)
+  )
+
+  model <- ffp_model(scenarios) |>
+    ffp_prior(
+      prior_uniform()
+    ) |>
+    ffp_view(
+      view_probability(
+        x = event,
+        target = 0.50,
+        given = conditioning
+      )
+    )
+
+  expect_length(
+    model$views,
+    1L
+  )
+
+  expect_s3_class(
+    model$views[[1]],
+    "ffp_view_probability"
+  )
 })
 
 

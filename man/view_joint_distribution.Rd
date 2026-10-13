@@ -25,7 +25,7 @@ An object of class \code{ffp_view_joint_distribution_spec} and
 \code{ffp_view_spec}.
 }
 \description{
-Creates a full-information view that approximates a target joint
+Creates a moment-based distribution view that approximates a target joint
 distribution by matching raw cross-moments.
 }
 \details{

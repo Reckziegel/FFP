@@ -87,12 +87,18 @@ test_that("copula target may have a different number of observations", {
 test_that("copula requires at least two features", {
   model <- make_copula_test_model()
 
-  target <- c(0.10, 0.30, 0.60, 0.90)
+  target <- data.frame(
+    equity = c(0.10, 0.30, 0.60, 0.90),
+    bonds = c(0.20, 0.40, 0.70, 0.80)
+  )
 
   expect_error(
     model |>
       ffp_view(
-        view_copula(x = equity, target = target)
+        view_copula(
+          x = equity,
+          target = target
+        )
       ),
     class = "ffp_error_invalid_view_features"
   )
@@ -102,22 +108,31 @@ test_that("copula requires at least two features", {
 test_that("copula values must lie in the unit interval", {
   model <- make_copula_test_model()
 
-  invalid_target <- data.frame(equity = c(0.10, 0.40, 1.10), bonds = c(0.20, 0.50, 0.80))
-
-  expect_error(
-    model |>
-      ffp_view(
-        view_copula(x = cbind(equity, bonds), target = invalid_target)
-      ),
-    class = "ffp_error_invalid_view_features"
+  invalid_target <- data.frame(
+    equity = c(0.10, 0.40, 1.10),
+    bonds = c(0.20, 0.50, 0.80)
   )
 
-  invalid_x <- data.frame(equity = c(0.10, 0.25, 1.20, 0.70, 0.90), bonds = c(0.20, 0.55, 0.30, 0.80, 0.65))
+  expect_error(
+    view_copula(
+      x = cbind(equity, bonds),
+      target = invalid_target
+    ),
+    class = "ffp_error_invalid_view_target"
+  )
+
+  invalid_x <- data.frame(
+    equity = c(0.10, 0.25, 1.20, 0.70, 0.90),
+    bonds = c(0.20, 0.55, 0.30, 0.80, 0.65)
+  )
 
   expect_error(
     model |>
       ffp_view(
-        view_copula(x = invalid_x, target = model$scenarios[c("equity", "bonds")])
+        view_copula(
+          x = invalid_x,
+          target = model$scenarios[c("equity", "bonds")]
+        )
       ),
     class = "ffp_error_invalid_view_features"
   )
@@ -159,25 +174,44 @@ test_that("copula target names and order must match x", {
 
 
 test_that("copula targets must contain finite numeric values", {
-  model <- make_copula_test_model()
 
-  missing_target <- data.frame(equity = c(0.10, NA_real_, 0.90), bonds = c(0.20, 0.50, 0.80))
-  infinite_target <- data.frame(equity = c(0.10, Inf, 0.90), bonds = c(0.20, 0.50, 0.80))
-  character_target <- data.frame(equity = c("low", "middle", "high"), bonds = c(0.20, 0.50, 0.80))
+  missing_target <- data.frame(
+    equity = c(0.10, NA_real_, 0.90),
+    bonds = c(0.20, 0.50, 0.80)
+  )
 
-  expect_error(
-    model |> ffp_view(view_copula(cbind(equity, bonds), target = missing_target)),
-    class = "ffp_error_invalid_view_features"
+  infinite_target <- data.frame(
+    equity = c(0.10, Inf, 0.90),
+    bonds = c(0.20, 0.50, 0.80)
+  )
+
+  character_target <- data.frame(
+    equity = c("low", "middle", "high"),
+    bonds = c(0.20, 0.50, 0.80)
   )
 
   expect_error(
-    model |> ffp_view(view_copula(cbind(equity, bonds), target = infinite_target)),
-    class = "ffp_error_invalid_view_features"
+    view_copula(
+      x = cbind(equity, bonds),
+      target = missing_target
+    ),
+    class = "ffp_error_invalid_view_target"
   )
 
   expect_error(
-    model |> ffp_view(view_copula(cbind(equity, bonds), target = character_target)),
-    class = "ffp_error_invalid_view_features"
+    view_copula(
+      x = cbind(equity, bonds),
+      target = infinite_target
+    ),
+    class = "ffp_error_invalid_view_target"
+  )
+
+  expect_error(
+    view_copula(
+      x = cbind(equity, bonds),
+      target = character_target
+    ),
+    class = "ffp_error_invalid_view_target"
   )
 })
 
@@ -471,4 +505,90 @@ test_that("ffp_fit reproduces copula marginal and dependence moments", {
   expect_identical(fit$n_views, 1L)
   expect_true(fit$solver$converged)
   expect_gt(fit$solver$objective, 0)
+})
+
+test_that("copula target supports a single observation", {
+  model <- make_copula_test_model()
+
+  target <- data.frame(
+    equity = 0.70,
+    bonds = 0.40
+  )
+
+  model <- model |>
+    ffp_view(
+      view_copula(
+        x = cbind(equity, bonds),
+        target = target
+      )
+    )
+
+  constraints <- compile_views(model)
+
+  expect_equal(
+    constraints$b_eq,
+    c(
+      1 / 2,
+      1 / 2,
+      1 / 3,
+      0.70 * 0.40,
+      1 / 3
+    )
+  )
+})
+
+test_that("copula printing is informative", {
+  target <- data.frame(
+    equity = c(0.10, 0.30, 0.70, 0.90),
+    bonds = c(0.20, 0.60, 0.40, 0.80)
+  )
+
+  spec <- view_copula(
+    x = cbind(equity, bonds),
+    target = target,
+    order = 2L
+  )
+
+  spec_output <- capture.output(
+    print(spec)
+  )
+
+  expect_true(
+    any(grepl("Method:      copula", spec_output, fixed = TRUE))
+  )
+
+  expect_true(
+    any(grepl("Moment order: 2", spec_output, fixed = TRUE))
+  )
+
+  expect_true(
+    any(grepl("Target obs.:  4", spec_output, fixed = TRUE))
+  )
+
+  model <- make_copula_test_model() |>
+    ffp_view(spec)
+
+  bound_output <- capture.output(
+    print(model$views[[1]])
+  )
+
+  expect_true(
+    any(grepl("<ffp_view_copula>", bound_output, fixed = TRUE))
+  )
+
+  expect_true(
+    any(grepl("Features:    2", bound_output, fixed = TRUE))
+  )
+
+  expect_true(
+    any(grepl("Constraints: 5", bound_output, fixed = TRUE))
+  )
+
+  expect_true(
+    any(grepl("Moment order: 2", bound_output, fixed = TRUE))
+  )
+
+  expect_true(
+    any(grepl("Target obs.:  4", bound_output, fixed = TRUE))
+  )
 })
